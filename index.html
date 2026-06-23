@@ -26,6 +26,7 @@ body {
 .big-title { font-size:28px; font-weight:bold; color:#f3e3b0; line-height:1.7; }
 .sub-title-en { font-family:Georgia,serif; font-size:13px; color:#cdb877; letter-spacing:1px; margin-top:6px; }
 .date-line { font-size:16px; color:#e9d39a; margin-top:10px; }
+.date-note { font-size:10px; color:#7fae8a; margin-top:4px; }
 
 .toggle-btn {
   display:block;
@@ -76,7 +77,8 @@ body {
   <div class="title-block">
     <div class="big-title">پاکستان کے 12 شہروں<br>کے مکمل نماز اوقات</div>
     <div class="sub-title-en">COMPLETE PRAYER TIMES — 12 MAJOR CITIES</div>
-    <div class="date-line">منگل، 23 جون 2026ء / 7 محرم الحرام 1448ھ</div>
+    <div class="date-line" id="dateLine">تاریخ لوڈ ہو رہی ہے...</div>
+    <div class="date-note">(ہجری تاریخ تخمینی ہے — چاند نظر آنے کے اعلان سے 1 دن آگے/پیچھے ہو سکتی ہے)</div>
   </div>
 
   <button class="toggle-btn" onclick="toggleCards()">🕐 تمام شہروں کے اوقات دیکھیں 👇</button>
@@ -339,6 +341,40 @@ function toggleCards() {
     btn.innerHTML = '🕐 تمام شہروں کے اوقات دیکھیں 👇';
   }
 }
+
+// ===== Auto date (Gregorian + Hijri) =====
+const urduDays = ["اتوار","پیر","منگل","بدھ","جمعرات","جمعہ","ہفتہ"];
+const urduMonthsGreg = ["جنوری","فروری","مارچ","اپریل","مئی","جون","جولائی","اگست","ستمبر","اکتوبر","نومبر","دسمبر"];
+const urduMonthsHijri = ["محرم الحرام","صفر","ربیع الاول","ربیع الثانی","جمادی الاول","جمادی الثانی","رجب","شعبان","رمضان المبارک","شوال","ذیقعد","ذی الحجہ"];
+
+function getHijri(date) {
+  try {
+    const fmt = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', { day:'numeric', month:'numeric', year:'numeric' });
+    const parts = fmt.formatToParts(date);
+    let day, month, year;
+    for (const p of parts) {
+      if (p.type === 'day') day = parseInt(p.value);
+      if (p.type === 'month') month = parseInt(p.value);
+      if (p.type === 'year') year = parseInt(p.value);
+    }
+    return { day, month, year };
+  } catch (e) {
+    return null;
+  }
+}
+
+function renderDate() {
+  const today = new Date();
+  const dayName = urduDays[today.getDay()];
+  const gregLine = `${today.getDate()} ${urduMonthsGreg[today.getMonth()]} ${today.getFullYear()}ء`;
+  let hijriLine = "";
+  const h = getHijri(today);
+  if (h && h.month >= 1 && h.month <= 12) {
+    hijriLine = ` / ${h.day} ${urduMonthsHijri[h.month-1]} ${h.year}ھ`;
+  }
+  document.getElementById('dateLine').innerText = `${dayName}، ${gregLine}${hijriLine}`;
+}
+renderDate();
 </script>
 </body>
 </html>
