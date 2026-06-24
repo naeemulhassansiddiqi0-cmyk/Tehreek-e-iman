@@ -70,6 +70,39 @@ body {
 
 .disclaimer { text-align:center; font-size:11px; color:#7fae8a; margin-top:24px; padding:0 20px; }
 .footer { text-align:center; margin-top:16px; font-size:12px; color:#cdb877; }
+
+.caption-btn {
+  display:block;
+  margin:20px auto 0;
+  background:linear-gradient(180deg,#3a6b4f,#1f4a32);
+  color:#f3e3b0;
+  font-weight:bold;
+  font-size:14px;
+  padding:10px 20px;
+  border:1px solid #d4af37;
+  border-radius:24px;
+  cursor:pointer;
+  font-family:'Nastaliq',sans-serif;
+}
+#captionWrap {
+  max-height:0;
+  overflow:hidden;
+  transition:max-height 0.5s ease;
+  padding:0 16px;
+}
+#captionWrap.open { max-height:2000px; }
+.caption-box {
+  background:rgba(255,255,255,0.04);
+  border:1px solid #5a4a1a;
+  border-radius:10px;
+  margin-top:14px;
+  padding:16px 18px;
+  font-size:14px;
+  line-height:2;
+  color:#e9d39a;
+  text-align:right;
+}
+.caption-box a { color:#9fd9ff; word-break:break-all; }
 </style>
 </head>
 <body>
@@ -327,6 +360,21 @@ body {
     <div class="disclaimer">عصر حنفی مسلک کے مطابق — اوقات تقریبی ہیں، اپنی مقامی مسجد کی اذان سے تصدیق کر لیں</div>
   </div>
 
+  <button class="caption-btn" onclick="toggleCaption()">📋 پوسٹ کیپشن پڑھیں 👇</button>
+  <div id="captionWrap">
+    <div class="caption-box">
+🌙 پاکستان کے 12 شہروں کے مکمل نماز اوقات (فجر، ظہر، عصر، مغرب، عشاء، اشراق، چاشت، سحری، افطاری، طلوع، غروب، زوال)<br><br>
+👇 مکمل تفصیل دیکھنے کے لیے نیچے لنک پر کلک کریں (روزانہ خود بخود صحیح تاریخ دکھاتا ہے):<br>
+<a href="https://naeemulhassansiddiqi0-cmyk.github.io/Tehreek-e-iman/">https://naeemulhassansiddiqi0-cmyk.github.io/Tehreek-e-iman/</a><br><br>
+السلام علیکم ورحمۃ اللہ<br>
+روزانہ کراچی اور پاکستان بھر کے نماز کے اوقات اور اسلامی پوسٹس کے لیے<br>
+"تحریکِ ایمان" WhatsApp چینل کو فالو کریں:<br>
+<a href="https://whatsapp.com/channel/0029VbCVdFz9Bb639qayOl08">https://whatsapp.com/channel/0029VbCVdFz9Bb639qayOl08</a><br><br>
+جزاک اللہ خیر<br>
+محمد نعیم الحسن صدیقی
+    </div>
+  </div>
+
   <div class="footer">Tehreek-e-Iman — تحریکِ ایمان</div>
 
 <script>
@@ -375,6 +423,18 @@ function renderDate() {
   document.getElementById('dateLine').innerText = `${dayName}، ${gregLine}${hijriLine}`;
 }
 renderDate();
+
+function toggleCaption() {
+  const el = document.getElementById('captionWrap');
+  el.classList.toggle('open');
+  const btn = document.querySelector('.caption-btn');
+  if (el.classList.contains('open')) {
+    btn.innerHTML = '🔼 کیپشن بند کریں';
+    el.scrollIntoView({behavior:'smooth'});
+  } else {
+    btn.innerHTML = '📋 پوسٹ کیپشن پڑھیں 👇';
+  }
+}
 </script>
 </body>
 </html>
