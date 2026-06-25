@@ -395,10 +395,13 @@ const urduDays = ["اتوار","پیر","منگل","بدھ","جمعرات","جم
 const urduMonthsGreg = ["جنوری","فروری","مارچ","اپریل","مئی","جون","جولائی","اگست","ستمبر","اکتوبر","نومبر","دسمبر"];
 const urduMonthsHijri = ["محرم الحرام","صفر","ربیع الاول","ربیع الثانی","جمادی الاول","جمادی الثانی","رجب","شعبان","رمضان المبارک","شوال","ذیقعد","ذی الحجہ"];
 
+const HIJRI_DAY_ADJUSTMENT = -1;
+
 function getHijri(date) {
   try {
+    const adjustedDate = new Date(date.getTime() + HIJRI_DAY_ADJUSTMENT * 24 * 60 * 60 * 1000);
     const fmt = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', { day:'numeric', month:'numeric', year:'numeric' });
-    const parts = fmt.formatToParts(date);
+    const parts = fmt.formatToParts(adjustedDate);
     let day, month, year;
     for (const p of parts) {
       if (p.type === 'day') day = parseInt(p.value);
