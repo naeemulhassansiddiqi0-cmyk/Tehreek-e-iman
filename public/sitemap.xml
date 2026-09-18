@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+  <url>
+    <loc>https://tehreek-iman.org/</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.00</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>تحریکِ ایمان — جامع اسلامی پورٹل</image:title>
+      <image:caption>تحریکِ ایمان — جامع اسلامی پورٹل — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?tab=prayer-times</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.00</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>اوقاتِ صلوٰۃ و دائمی جنتری مع آڈیو اذان</image:title>
+      <image:caption>اوقاتِ صلوٰۃ و دائمی جنتری مع آڈیو اذان — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?tab=reader</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>اسمارٹ کتب خانہ و شروحاتِ درسِ نظامی</image:title>
+      <image:caption>اسمارٹ کتب خانہ و شروحاتِ درسِ نظامی — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?tab=ai-tutor</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>ڈیجیٹل دار الافتاء و رفیقِ مفتی مع AI</image:title>
+      <image:caption>ڈیجیٹل دار الافتاء و رفیقِ مفتی مع AI — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?tab=exams</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>وفاق المدارس امتحانی مرکز و سمیلیٹر</image:title>
+      <image:caption>وفاق المدارس امتحانی مرکز و سمیلیٹر — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?tab=flashcards</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>حفظِ متون و 3D فلیش کارڈز</image:title>
+      <image:caption>حفظِ متون و 3D فلیش کارڈز — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?tab=notes</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>شخصی حواشی و علمی یادداشتیں</image:title>
+      <image:caption>شخصی حواشی و علمی یادداشتیں — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?modal=kharji</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>شعبۂ ۱۰۰۰ منتخب خارجی کتابیں</image:title>
+      <image:caption>شعبۂ ۱۰۰۰ منتخب خارجی کتابیں — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?darja=ula</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>درجہ اولیٰ (عامہ سال اول) — کتب و شروحات</image:title>
+      <image:caption>درجہ اولیٰ (عامہ سال اول) — کتب و شروحات — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?darja=sania</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>درجہ ثانیہ (عامہ سال دوم) — کتب و شروحات</image:title>
+      <image:caption>درجہ ثانیہ (عامہ سال دوم) — کتب و شروحات — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?darja=salisa</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>درجہ ثالثہ (خاصہ سال اول) — کتب و شروحات</image:title>
+      <image:caption>درجہ ثالثہ (خاصہ سال اول) — کتب و شروحات — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?darja=rabia</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>درجہ رابعہ (خاصہ سال دوم) — کتب و شروحات</image:title>
+      <image:caption>درجہ رابعہ (خاصہ سال دوم) — کتب و شروحات — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?darja=khamisa</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>درجہ خامسہ (عالیہ سال اول) — کتب و شروحات</image:title>
+      <image:caption>درجہ خامسہ (عالیہ سال اول) — کتب و شروحات — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?darja=sadisa</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>درجہ سادسہ (عالیہ سال دوم) — کتب و شروحات</image:title>
+      <image:caption>درجہ سادسہ (عالیہ سال دوم) — کتب و شروحات — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?darja=sabia</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>درجہ سابعہ (عالمیہ سال اول) — کتب و شروحات</image:title>
+      <image:caption>درجہ سابعہ (عالمیہ سال اول) — کتب و شروحات — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?darja=samina</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>درجہ ثامنہ (دورۂ حدیث شریف) — صحاح ستہ</image:title>
+      <image:caption>درجہ ثامنہ (دورۂ حدیث شریف) — صحاح ستہ — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?darja=takhasus</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>درجہ تخصص فی الفقہ والافتاء — امہات الفتاویٰ</image:title>
+      <image:caption>درجہ تخصص فی الفقہ والافتاء — امہات الفتاویٰ — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?book=quran</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>القرآن الکریم مع اعراب القرآن و تفاسیر</image:title>
+      <image:caption>القرآن الکریم مع اعراب القرآن و تفاسیر — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?book=jalalayn</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>تفسیر الجلالین للإمامين المحلي والسيوطي</image:title>
+      <image:caption>تفسیر الجلالین للإمامين المحلي والسيوطي — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?book=bukhari</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>صحیح البخاری للإمام محمد بن إسماعيل البخاري</image:title>
+      <image:caption>صحیح البخاری للإمام محمد بن إسماعيل البخاري — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?book=muslim</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>صحیح مسلم للإمام مسلم بن الحجاج النيسابوري</image:title>
+      <image:caption>صحیح مسلم للإمام مسلم بن الحجاج النيسابوري — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?book=tirmidhi</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>جامع الترمذی للإمام أبي عيسى الترمذي</image:title>
+      <image:caption>جامع الترمذی للإمام أبي عيسى الترمذي — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?book=abudawood</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>سنن أبی داود للإمام السجستاني</image:title>
+      <image:caption>سنن أبی داود للإمام السجستاني — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?book=nasai</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>سنن النسائی للإمام أحمد بن شعيب النسائي</image:title>
+      <image:caption>سنن النسائی للإمام أحمد بن شعيب النسائي — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?book=ibnmajah</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>سنن ابن ماجہ للإمام القزويني</image:title>
+      <image:caption>سنن ابن ماجہ للإمام القزويني — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?book=muwatta</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>مؤطا إمام مالک بن أنس</image:title>
+      <image:caption>مؤطا إمام مالک بن أنس — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?book=mishkat</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>مشکوٰۃ المصابیح للإمام الخطیب التبریزی</image:title>
+      <image:caption>مشکوٰۃ المصابیح للإمام الخطیب التبریزی — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?book=tahawi</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>شرح معانی الآثار للإمام الطحاوی</image:title>
+      <image:caption>شرح معانی الآثار للإمام الطحاوی — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?book=hidayah</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>الہدایۃ شرح بدایۃ المبتدی للإمام المرغینانی</image:title>
+      <image:caption>الہدایۃ شرح بدایۃ المبتدی للإمام المرغینانی — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?book=quduri</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>مختصر القدوری للإمام القدوری البغدادی</image:title>
+      <image:caption>مختصر القدوری للإمام القدوری البغدادی — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?book=kanz</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>کنز الدقائق للإمام النسفی</image:title>
+      <image:caption>کنز الدقائق للإمام النسفی — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?book=kafiya</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>الکافیۃ فی النحو لابن الحاجب</image:title>
+      <image:caption>الکافیۃ فی النحو لابن الحاجب — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?book=nuranwar</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>نور الانوار فی شرح المنار لملا جیون</image:title>
+      <image:caption>نور الانوار فی شرح المنار لملا جیون — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?book=fatawa-alamgiri</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>الفتاوى الهندية (عالمگیری)</image:title>
+      <image:caption>الفتاوى الهندية (عالمگیری) — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?book=fatawa-shami</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>رد المحتار علی الدر المختار (فتاویٰ شامی)</image:title>
+      <image:caption>رد المحتار علی الدر المختار (فتاویٰ شامی) — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?book=fatawa-qazikhan</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>فتاوى قاضي خان (الخانیۃ)</image:title>
+      <image:caption>فتاوى قاضي خان (الخانیۃ) — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?book=fatawa-tatarkhaniya</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>الفتاوى التاتارخانية للعلامة عالم بن العلاء</image:title>
+      <image:caption>الفتاوى التاتارخانية للعلامة عالم بن العلاء — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?book=fatawa-bazzaziyya</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>الفتاوى البزازية (الجامع الوجيز)</image:title>
+      <image:caption>الفتاوى البزازية (الجامع الوجيز) — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?book=fatawa-rizvia</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>الفتاوى الرضوية للإمام أحمد رضا خان</image:title>
+      <image:caption>الفتاوى الرضوية للإمام أحمد رضا خان — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?book=rasm-mufti</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>شرح عقود رسم المفتي للعلامة ابن عابدين</image:title>
+      <image:caption>شرح عقود رسم المفتي للعلامة ابن عابدين — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?book=ashbah-nazair</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>الأشباه والنظائر لابن نجيم الحنفي</image:title>
+      <image:caption>الأشباه والنظائر لابن نجيم الحنفي — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?book=badai-sanai</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>بدائع الصنائع في ترتيب الشرائع للكاساني</image:title>
+      <image:caption>بدائع الصنائع في ترتيب الشرائع للكاساني — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tehreek-iman.org/?book=fath-qadir</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://tehreek-iman.org/tehreek-iman-logo.jpg</image:loc>
+      <image:title>فتح القدير للعاجز الفقير لابن الهمام</image:title>
+      <image:caption>فتح القدير للعاجز الفقير لابن الهمام — تحریکِ ایمان</image:caption>
+    </image:image>
+  </url>
+</urlset>

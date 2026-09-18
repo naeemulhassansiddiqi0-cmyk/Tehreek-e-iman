@@ -1,0 +1,88 @@
+{
+  "name": "تحریکِ ایمان | جامع اسلامی پورٹل و کتبِ درسِ نظامی",
+  "short_name": "تحریکِ ایمان",
+  "description": "جامع اسلامی ڈیجیٹل کتب خانہ، اوقاتِ صلوٰۃ مع آڈیو اذان، صحاح ستہ، فقہ و فتاویٰ، اور وفاق المدارس امتحانی مرکز",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#01140e",
+  "theme_color": "#064e3b",
+  "orientation": "any",
+  "dir": "rtl",
+  "lang": "ur",
+  "categories": [
+    "education",
+    "books",
+    "reference",
+    "lifestyle"
+  ],
+  "icons": [
+    {
+      "src": "/tehreek-iman-logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/tehreek-iman-logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "اوقاتِ صلوٰۃ و دائمی جنتری",
+      "short_name": "اوقاتِ صلوٰۃ",
+      "description": "پاکستان کے 15+ بڑے شہروں کے اوقاتِ نماز، سحر و افطار اور لائیو اذان",
+      "url": "/?tab=prayer-times",
+      "icons": [
+        {
+          "src": "/tehreek-iman-logo.jpg",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "اسمارٹ کتب خانہ و شروحات",
+      "short_name": "کتب خانہ",
+      "description": "درسِ نظامی کے 9 درجات اور صحاح ستہ کا مکمل مطالعہ",
+      "url": "/?tab=reader",
+      "icons": [
+        {
+          "src": "/tehreek-iman-logo.jpg",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "ڈیجیٹل دار الافتاء و رفیقِ مفتی",
+      "short_name": "دار الافتاء",
+      "description": "قرآن و سنت اور فقہ حنفی سے مدلل شرعی رہنمائی مع AI",
+      "url": "/?tab=ai-tutor",
+      "icons": [
+        {
+          "src": "/tehreek-iman-logo.jpg",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "وفاق المدارس امتحانی مرکز",
+      "short_name": "امتحانی مرکز",
+      "description": "ماڈل پیپرز اور 3 گھنٹے کا لائیو امتحانی سمیلیٹر",
+      "url": "/?tab=exams",
+      "icons": [
+        {
+          "src": "/tehreek-iman-logo.jpg",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

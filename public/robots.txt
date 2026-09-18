@@ -1,0 +1,43 @@
+# ==============================================================================
+# Robots.txt for Tehreek-e-Iman Digital Islamic Portal (تحریکِ ایمان)
+# Patron: Hazrat Maulana Muhammad Naeem-ul-Hassan Siddiqi
+# Canonical Host: https://tehreek-iman.org/
+# ==============================================================================
+
+User-agent: *
+Allow: /
+Disallow: /api/private/
+Disallow: /admin/
+
+# Google Search Engine Crawlers
+User-agent: Googlebot
+User-agent: Googlebot-Image
+User-agent: Googlebot-News
+Allow: /
+
+# Microsoft Bing & Yahoo
+User-agent: Bingbot
+User-agent: msnbot
+Allow: /
+
+# Apple Search
+User-agent: Applebot
+Allow: /
+
+# Regional International Search Engines (Yandex, Baidu, DuckDuckGo)
+User-agent: DuckDuckBot
+User-agent: YandexBot
+User-agent: Baiduspider
+Allow: /
+
+# Educational Research AI Crawlers (Search Discovery)
+User-agent: GPTBot
+User-agent: ClaudeBot
+User-agent: PerplexityBot
+Allow: /
+
+# Host Directive
+Host: https://tehreek-iman.org
+
+# Canonical XML Sitemap
+Sitemap: https://tehreek-iman.org/sitemap.xml

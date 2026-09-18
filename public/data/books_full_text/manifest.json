@@ -1,0 +1,65 @@
+{
+  "completedAt": "2026-09-17T23:39:41.220Z",
+  "books": [
+    {
+      "title": "فتاوى قاضيخان (الفتاوى الخانية)",
+      "slug": "fatawa-qazi-khan",
+      "pages": 147,
+      "chapters": 63
+    },
+    {
+      "title": "الفتاوى الهندية (عالمكيرية)",
+      "slug": "fatawa-alamgiri",
+      "pages": 200,
+      "chapters": 102
+    },
+    {
+      "title": "الهداية شرح بداية المبتدي",
+      "slug": "al-hidaya",
+      "pages": 180,
+      "chapters": 78
+    },
+    {
+      "title": "المبسوط للسرخسي",
+      "slug": "al-mabsut-sarakhsi",
+      "pages": 180,
+      "chapters": 25
+    },
+    {
+      "title": "بدائع الصنائع في ترتيب الشرائع",
+      "slug": "badae-al-sanaye",
+      "pages": 200,
+      "chapters": 71
+    },
+    {
+      "title": "فتح القدير للعاجز الفقير (شرح الهداية)",
+      "slug": "fath-al-qadir",
+      "pages": 180,
+      "chapters": 10
+    },
+    {
+      "title": "رد المحتار على الدر المختار (فتاوى شامي)",
+      "slug": "radd-al-muhtar",
+      "pages": 200,
+      "chapters": 11
+    },
+    {
+      "title": "مختصر القدوري في الفقه الحنفي",
+      "slug": "mukhtasar-al-quduri",
+      "pages": 119,
+      "chapters": 68
+    },
+    {
+      "title": "كنز الدقائق في فروع الحنفية",
+      "slug": "kanz-al-daqaiq",
+      "pages": 120,
+      "chapters": 53
+    },
+    {
+      "title": "الدر المختار شرح تنوير الأبصار",
+      "slug": "al-durr-al-mukhtar",
+      "pages": 150,
+      "chapters": 42
+    }
+  ]
+}

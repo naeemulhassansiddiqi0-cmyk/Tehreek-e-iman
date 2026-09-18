@@ -1,0 +1,8 @@
+﻿name = "tehreek-e-imaan"
+compatibility_date = "2026-09-17"
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "tehreek_e_imaan_db"
+database_id = "b8700d2d-90a1-429d-b36d-dd43430e02a2"

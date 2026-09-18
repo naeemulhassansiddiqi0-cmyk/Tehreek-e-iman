@@ -1,0 +1,568 @@
+@import url('https://fonts.cdnfonts.com/css/jameel-noori-nastaleeq');
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'Jameel Noori Nastaleeq';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Jameel Noori Nastaleeq'), local('Jameel Noori Nastaliq'), url('https://fonts.cdnfonts.com/s/149204/JameelNooriNastaleeqRegular.woff') format('woff');
+  font-display: swap;
+}
+
+@layer base {
+  body {
+    font-family: 'Jameel Noori Nastaleeq', 'Jameel Noori Nastaliq', 'Scheherazade New', 'Amiri', system-ui, sans-serif;
+    direction: rtl;
+    text-align: right;
+    background-color: #fbf9f4;
+    color: #1a201e;
+  }
+}
+
+.font-arabic {
+  font-family: 'Amiri', 'Traditional Arabic', 'Arabic Typesetting', 'Scheherazade New', serif;
+  line-height: 2.9;
+  letter-spacing: 0.02em;
+}
+
+.font-amiri {
+  font-family: 'Amiri', 'Traditional Arabic', 'Arabic Typesetting', serif;
+}
+
+.font-scheherazade {
+  font-family: 'Scheherazade New', 'Traditional Arabic', serif;
+}
+
+.font-lateef {
+  font-family: 'Lateef', 'Traditional Arabic', serif;
+}
+
+/* High-Contrast Arabic Matn Sanctuary Frame */
+.arabic-matn-box {
+  background-color: #ffffff;
+  border: 2px solid #b38830;
+  box-shadow: 0 6px 20px -2px rgba(179, 136, 48, 0.15), inset 0 0 0 3px #fbf8ef;
+}
+
+.dark .arabic-matn-box {
+  background-color: #0c1210;
+  border: 2px solid #d4af37;
+  box-shadow: 0 8px 24px -2px rgba(0, 0, 0, 0.7), inset 0 0 0 3px #18231f;
+}
+
+.arabic-matn-text {
+  color: #000000; /* Pure deep solid black for crystal-clear clarity on light */
+  line-height: 2.9; /* Generous clearance for all Tashkeel / Harakat */
+  letter-spacing: 0.02em;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+.dark .arabic-matn-text {
+  color: #fff4cb; /* Radiant luminescent gold for dark contrast */
+}
+
+/* Specific Dedicated Matn Themes for Scholar Comfort */
+.matn-box-mushaf {
+  background-color: #ffffff !important;
+  border: 2.5px solid #b8860b !important;
+  box-shadow: 0 6px 24px -2px rgba(184, 134, 11, 0.2), inset 0 0 0 4px #faf5e8 !important;
+}
+.matn-text-mushaf {
+  color: #000000 !important;
+}
+
+.matn-box-parchment {
+  background-color: #fdfaf2 !important;
+  border: 2.5px solid #113229 !important;
+  box-shadow: 0 6px 24px -2px rgba(17, 50, 41, 0.18), inset 0 0 0 4px #eee3cb !important;
+}
+.matn-text-parchment {
+  color: #051a12 !important;
+}
+
+.matn-box-night {
+  background-color: #090e0c !important;
+  border: 2.5px solid #d4af37 !important;
+  box-shadow: 0 8px 28px -2px rgba(0, 0, 0, 0.8), inset 0 0 0 4px #182420 !important;
+}
+.matn-text-night {
+  color: #fff5cc !important;
+}
+
+.font-nastaliq {
+  font-family: 'Jameel Noori Nastaleeq', 'Jameel Noori Nastaliq', 'Nafees Web Nasta\'liq', 'Urdu Typesetting', serif;
+  line-height: 2.4;
+  direction: rtl;
+}
+
+.font-gulzar {
+  font-family: 'Gulzar', 'Jameel Noori Nastaleeq', 'Jameel Noori Nastaliq', serif;
+  line-height: 1.9;
+}
+
+/* Global Urdu font application */
+body, button, input, textarea, select, .font-nastaliq {
+  font-family: 'Jameel Noori Nastaleeq', 'Jameel Noori Nastaliq', serif;
+}
+
+.font-quran, .font-amiri-quran {
+  font-family: 'Amiri Quran', 'KFGQPC Uthman Taha Naskh', 'Scheherazade New', 'Amiri', serif;
+  line-height: 2.6;
+  letter-spacing: 0.03em;
+}
+
+/* Elegant Classical Border & Frame */
+.islamic-frame {
+  border: 1px solid #e3dac9;
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px -2px rgba(17, 50, 41, 0.05);
+}
+
+.dark .islamic-frame {
+  border-color: #273732;
+  background-color: #141c19;
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.3);
+}
+
+/* Custom refined scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(26, 67, 55, 0.04);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #a37123;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #82531e;
+}
+
+/* Refined, dignified parchment pattern */
+.parchment-pattern {
+  background-color: #faf7f0;
+  background-image: radial-gradient(#dfd4be 0.65px, transparent 0.65px);
+  background-size: 24px 24px;
+}
+
+/* =========================================================================
+   ROYAL 3D LUXURY CARD & COMPONENT STYLES (تحریکِ ایمان ۳D اسٹائل)
+   ========================================================================= */
+
+/* High-Definition 3D Card with Bevel, Inset Highlight, and Lift Dynamics */
+.card-3d-luxury {
+  background: linear-gradient(180deg, #ffffff 0%, #fbf9f4 100%);
+  border: 2px solid #cfbe9f;
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.04),
+    0 8px 24px -4px rgba(24, 45, 38, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.card-3d-luxury:hover {
+  transform: translateY(-4px) scale(1.008);
+  box-shadow: 
+    0 20px 40px -8px rgba(16, 185, 129, 0.25),
+    0 10px 20px -3px rgba(180, 130, 40, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+  border-color: #d4af37;
+}
+
+.dark .card-3d-luxury {
+  background: linear-gradient(180deg, #1b2622 0%, #121916 100%);
+  border: 2px solid #2e443d;
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.5),
+    0 12px 28px -6px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.dark .card-3d-luxury:hover {
+  transform: translateY(-4px) scale(1.008);
+  box-shadow: 
+    0 20px 42px -6px rgba(16, 185, 129, 0.35),
+    0 10px 24px -2px rgba(212, 175, 55, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border-color: #d4af37;
+}
+
+/* 3D Emerald Accent Panel */
+.card-3d-emerald {
+  background: linear-gradient(180deg, #ffffff 0%, #f4fbf8 100%);
+  border: 2px solid #165b4c;
+  box-shadow: 
+    0 6px 20px -3px rgba(16, 85, 68, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-3d-emerald:hover {
+  transform: translateY(-3px);
+  border-color: #0b7a61;
+  box-shadow: 
+    0 16px 34px -4px rgba(11, 122, 97, 0.28),
+    0 6px 14px -2px rgba(0, 0, 0, 0.08);
+}
+
+.dark .card-3d-emerald {
+  background: linear-gradient(180deg, #13241f 0%, #0c1814 100%);
+  border: 2px solid #247562;
+  box-shadow: 
+    0 6px 20px -3px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.dark .card-3d-emerald:hover {
+  transform: translateY(-3px);
+  border-color: #38bdf8;
+  box-shadow: 
+    0 16px 36px -4px rgba(16, 185, 129, 0.38);
+}
+
+/* 3D Amber Gold Accent Panel */
+.card-3d-amber {
+  background: linear-gradient(180deg, #fffdf8 0%, #fdf6e7 100%);
+  border: 2px solid #c99324;
+  box-shadow: 
+    0 6px 20px -3px rgba(184, 134, 11, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-3d-amber:hover {
+  transform: translateY(-3px);
+  border-color: #e5a92a;
+  box-shadow: 
+    0 16px 34px -4px rgba(212, 175, 55, 0.35),
+    0 6px 14px -2px rgba(0, 0, 0, 0.08);
+}
+
+.dark .card-3d-amber {
+  background: linear-gradient(180deg, #241d11 0%, #17130a 100%);
+  border: 2px solid #8c6a1e;
+  box-shadow: 
+    0 6px 20px -3px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.dark .card-3d-amber:hover {
+  transform: translateY(-3px);
+  border-color: #d4af37;
+  box-shadow: 
+    0 16px 36px -4px rgba(212, 175, 55, 0.45);
+}
+
+/* 3D Interactive Cards for Platform-Wide Depth (Dashboard, Library, Modules) */
+.card-3d-interactive {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 2px solid #d5c7ab;
+  box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.card-3d-interactive:hover {
+  transform: translateY(-4px) scale(1.008);
+  box-shadow: 
+    0 18px 36px -6px rgba(16, 185, 129, 0.22),
+    0 8px 16px -2px rgba(212, 175, 55, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+  border-color: #d4af37;
+}
+
+.dark .card-3d-interactive {
+  border: 2px solid #2e443d;
+  box-shadow: 0 6px 20px -2px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.dark .card-3d-interactive:hover {
+  transform: translateY(-4px) scale(1.008);
+  box-shadow: 
+    0 18px 38px -4px rgba(16, 185, 129, 0.32),
+    0 8px 20px -2px rgba(212, 175, 55, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  border-color: #d4af37;
+}
+
+/* 3D Calligraphy Mushaf Cartouche for Classical Examples - Adaptive for Light & Dark */
+.cartouche-mushaf-3d {
+  background: linear-gradient(180deg, #ffffff 0%, #faf6eb 100%);
+  border: 2.5px solid #c89d30;
+  box-shadow: 
+    0 10px 28px -4px rgba(184, 134, 11, 0.2),
+    0 4px 10px rgba(0, 0, 0, 0.04),
+    inset 0 0 0 3px #fcf8ee,
+    inset 0 1px 1px rgba(255, 255, 255, 1);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cartouche-mushaf-3d:hover {
+  transform: translateY(-3px);
+  border-color: #b8860b;
+  box-shadow: 
+    0 18px 40px -4px rgba(184, 134, 11, 0.32),
+    0 8px 20px rgba(0, 0, 0, 0.08),
+    inset 0 0 0 3px #f7eed7;
+}
+
+.dark .cartouche-mushaf-3d {
+  background: linear-gradient(135deg, #0d1a15 0%, #06100c 50%, #0d1a15 100%);
+  border: 2.5px solid #d4af37;
+  box-shadow: 
+    0 10px 30px -4px rgba(0, 0, 0, 0.7),
+    0 4px 12px rgba(212, 175, 55, 0.25),
+    inset 0 0 0 3px #182f25,
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+.dark .cartouche-mushaf-3d:hover {
+  transform: translateY(-3px);
+  border-color: #fde047;
+  box-shadow: 
+    0 18px 42px -4px rgba(0, 0, 0, 0.8),
+    0 8px 24px rgba(241, 196, 15, 0.4),
+    inset 0 0 0 3px #24473b;
+}
+
+/* 3D Tactile Buttons */
+.btn-3d-gold {
+  background: linear-gradient(180deg, #fcd34d 0%, #d97706 100%);
+  border: 1.5px solid #b45309;
+  box-shadow: 
+    0 4px 12px rgba(180, 83, 9, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-3d-gold:hover {
+  background: linear-gradient(180deg, #fde68a 0%, #f59e0b 100%);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 20px rgba(180, 83, 9, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+.btn-3d-gold:active {
+  transform: translateY(1px);
+  box-shadow: 
+    0 2px 4px rgba(180, 83, 9, 0.3),
+    inset 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+.btn-3d-emerald {
+  background: linear-gradient(180deg, #064e3b 0%, #022c22 100%);
+  border: 2px solid #d4af37;
+  box-shadow: 
+    0 6px 18px rgba(2, 44, 34, 0.5),
+    0 2px 6px rgba(212, 175, 55, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.4);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-3d-emerald:hover {
+  background: linear-gradient(180deg, #047857 0%, #064e3b 100%);
+  transform: translateY(-2px);
+  border-color: #fcd34d;
+  box-shadow: 
+    0 12px 28px rgba(4, 120, 87, 0.4),
+    0 4px 14px rgba(252, 211, 77, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.btn-3d-emerald:active {
+  transform: translateY(1px);
+  box-shadow: 
+    0 2px 6px rgba(2, 44, 34, 0.5),
+    inset 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+/* 3D Interactive Word Chip in Sentences */
+.word-chip-3d {
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-block;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 0 4px;
+}
+
+.word-chip-3d:hover {
+  transform: translateY(-3px) scale(1.12);
+  box-shadow: 0 8px 18px -2px rgba(212, 175, 55, 0.5), 0 2px 6px rgba(0, 0, 0, 0.12);
+  background-color: #fde047 !important;
+  color: #000000 !important;
+  border: 1.5px solid #b45309 !important;
+}
+
+/* =========================================================================
+   ROYAL 2026 COLORFUL ISLAMIC JEWEL MODAL STYLES (تحقیقِ الفاظ شاہی رنگین انداز)
+   ========================================================================= */
+.modal-contrast-card {
+  background: radial-gradient(circle at 50% 0%, #064a38 0%, #032e23 50%, #021e16 100%) !important;
+  color: #fefce8 !important;
+  border: 3px solid #d4af37 !important;
+  box-shadow: 
+    0 25px 70px -10px rgba(0, 0, 0, 0.85),
+    0 0 45px rgba(16, 185, 129, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.5) !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.modal-contrast-card:hover {
+  border-color: #fde047 !important;
+  box-shadow: 
+    0 30px 80px -10px rgba(0, 0, 0, 0.9),
+    0 0 55px rgba(212, 175, 55, 0.4) !important;
+}
+
+.dark .modal-contrast-card {
+  background: radial-gradient(circle at 50% 0%, #063d2e 0%, #02261c 50%, #01140f 100%) !important;
+  color: #fefce8 !important;
+  border: 3px solid #d4af37 !important;
+  box-shadow: 
+    0 25px 70px -10px rgba(0, 0, 0, 0.9),
+    0 0 45px rgba(212, 175, 55, 0.3) !important;
+}
+
+/* 2026 Colorful Jewel Cards for Dashboard & Modules */
+.card-jewel-emerald {
+  background: linear-gradient(135deg, #074332 0%, #032a1f 100%) !important;
+  border: 2px solid #10b981 !important;
+  color: #ecfdf5 !important;
+  box-shadow: 0 8px 24px -3px rgba(3, 42, 31, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+}
+
+.card-jewel-amber {
+  background: linear-gradient(135deg, #452808 0%, #261502 100%) !important;
+  border: 2px solid #f59e0b !important;
+  color: #fef3c7 !important;
+  box-shadow: 0 8px 24px -3px rgba(69, 40, 8, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+.card-jewel-sapphire {
+  background: linear-gradient(135deg, #0f2e54 0%, #07172c 100%) !important;
+  border: 2px solid #38bdf8 !important;
+  color: #e0f2fe !important;
+  box-shadow: 0 8px 24px -3px rgba(15, 46, 84, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+}
+
+.card-jewel-ruby {
+  background: linear-gradient(135deg, #4a1020 0%, #26050e 100%) !important;
+  border: 2px solid #fb7185 !important;
+  color: #ffe4e6 !important;
+  box-shadow: 0 8px 24px -3px rgba(74, 16, 32, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+}
+
+.card-jewel-dark {
+  background: linear-gradient(135deg, #07261d 0%, #031711 100%) !important;
+  border: 1.5px solid rgba(16, 185, 129, 0.4) !important;
+  color: #fefce8 !important;
+  box-shadow: 0 6px 20px -3px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+.card-jewel-dark:hover {
+  border-color: #d4af37 !important;
+  box-shadow: 0 12px 30px -4px rgba(212, 175, 55, 0.25) !important;
+}
+
+/* Eye-soothing Deep Jewel Board & Input Surfaces */
+.board-jewel-emerald {
+  background: radial-gradient(circle at 50% 0%, #064030 0%, #03281e 60%, #011812 100%) !important;
+  border: 2px solid #059669 !important;
+  color: #fefce8 !important;
+  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+}
+
+.input-jewel {
+  background: #021e17 !important;
+  border: 1.5px solid #059669 !important;
+  color: #fefce8 !important;
+}
+
+.input-jewel::placeholder {
+  color: #6ee7b7 !important;
+  opacity: 0.65 !important;
+}
+
+.input-jewel:focus {
+  border-color: #d4af37 !important;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3) !important;
+}
+
+/* Crystal-clear high contrast explanation text */
+.text-explanation-contrast {
+  color: #fefce8 !important;
+  font-weight: 800 !important;
+  font-family: 'Jameel Noori Nastaleeq', 'Jameel Noori Nastaliq', serif !important;
+  line-height: 2.8 !important;
+  text-rendering: optimizeLegibility !important;
+  -webkit-font-smoothing: antialiased !important;
+}
+
+/* 3D Islamic Royal Hero Container (2026 Spatial Depth) */
+.hero-3d-royal {
+  background: radial-gradient(circle at 80% 20%, #064e3b 0%, #022c22 65%, #011610 100%);
+  border: 3px solid #d4af37;
+  box-shadow: 
+    0 25px 60px -12px rgba(2, 44, 34, 0.8),
+    0 0 35px rgba(212, 175, 55, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.6);
+  position: relative;
+  overflow: hidden;
+}
+
+/* =========================================================================
+   PRINT / PDF STYLESHEET (طرزِ طباعت و پی ڈی ایف برائے کتب و امتحانات)
+   ========================================================================= */
+@media print {
+  @page {
+    margin: 1.5cm;
+    size: auto;
+  }
+
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    direction: rtl !important;
+    text-align: right !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide navigation, sidebars, interactive controls during print */
+  nav,
+  header,
+  aside,
+  .no-print,
+  button:not(.print-keep) {
+    display: none !important;
+  }
+
+  /* Clean print sheet layout */
+  .print-clean-container {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* Prevent awkward page break cuts across paragraphs or exam segments */
+  .break-inside-avoid,
+  .print-avoid-break {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+}
+
+
