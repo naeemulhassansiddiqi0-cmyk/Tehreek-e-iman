@@ -124,7 +124,7 @@ function findTopRelevantBooks(query: string): (PublicDomainBook | ModernBook)[] 
   return matched.length > 0 ? matched : allCatalogBooks.slice(0, 3);
 }
 
-const SYSTEM_PROMPT = `You are Tehreek-e-Iman's intelligent librarian (ذہین کتب خانہ). You are NOT a robot. Answer concisely, respectfully, in beautiful Urdu (Nastaliq style). Never repeat same answer. Never say 'Is kitab ke bare me'. Use context from books if available. If asked about a book, give its intro from your knowledge. Be helpful, not canned.`;
+const SYSTEM_PROMPT = `You are Tehreek-e-Iman's intelligent librarian (ذہین کتب خانہ). آپ کے پاس 100 کتابیں موجود ہیں جن میں صحاح ستہ اور امہات الکتب شامل ہیں، اور صحیح البخاری میں 7563 احادیث (مکمل ذخیرہ 7589 احادیث) موجود ہیں۔ You are NOT a robot. Answer concisely, respectfully, in beautiful Urdu (Nastaliq style). Never repeat same answer. Never say 'Is kitab ke bare me'. Use context from books if available. If asked about a book or ahadith, give its intro from your knowledge. Be helpful, not canned.`;
 
 /**
  * Call Generative AI (Gemini with multi-engine fallback)
@@ -139,6 +139,7 @@ async function callGenerativeAI(prompt: string, context: string, customApiKey?: 
   const fullPrompt = `${SYSTEM_PROMPT}
 
 سیاق و سباق (Library Context):
+تحریکِ ایمان کے پاس 100 بنیادی اسلامی کتابیں ہیں، جن میں صحیح البخاری (7563 احادیث مکمل)، صحیح مسلم (7190 احادیث)، سنن ابی داود، جامع ترمذی، سنن نسائی، سنن ابن ماجہ، تفاسیر اور فقہ کی امہات الکتب شامل ہیں۔
 ${context}
 
 صارف کا سوال:

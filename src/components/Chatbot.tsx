@@ -1,5 +1,5 @@
-﻿import React, { useState, useRef, useEffect } from 'react';
-import { Sparkles, X, Send, BookOpen, ExternalLink, RefreshCw } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Sparkles, X, Send, BookOpen, ExternalLink, RefreshCw, Mic, MicOff } from 'lucide-react';
 import { processChatMessage, ChatResponsePayload } from '../services/smartChatService';
 import { PublicDomainBook, ModernBook } from '../data/publicDomainBooks';
 
@@ -19,6 +19,8 @@ export const Chatbot: React.FC<ChatbotProps> = ({ onSelectBook, apiKey }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome',
@@ -32,6 +34,55 @@ export const Chatbot: React.FC<ChatbotProps> = ({ onSelectBook, apiKey }) => {
   ]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Setup SpeechRecognition for Urdu voice input
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'ur-PK';
+        recognition.onresult = (event: any) => {
+          const transcript = event.results?.[0]?.[0]?.transcript;
+          if (transcript) {
+            setInputMessage(prev => prev ? `${prev} ${transcript}` : transcript);
+          }
+          setIsListening(false);
+        };
+        recognition.onerror = () => {
+          setIsListening(false);
+        };
+        recognition.onend = () => {
+          setIsListening(false);
+        };
+        recognitionRef.current = recognition;
+      }
+    }
+  }, []);
+
+  const toggleListening = () => {
+    if (!recognitionRef.current) {
+      alert('آپ کے براؤزر میں وائس ریکگنیشن کی سہولت دستیاب نہیں ہے۔ براہ کرم گوگل کروم استعمال فرمائیں۔');
+      return;
+    }
+    if (isListening) {
+      try {
+        recognitionRef.current.stop();
+      } catch {
+        // ignore
+      }
+      setIsListening(false);
+    } else {
+      try {
+        recognitionRef.current.start();
+        setIsListening(true);
+      } catch {
+        setIsListening(false);
+      }
+    }
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -127,7 +178,7 @@ export const Chatbot: React.FC<ChatbotProps> = ({ onSelectBook, apiKey }) => {
         <div
           dir="rtl"
           className="fixed bottom-24 left-6 z-50 w-[92vw] sm:w-[420px] max-h-[640px] h-[80vh] flex flex-col bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-fadeIn"
-          style={{ fontFamily: "'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', system-ui, sans-serif" }}
+          style={{ fontFamily: "'Noto Nastaliq Urdu', 'Amiri', 'Jameel Noori Nastaleeq', system-ui, sans-serif" }}
         >
           {/* Header */}
           <div className="bg-emerald-800 text-white px-5 py-3.5 flex items-center justify-between shadow-sm">
@@ -316,10 +367,28 @@ export const Chatbot: React.FC<ChatbotProps> = ({ onSelectBook, apiKey }) => {
               type="text"
               value={inputMessage}
               onChange={e => setInputMessage(e.target.value)}
-              placeholder="کتاب کا نام، مصنف یا موضوع تحریر فرمائیں..."
-              className="flex-1 px-4 py-2.5 text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-xl text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:bg-white transition"
+              placeholder={isListening ? "آپ کی آواز سنی جا رہی ہے، بولیں..." : "کتاب کا نام، مصنف یا موضوع تحریر فرمائیں..."}
+              className={`flex-1 px-4 py-2.5 text-xs sm:text-sm border rounded-xl text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:bg-white transition ${
+                isListening ? 'bg-red-50/40 border-red-300' : 'bg-gray-50 border-gray-200'
+              }`}
               disabled={isLoading}
             />
+
+            {/* Voice Recognition Button */}
+            <button
+              type="button"
+              onClick={toggleListening}
+              className={`p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-center ${
+                isListening
+                  ? 'bg-red-50 text-red-600 border-red-300 animate-pulse ring-2 ring-red-400'
+                  : 'bg-gray-50 text-emerald-800 border-gray-200 hover:bg-emerald-50 hover:border-emerald-300'
+              }`}
+              title={isListening ? 'بولنا بند کریں (سماعت جاری ہے)' : 'آواز سے تلاش کریں (Voice Input)'}
+              aria-label="آواز سے بولیں"
+            >
+              {isListening ? <MicOff className="w-4 h-4 text-red-600" /> : <Mic className="w-4 h-4" />}
+            </button>
+
             <button
               type="submit"
               disabled={isLoading || !inputMessage.trim()}

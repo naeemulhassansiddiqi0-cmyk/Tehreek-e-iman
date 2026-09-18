@@ -18,27 +18,40 @@ import {
 } from "lucide-react";
 
 interface HadithItem {
-  number: number;
-  arab: string;
-  urdu: string;
+  hadithnumber?: number;
+  number?: number;
+  arab?: string;
+  text?: string;
+  urdu?: string;
 }
 
-// 1. Book Configurations for 100% Full Hadith Books (No 500 Limit)
-const BOOK_CONFIGS: Record<string, { edition: string; urdEdition: string; total: number; urduName: string }> = {
-  "sahih-bukhari": { edition: "ara-bukhari", urdEdition: "urd-bukhari", total: 7563, urduName: "صحیح البخاری" },
-  "bukhari": { edition: "ara-bukhari", urdEdition: "urd-bukhari", total: 7563, urduName: "صحیح البخاری" },
-  "sahih-muslim": { edition: "ara-muslim", urdEdition: "urd-muslim", total: 7190, urduName: "صحیح مسلم" },
-  "muslim": { edition: "ara-muslim", urdEdition: "urd-muslim", total: 7190, urduName: "صحیح مسلم" },
-  "sunan-abu-daud": { edition: "ara-abudawud", urdEdition: "urd-abudawud", total: 5274, urduName: "سنن ابی داود" },
-  "sunan-abu-dawood": { edition: "ara-abudawud", urdEdition: "urd-abudawud", total: 5274, urduName: "سنن ابی داود" },
-  "jami-tirmizi": { edition: "ara-tirmidhi", urdEdition: "urd-tirmidhi", total: 3956, urduName: "جامع الترمذی" },
-  "jami-tirmidhi": { edition: "ara-tirmidhi", urdEdition: "urd-tirmidhi", total: 3956, urduName: "جامع الترمذی" },
-  "sunan-nasai": { edition: "ara-nasai", urdEdition: "urd-nasai", total: 5761, urduName: "سنن النسائی" },
-  "sunan-ibn-majah": { edition: "ara-ibnmajah", urdEdition: "urd-ibnmajah", total: 4341, urduName: "سنن ابن ماجہ" },
-  "muwatta-imam-malik": { edition: "ara-malik", urdEdition: "urd-malik", total: 1858, urduName: "مؤطا امام مالک" },
+// 1. Slugs mapped to local files in public/hadith-data/[slug].json
+const HADITH_FILE_MAP: Record<string, string> = {
+  "sahih-bukhari": "sahih-bukhari",
+  "bukhari": "sahih-bukhari",
+  "sahih-muslim": "sahih-muslim",
+  "muslim": "sahih-muslim",
+  "sunan-abu-daud": "sunan-abu-daud",
+  "sunan-abu-dawood": "sunan-abu-daud",
+  "jami-tirmizi": "jami-tirmizi",
+  "jami-tirmidhi": "jami-tirmizi",
+  "sunan-nasai": "sunan-nasai",
+  "nasai": "sunan-nasai",
+  "sunan-ibn-majah": "sunan-ibn-majah",
+  "ibn-majah": "sunan-ibn-majah",
 };
 
-// Global in-memory cache to ensure instantaneous subsequent page loads
+// Expected counts for canonical hadith books
+const HADITH_TOTALS: Record<string, { total: number; urduName: string }> = {
+  "sahih-bukhari": { total: 7589, urduName: "صحیح البخاری" },
+  "sahih-muslim": { total: 7563, urduName: "صحیح مسلم" },
+  "sunan-abu-daud": { total: 5274, urduName: "سنن ابی داود" },
+  "jami-tirmizi": { total: 3998, urduName: "جامع الترمذی" },
+  "sunan-nasai": { total: 5765, urduName: "سنن النسائی" },
+  "sunan-ibn-majah": { total: 4343, urduName: "سنن ابن ماجہ" },
+};
+
+// Global in-memory cache to ensure instant subsequent page loads
 const hadithGlobalCache: Record<string, HadithItem[]> = {};
 
 export default function BookDetailPage() {
@@ -46,7 +59,7 @@ export default function BookDetailPage() {
   const rawSlug = (params?.slug as string) || '';
   const slug = decodeURIComponent(rawSlug).toLowerCase().trim();
 
-  // Find book in publicDomainBooks
+  // Find book in publicDomainBooks catalog
   const book = useMemo(() => {
     return (
       publicDomainBooks.find(b => b.slug.toLowerCase() === slug || b.id.toLowerCase() === slug) ||
@@ -55,20 +68,19 @@ export default function BookDetailPage() {
     );
   }, [slug]);
 
-  // Check if book matches full hadith config
-  const matchedConfig = useMemo(() => {
-    if (BOOK_CONFIGS[slug]) return BOOK_CONFIGS[slug];
+  // Check if book matches local hadith collection file
+  const hadithFileKey = useMemo(() => {
+    if (HADITH_FILE_MAP[slug]) return HADITH_FILE_MAP[slug];
     if (book) {
-      if (BOOK_CONFIGS[book.slug]) return BOOK_CONFIGS[book.slug];
-      if (BOOK_CONFIGS[book.id]) return BOOK_CONFIGS[book.id];
-      const s = book.slug.toLowerCase();
-      if (s.includes("bukhari")) return BOOK_CONFIGS["sahih-bukhari"];
-      if (s.includes("muslim")) return BOOK_CONFIGS["sahih-muslim"];
-      if (s.includes("abu-dawood") || s.includes("abu-daud")) return BOOK_CONFIGS["sunan-abu-daud"];
-      if (s.includes("tirmidhi") || s.includes("tirmizi")) return BOOK_CONFIGS["jami-tirmizi"];
-      if (s.includes("nasai")) return BOOK_CONFIGS["sunan-nasai"];
-      if (s.includes("ibn-majah")) return BOOK_CONFIGS["sunan-ibn-majah"];
-      if (s.includes("malik")) return BOOK_CONFIGS["muwatta-imam-malik"];
+      if (HADITH_FILE_MAP[book.slug]) return HADITH_FILE_MAP[book.slug];
+      if (HADITH_FILE_MAP[book.id]) return HADITH_FILE_MAP[book.id];
+      const s = (book.slug + ' ' + book.id).toLowerCase();
+      if (s.includes("bukhari")) return "sahih-bukhari";
+      if (s.includes("muslim")) return "sahih-muslim";
+      if (s.includes("abu-dawood") || s.includes("abu-daud")) return "sunan-abu-daud";
+      if (s.includes("tirmidhi") || s.includes("tirmizi")) return "jami-tirmizi";
+      if (s.includes("nasai")) return "sunan-nasai";
+      if (s.includes("ibn-majah")) return "sunan-ibn-majah";
     }
     return null;
   }, [slug, book]);
@@ -81,50 +93,65 @@ export default function BookDetailPage() {
   const [copied, setCopied] = useState<boolean>(false);
   const readerTopRef = useRef<HTMLDivElement>(null);
 
-  // Fetch full dataset for Hadith collections
+  // Load 100% full dataset from local JSON files (public/hadith-data/[slug].json)
   useEffect(() => {
-    if (!matchedConfig) return;
+    if (!hadithFileKey) {
+      setLoading(false);
+      return;
+    }
 
-    const cacheKey = matchedConfig.edition;
-    if (hadithGlobalCache[cacheKey] && hadithGlobalCache[cacheKey].length > 0) {
-      setAllHadiths(hadithGlobalCache[cacheKey]);
+    if (hadithGlobalCache[hadithFileKey] && hadithGlobalCache[hadithFileKey].length > 0) {
+      setAllHadiths(hadithGlobalCache[hadithFileKey]);
       setLoading(false);
       return;
     }
 
     setLoading(true);
-    Promise.all([
-      fetch(`https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/${matchedConfig.edition}.min.json`)
-        .then(r => r.json())
-        .catch(() => null),
-      fetch(`https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/${matchedConfig.urdEdition}.min.json`)
-        .then(r => r.json())
-        .catch(() => null)
-    ])
-      .then(([araData, urdData]) => {
-        const araList: any[] = araData?.hadiths || [];
-        const urdList: any[] = urdData?.hadiths || [];
 
-        if (araList.length > 0) {
-          const merged: HadithItem[] = araList.map((h, idx) => ({
-            number: h.hadithnumber || (idx + 1),
-            arab: h.text,
-            urdu: urdList[idx]?.text || ''
+    // Fetch directly from local JSON in public/hadith-data/
+    fetch(`/hadith-data/${hadithFileKey}.json`)
+      .then(res => {
+        if (!res.ok) throw new Error(`Status ${res.status}`);
+        return res.json();
+      })
+      .then(data => {
+        const rawList: any[] = data?.hadiths || (Array.isArray(data) ? data : []);
+        if (rawList.length > 0) {
+          const formatted: HadithItem[] = rawList.map((h, idx) => ({
+            hadithnumber: h.hadithnumber || h.number || (idx + 1),
+            number: h.hadithnumber || h.number || (idx + 1),
+            arab: h.arab || h.text || '',
+            urdu: h.urdu || ''
           }));
-          hadithGlobalCache[cacheKey] = merged;
-          setAllHadiths(merged);
+          hadithGlobalCache[hadithFileKey] = formatted;
+          setAllHadiths(formatted);
         } else {
-          // If CDN fails, fallback gracefully to book.pages
           setAllHadiths([]);
         }
       })
-      .catch(() => {
-        setAllHadiths([]);
+      .catch(err => {
+        console.warn('Local hadith-data fetch error, using fallback:', err);
+        // Fallback to jsdelivr CDN if local file is unreachable
+        const editionName = hadithFileKey.replace('sahih-', '').replace('sunan-', '').replace('jami-', '');
+        fetch(`https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/ara-${editionName}.min.json`)
+          .then(r => r.json())
+          .then(cdnData => {
+            const list = cdnData?.hadiths || [];
+            const formatted = list.map((h: any, idx: number) => ({
+              hadithnumber: h.hadithnumber || (idx + 1),
+              number: h.hadithnumber || (idx + 1),
+              arab: h.text || '',
+              urdu: ''
+            }));
+            hadithGlobalCache[hadithFileKey] = formatted;
+            setAllHadiths(formatted);
+          })
+          .catch(() => setAllHadiths([]));
       })
       .finally(() => {
         setLoading(false);
       });
-  }, [matchedConfig]);
+  }, [hadithFileKey]);
 
   // Scroll smoothly to top on page change
   useEffect(() => {
@@ -153,15 +180,18 @@ export default function BookDetailPage() {
   }
 
   // Slicing & Pagination:
-  // For Hadith collections: 10 Ahadith per page (No 500 limit! Covers all 7563, 7190, etc.)
-  // For other 94 books: 1 page per chapter/safha
-  const isHadith = Boolean(matchedConfig && (allHadiths.length > 0 || loading));
-  const PER_PAGE = 10;
+  // For Hadith collections: 20 Ahadith per page (No 500 limit! Covers all 7589, 7563, etc.)
+  // For other 94 books: 1 page per chapter/safha, totalPages = book.pages.length
+  const isHadith = Boolean(hadithFileKey && (allHadiths.length > 0 || loading));
+  const PER_PAGE = 20;
 
-  const totalHadithsCount = allHadiths.length > 0 ? allHadiths.length : (matchedConfig?.total || 0);
+  const totalHadithsCount = allHadiths.length > 0
+    ? allHadiths.length
+    : (hadithFileKey && HADITH_TOTALS[hadithFileKey]?.total) || 0;
+
   const totalPages = isHadith
     ? Math.max(1, Math.ceil(totalHadithsCount / PER_PAGE))
-    : Math.max(1, book.pages?.length || 50);
+    : Math.max(1, (book.pages && book.pages.length > 0) ? book.pages.length : 50);
 
   const currentHadiths = useMemo(() => {
     if (!isHadith) return [];
@@ -267,7 +297,7 @@ export default function BookDetailPage() {
             <BookOpen className="w-3.5 h-3.5 text-amber-300" />
             <span>
               {isHadith
-                ? `Safha ${currentPage + 1} / ${totalPages} - Kul ${totalHadithsCount} Ahadith`
+                ? `Kul Ahadith: ${totalHadithsCount} - Safha ${currentPage + 1} / ${totalPages}`
                 : `Safha ${currentPage + 1} / ${totalPages} - Kul ${totalPages} Safhay`}
             </span>
           </div>
@@ -429,50 +459,54 @@ export default function BookDetailPage() {
               <div className="flex flex-col items-center justify-center py-28 text-center space-y-3">
                 <Loader2 className="w-8 h-8 text-emerald-800 animate-spin" />
                 <p className="text-base font-nastaliq font-bold text-emerald-900">
-                  «{book.title_ur}» کا مکمل ذخیرہ ({matchedConfig?.total.toLocaleString('ur-PK')} احادیث) لوڈ کیا جا رہا ہے...
+                  «{book.title_ur}» کا مکمل ذخیرہ ({totalHadithsCount.toLocaleString('ur-PK')} احادیث) لوڈ کیا جا رہا ہے...
                 </p>
-                <p className="text-xs text-stone-400 font-nastaliq">برائے مہربانی چند لمحے انتظار فرمائیں۔ یہ عمل صرف پہلی بار ہوتا ہے۔</p>
+                <p className="text-xs text-stone-400 font-nastaliq">برائے مہربانی چند لمحے انتظار فرمائیں۔</p>
               </div>
             ) : isHadith ? (
-              /* Hadith Reader: 10 Ahadith per page covering all 7563 / 7190 */
+              /* Hadith Reader: 20 Ahadith per page covering all 7589 / 7563 */
               <div className="space-y-6">
-                {currentHadiths.map(h => (
-                  <div
-                    key={h.number}
-                    className="border-b border-gray-100 py-6 space-y-3 hover:bg-emerald-50/20 transition-colors px-2 sm:px-4 rounded-2xl"
-                  >
-                    <div className="flex items-center justify-between text-xs text-stone-400">
-                      <span className="font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 font-nastaliq">
-                        حدیث نمبر: {h.number}
-                      </span>
-                      <span className="text-[11px] font-nastaliq text-stone-400">
-                        {book.title_ur} • صفحہ {currentPage + 1}
-                      </span>
-                    </div>
-
-                    {/* Authentic Arabic Text */}
-                    <p
-                      className="text-2xl sm:text-3xl font-arabic text-right leading-loose text-stone-900 select-text"
-                      dir="rtl"
-                      style={{ lineHeight: '2.5' }}
+                {currentHadiths.map(h => {
+                  const hadithNum = h.hadithnumber || h.number;
+                  const arabText = h.arab || h.text;
+                  return (
+                    <div
+                      key={hadithNum}
+                      className="border-b border-gray-100 py-6 space-y-3 hover:bg-emerald-50/20 transition-colors px-2 sm:px-4 rounded-2xl"
                     >
-                      {h.arab}
-                    </p>
-
-                    {/* Authentic Urdu Translation */}
-                    {h.urdu && (
-                      <div className="pt-3 mt-2 border-t border-dashed border-gray-100">
-                        <p
-                          className="font-nastaliq text-base sm:text-lg text-emerald-950 leading-loose text-right select-text"
-                          dir="rtl"
-                          style={{ lineHeight: '2.3' }}
-                        >
-                          {h.urdu}
-                        </p>
+                      <div className="flex items-center justify-between text-xs text-stone-400">
+                        <span className="font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 font-nastaliq">
+                          حدیث نمبر: {hadithNum?.toLocaleString('ur-PK')}
+                        </span>
+                        <span className="text-[11px] font-nastaliq text-stone-400">
+                          {book.title_ur} • صفحہ {currentPage + 1}
+                        </span>
                       </div>
-                    )}
-                  </div>
-                ))}
+
+                      {/* Authentic Arabic Text with Amiri Font */}
+                      <p
+                        className="text-2xl sm:text-3xl font-arabic text-right leading-loose text-stone-900 select-text"
+                        dir="rtl"
+                        style={{ lineHeight: '2.5', fontFamily: "'Amiri', 'Noto Naskh Arabic', serif" }}
+                      >
+                        {arabText}
+                      </p>
+
+                      {/* Authentic Urdu Translation */}
+                      {h.urdu && (
+                        <div className="pt-3 mt-2 border-t border-dashed border-gray-100">
+                          <p
+                            className="font-nastaliq text-base sm:text-lg text-emerald-950 leading-loose text-right select-text"
+                            dir="rtl"
+                            style={{ lineHeight: '2.3', fontFamily: "'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif" }}
+                          >
+                            {h.urdu}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
 
                 {currentHadiths.length === 0 && (
                   <div className="text-center py-16 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
@@ -547,11 +581,11 @@ export default function BookDetailPage() {
               <span>پچھلا صفحہ</span>
             </button>
 
-            {/* Pagination Button Status Required: Safha X / Y - Kul Z Ahadith */}
+            {/* Pagination Button Status Required: Kul Ahadith: {total} - Safha {page} / {totalPages} */}
             <div className="text-center font-nastaliq text-sm text-stone-700 font-bold">
               <span>
                 {isHadith
-                  ? `Safha ${currentPage + 1} / ${totalPages} - Kul ${totalHadithsCount} Ahadith`
+                  ? `Kul Ahadith: ${totalHadithsCount} - Safha ${currentPage + 1} / ${totalPages}`
                   : `Safha ${currentPage + 1} / ${totalPages} - Kul ${totalPages} Safhay`}
               </span>
             </div>

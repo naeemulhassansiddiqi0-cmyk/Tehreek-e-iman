@@ -92,19 +92,19 @@
 }
 
 .font-nastaliq {
-  font-family: 'Jameel Noori Nastaleeq', 'Jameel Noori Nastaliq', 'Nafees Web Nasta\'liq', 'Urdu Typesetting', serif;
+  font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Jameel Noori Nastaliq', 'Nafees Web Nasta\'liq', 'Urdu Typesetting', serif;
   line-height: 2.4;
   direction: rtl;
 }
 
 .font-gulzar {
-  font-family: 'Gulzar', 'Jameel Noori Nastaleeq', 'Jameel Noori Nastaliq', serif;
+  font-family: 'Gulzar', 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif;
   line-height: 1.9;
 }
 
 /* Global Urdu font application */
 body, button, input, textarea, select, .font-nastaliq {
-  font-family: 'Jameel Noori Nastaleeq', 'Jameel Noori Nastaliq', serif;
+  font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Jameel Noori Nastaliq', serif;
 }
 
 .font-quran, .font-amiri-quran {
