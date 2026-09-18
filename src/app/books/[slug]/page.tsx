@@ -1,5 +1,5 @@
-﻿import { allCatalogBooks, ModernBook } from '../../../data/publicDomainBooks';
-import { BookOpen, ExternalLink, ArrowRight } from 'lucide-react';
+﻿import { publicDomainBooks } from '../../../data/publicDomainBooks';
+import { ArrowRight, BookOpen, Clock, AlertCircle } from 'lucide-react';
 
 interface BookPageProps {
   params: {
@@ -8,135 +8,154 @@ interface BookPageProps {
 }
 
 export default function BookDetailPage({ params }: BookPageProps) {
-  const slug = params?.slug;
-  const book = allCatalogBooks.find(b => b.slug === slug || b.id === slug) || allCatalogBooks[0];
-
-  const isPublic = book.source_type === 'public';
-  const modernBook = !isPublic ? (book as ModernBook) : null;
+  const rawSlug = params?.slug || '';
+  const slug = decodeURIComponent(rawSlug).toLowerCase();
+  const book = publicDomainBooks.find(
+    b => b.slug.toLowerCase() === slug || b.id.toLowerCase() === slug
+  );
 
   return (
-    <div className="min-h-screen bg-white text-stone-900 pb-20" dir="rtl">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8">
-        
-        {/* Navigation Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-stone-500 font-nastaliq">
-          <a href="/" className="hover:text-emerald-800 flex items-center gap-1">
-            <ArrowRight className="w-4 h-4" />
-            <span>کتب خانہ</span>
-          </a>
-          <span>/</span>
-          <span className="text-emerald-900 font-bold">{book.title_ur}</span>
-        </div>
-
-        {/* Book Header Card */}
-        <div className="bg-white rounded-3xl border border-gray-100 p-6 sm:p-8 shadow-xs flex flex-col md:flex-row items-start gap-8">
-          <img
-            src={book.cover_url}
-            alt={book.title_ur}
-            className="w-44 h-64 object-cover rounded-2xl shadow-md border border-gray-200 shrink-0 mx-auto md:mx-0"
-          />
-
-          <div className="flex-1 space-y-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-100 font-nastaliq">
-                {book.category}
-              </span>
-              <span className={`px-3 py-1 rounded-full text-xs font-bold font-nastaliq ${
-                isPublic ? 'bg-amber-50 text-amber-900 border border-amber-200' : 'bg-blue-50 text-blue-900 border border-blue-200'
-              }`}>
-                {isPublic ? 'پبلک ڈومین (آزاد مطالعہ)' : 'جدید مرجع (بیرونی ماخذ)'}
-              </span>
+    <div className="min-h-screen bg-white text-[#065f46]" dir="rtl">
+      {/* Clean White Header like Homepage */}
+      <header className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-20 gap-4">
+            {/* Right: Logo text "تحریک ایمان" */}
+            <div className="flex items-center gap-3 select-none shrink-0">
+              <a href="/" className="flex items-center gap-3">
+                <img
+                  src="/tehreek-iman-logo.jpg"
+                  alt="تحریک ایمان"
+                  className="w-11 h-11 rounded-full object-cover border-2 border-emerald-700 shadow-xs"
+                />
+                <div className="flex flex-col">
+                  <span className="font-nastaliq text-2xl font-black text-[#065f46] tracking-tight leading-none">
+                    تحریک ایمان
+                  </span>
+                  <span className="text-[11px] font-medium text-stone-500 font-nastaliq mt-0.5">
+                    جامع ڈیجیٹل کتب خانہ
+                  </span>
+                </div>
+              </a>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl font-black font-nastaliq text-emerald-950 leading-tight">
-              {book.title_ur}
-            </h1>
-            <p className="font-arabic text-base sm:text-lg text-stone-600 leading-relaxed">
-              {book.title_ar}
-            </p>
-
-            <div className="text-sm text-stone-600 font-nastaliq space-y-1">
-              <p>
-                <strong>مصنف:</strong> {book.author} {book.death_year ? `(وفات: ${book.death_year}ھ)` : ''}
-              </p>
-              <p>
-                <strong>ضخامت:</strong> {book.volumes} جلدیں • {book.pages.toLocaleString('ur-PK')} صفحات
-              </p>
-            </div>
-
-            <p className="text-sm text-stone-700 font-nastaliq leading-loose text-justify pt-2">
-              {book.intro_ur}
-            </p>
-
-            {/* If modern book -> Big button to original source */}
-            {!isPublic && modernBook && (
-              <div className="pt-4 border-t border-gray-100">
-                <a
-                  href={modernBook.external_link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2.5 px-6 py-3 rounded-2xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold font-nastaliq text-base shadow-md transition-all active:scale-95"
-                >
-                  <span>اصل ماخذ پر پڑھیں</span>
-                  <ExternalLink className="w-5 h-5 text-amber-300" />
-                </a>
-                <p className="text-xs text-stone-400 font-nastaliq mt-2">
-                  یہ کتاب کاپی رائٹ سے محفوظ ہے، اس لیے اصل پبلشر / آرکائیو کے ذریعے کھولی جا رہی ہے۔
-                </p>
-              </div>
-            )}
+            {/* Left: Back Link */}
+            <nav className="flex items-center gap-2 text-sm font-nastaliq font-bold">
+              <a
+                href="/"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-gray-50 hover:bg-emerald-50 text-[#065f46] border border-gray-200 transition"
+              >
+                <ArrowRight className="w-4 h-4" />
+                <span>واپس کتب خانہ</span>
+              </a>
+            </nav>
           </div>
         </div>
+      </header>
 
-        {/* If public book -> Reader View interface */}
-        {isPublic && (
-          <div className="bg-white rounded-3xl border border-gray-100 p-6 sm:p-8 space-y-6 shadow-xs">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-              <div className="flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-emerald-800" />
-                <h2 className="text-xl font-black font-nastaliq text-emerald-950">
-                  متن و شروحات کا براہِ راست مطالعہ
-                </h2>
-              </div>
-              <span className="text-xs text-stone-500 font-nastaliq">صفحہ ۱ از {book.pages}</span>
+      {/* Main Content Area */}
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
+        {!book ? (
+          /* Not Found State */
+          <div className="bg-white rounded-3xl border border-gray-100 p-8 sm:p-12 shadow-sm text-center space-y-6">
+            <div className="w-16 h-16 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mx-auto border border-amber-200">
+              <AlertCircle className="w-8 h-8" />
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black font-nastaliq text-[#065f46]">
+              کتاب نہیں ملی
+            </h1>
+            <p className="text-stone-500 font-nastaliq text-sm sm:text-base max-w-md mx-auto">
+              معذرت، مطلوبہ کتاب پبلک ڈومین کتب خانہ کے ریکارڈ میں موجود نہیں ہے۔ آپ فہرست میں جا کر دیگر کتب کا مطالعہ فرما سکتے ہیں۔
+            </p>
+            <div className="pt-2">
+              <a
+                href="/"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-[#065f46] hover:bg-[#054e39] text-white text-sm font-bold font-nastaliq shadow-sm transition active:scale-95"
+              >
+                <span>واپس کتب خانہ پر جائیں</span>
+                <ArrowRight className="w-4 h-4" />
+              </a>
+            </div>
+          </div>
+        ) : (
+          /* Book Found State: Simple White Card with Shadow in Center */
+          <div className="bg-white rounded-3xl border border-gray-100 p-8 sm:p-12 shadow-sm text-center space-y-8">
+            {/* 3. Category Chip (Green) */}
+            <div className="flex justify-center">
+              <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-[#065f46] border border-emerald-200 font-nastaliq">
+                <BookOpen className="w-3.5 h-3.5 text-[#065f46]" />
+                <span>موضوع: {book.category}</span>
+              </span>
             </div>
 
-            {/* Authentic Matn Reading Display */}
-            <div className="p-6 sm:p-8 bg-[#fffdfa] rounded-2xl border border-amber-100 shadow-inner space-y-6">
-              <div className="text-center pb-4 border-b border-amber-100">
-                <span className="font-arabic text-sm text-amber-900 font-bold block mb-1">
-                  بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+            {/* 1. Book Title (Urdu) */}
+            <div className="space-y-2">
+              <h1 className="text-3xl sm:text-5xl font-black font-nastaliq text-[#065f46] leading-relaxed">
+                {book.title_ur}
+              </h1>
+              {book.title_ar && (
+                <p className="font-arabic text-lg sm:text-xl text-stone-500 leading-relaxed">
+                  {book.title_ar}
+                </p>
+              )}
+            </div>
+
+            {/* 2. Author Name */}
+            <div className="text-sm sm:text-base text-stone-600 font-nastaliq">
+              <span>مصنف: </span>
+              <strong className="text-[#065f46] font-black">{book.author}</strong>
+              {book.death_year && (
+                <span className="text-stone-400 font-sans mr-2">
+                  (وفات: {book.death_year}ھ)
                 </span>
-                <h3 className="font-arabic text-xl font-bold text-stone-900">
-                  كِتَابُ {book.title_ar}
-                </h3>
-              </div>
+              )}
+            </div>
 
-              {/* Sample scholarly Arabic passage */}
-              <p className="font-arabic text-xl sm:text-2xl text-stone-900 text-justify leading-[2.8]">
-                الْحَمْدُ لِلَّهِ الَّذِي هَدَانَا لِهَٰذَا وَمَا كُنَّا لِنَهْتَدِيَ لَوْلَا أَنْ هَدَانَا اللَّهُ، وَالصَّلَاةُ وَالسَّلَامُ عَلَى رَسُولِهِ خَيْرِ خَلْقِهِ وَسَيِّدِ أَنْبِيَائِهِ مُحَمَّدٍ وَعَلَى آلِهِ وَأَصْحَابِهِ أَجْمَعِينَ. أَمَّا بَعْدُ، فَهَٰذَا مُخْتَصَرٌ فِي بَيَانِ الْمَسَائِلِ الشَّرْعِيَّةِ وَالْأَحْكَامِ الْفِقْهِيَّةِ عَلَى مَنْهَجِ أَهْلِ السُّنَّةِ وَالْجَمَاعَةِ.
+            {/* 4. Description */}
+            <div className="max-w-2xl mx-auto">
+              <p className="text-stone-700 text-sm sm:text-base font-nastaliq leading-[2.6] text-justify sm:text-center">
+                {book.intro_ur}
               </p>
+            </div>
 
-              {/* Verified Urdu Translation Box in Emerald Nastaliq */}
-              <div
-                className="rounded-2xl text-right"
-                style={{
-                  fontFamily: "'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif",
-                  fontSize: '20px',
-                  color: '#14532d',
-                  background: '#f0fdf4',
-                  padding: '18px',
-                  borderRight: '5px solid #16a34a',
-                  lineHeight: '2.4'
-                }}
+            {/* Book Meta Details */}
+            <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-stone-500 font-nastaliq pt-2">
+              <span className="px-3 py-1 bg-gray-50 rounded-xl border border-gray-100">
+                ضخامت: {book.volumes} جلدیں
+              </span>
+              <span className="px-3 py-1 bg-gray-50 rounded-xl border border-gray-100">
+                صفحات: {book.pages.toLocaleString('ur-PK')} ص
+              </span>
+              <span className="px-3 py-1 bg-emerald-50/50 text-[#065f46] rounded-xl border border-emerald-100">
+                پبلک ڈومین (آزاد مطالعہ)
+              </span>
+            </div>
+
+            {/* 5. 2 Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6 border-t border-gray-100">
+              {/* Button 1: آن لائن پڑھیں - جلد آ رہا ہے */}
+              <button
+                type="button"
+                disabled
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl bg-emerald-50 text-[#065f46] border-2 border-emerald-200 text-sm font-black font-nastaliq cursor-not-allowed opacity-90 shadow-xs"
+                title="آن لائن مطالعہ کا فیچر جلد فعال کیا جا رہا ہے"
               >
-                سب تعریفیں اللہ ہی کے لیے ہیں جس نے ہمیں اس کی ہدایت بخشی اور ہم ہرگز راہ نہ پاتے اگر اللہ ہمیں ہدایت نہ دیتا۔ اور درود و سلام ہو اس کی مخلوق میں سب سے برگزیدہ اور انبیاء کے سردار حضرت محمد مصطفیٰ ﷺ پر اور آپ کی آل و اصحاب پر۔ حمد و صلاۃ کے بعد، یہ مختصر شرعی مسائل اور فقہی احکام کے بیان پر مشتمل مستند نسخہ ہے۔
-              </div>
+                <Clock className="w-4 h-4 text-[#065f46]" />
+                <span>آن لائن پڑھیں — جلد آ رہا ہے</span>
+              </button>
+
+              {/* Button 2: واپس کتب خانہ پر جائیں */}
+              <a
+                href="/"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl bg-[#065f46] hover:bg-[#054e39] text-white text-sm font-bold font-nastaliq shadow-md transition active:scale-95"
+              >
+                <span>واپس کتب خانہ پر جائیں</span>
+                <ArrowRight className="w-4 h-4" />
+              </a>
             </div>
           </div>
         )}
-
-      </div>
+      </main>
     </div>
   );
 }
