@@ -5,7 +5,7 @@ import { WordLookupModal } from './WordLookupModal';
 import { ChapterIndexDrawer } from './ChapterIndexDrawer';
 import { BookDirectoryModal } from './BookDirectoryModal';
 import { FloatingReaderControls } from './FloatingReaderControls';
-import { getTranslationInLanguage } from '../../services/translationService';
+import { getTranslationInLanguage, getCorrectUrduTranslation } from '../../services/translationService';
 import { fetchHadithByNumber, convertApiHadithToChapter, getHadithBookMeta, createAcademicHadithChapter, extractHadithNumber } from '../../services/hadithApiService';
 import { 
   Columns2,
@@ -91,6 +91,9 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
   const inBookResults = useMemo(() => {
     return searchInsideBook(selectedBook, inBookQuery);
   }, [selectedBook, inBookQuery]);
+
+  // Live Gemini Urdu Translations Cache
+  const [geminiTranslations, setGeminiTranslations] = useState<Record<string, string>>({});
 
   useEffect(() => {
     let mounted = true;
@@ -1334,6 +1337,10 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
             : [];
 
           const getParaUrduTranslation = (pIdx: number, arText: string): string => {
+            // 0) If Gemini translation is ready in state, return it immediately
+            if (geminiTranslations[arText]) {
+              return geminiTranslations[arText];
+            }
             // 1) First try to get urdu_tarjuma from D1 / static bundle
             const candidate = urduParas[pIdx]?.trim();
             // 2) If empty, same as Arabic, not authentic Urdu, or stale template, immediately call fiqhUrduTranslator.translateParagraph(arabicText) to generate unique Urdu
@@ -1346,6 +1353,19 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
             ) {
               return candidate;
             }
+
+            // Trigger background Gemini translation if not already loaded
+            if (typeof window !== 'undefined' && !geminiTranslations[arText]) {
+              getCorrectUrduTranslation(arText, apiKey).then(res => {
+                if (res && res.trim() && res !== arText) {
+                  setGeminiTranslations(prev => {
+                    if (prev[arText] === res) return prev;
+                    return { ...prev, [arText]: res };
+                  });
+                }
+              }).catch(() => {});
+            }
+
             return translateParagraph(
               arText,
               currentChapter?.titleArabic || currentChapter?.titleUrdu || '',
@@ -1511,46 +1531,43 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                               {/* 2. Dedicated Urdu Translation Box for this specific Paragraph */}
                               <div 
                                 style={{
-                                  backgroundColor: '#FFFBEA',
-                                  color: '#000000',
-                                  border: '2px solid #E6D28C',
-                                  borderRight: '6px solid #D97706',
-                                  filter: 'none',
-                                  WebkitBackdropFilter: 'none',
-                                  backdropFilter: 'none'
+                                  fontFamily: "'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu'",
+                                  fontSize: '22px',
+                                  color: '#14532d',
+                                  background: '#f0fdf4',
+                                  padding: '16px',
+                                  borderRight: '5px solid #16a34a',
+                                  textAlign: 'right',
+                                  lineHeight: '2.3'
                                 }}
-                                className="rounded-2xl p-4 sm:p-5 shadow-xs space-y-2"
+                                className="rounded-2xl shadow-xs space-y-2 border border-emerald-200"
                               >
-                                <div className="flex items-center justify-between border-b border-amber-300/70 pb-2">
-                                  <div className="flex items-center gap-2 text-xs font-nastaliq font-bold" style={{ color: '#000000' }}>
-                                    <BookOpen className="w-4 h-4 text-amber-700 shrink-0" />
+                                <div className="flex items-center justify-between border-b border-emerald-300/70 pb-2">
+                                  <div className="flex items-center gap-2 text-xs font-nastaliq font-bold" style={{ color: '#14532d' }}>
+                                    <BookOpen className="w-4 h-4 text-emerald-700 shrink-0" />
                                     <span className="font-bold text-sm">اردو ترجمہ و شرعی مفہوم (پیراگراف {pIdx + 1}):</span>
                                   </div>
                                   <button
                                     type="button"
                                     onClick={() => onSendToAI(arPara, selectedBook.title)}
                                     className="text-xs hover:underline font-nastaliq font-bold flex items-center gap-1 cursor-pointer transition-colors"
-                                    style={{ color: '#000000' }}
+                                    style={{ color: '#14532d' }}
                                     title="اے آئی سے اس پیراگراف کا تفصیلی حل پوچھیں"
                                   >
-                                    <Sparkles className="w-3.5 h-3.5 text-amber-700" />
+                                    <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
                                     <span>AI سے فقرہ حل کروائیں</span>
                                   </button>
                                 </div>
                                 <p 
                                   dir="rtl"
                                   style={{
-                                    color: '#000000',
-                                    fontFamily: "'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Urdu Typesetting', serif",
-                                    fontSize: '18px',
-                                    fontWeight: 'bold',
-                                    lineHeight: '2.4',
-                                    textAlign: 'justify',
-                                    filter: 'none',
-                                    WebkitBackdropFilter: 'none',
-                                    backdropFilter: 'none'
+                                    fontFamily: "'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu'",
+                                    fontSize: '22px',
+                                    color: '#14532d',
+                                    textAlign: 'right',
+                                    lineHeight: '2.3'
                                   }}
-                                  className="whitespace-pre-line select-text font-nastaliq font-bold text-[18px] text-black"
+                                  className="whitespace-pre-line select-text font-bold"
                                 >
                                   {paraUrdu}
                                 </p>
@@ -1812,8 +1829,20 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                             <span>بزبان «{activeLangConfig.nameNative} ({activeLangConfig.nameUrdu})» سلیس ترجمہ تیار ہو رہا ہے...</span>
                           </div>
                         ) : (
-                          <div className="p-4 sm:p-5 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200/80 dark:border-stone-800 shadow-xs">
-                            <p className={`text-base sm:text-lg ${activeLangConfig.direction === 'rtl' ? 'font-nastaliq leading-loose text-justify' : 'font-sans leading-relaxed'} text-stone-900 dark:text-stone-100 whitespace-pre-line select-text`}>
+                          <div 
+                            style={currentLang === 'ur' ? {
+                              fontFamily: "'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu'",
+                              fontSize: '22px',
+                              color: '#14532d',
+                              background: '#f0fdf4',
+                              padding: '16px',
+                              borderRight: '5px solid #16a34a',
+                              textAlign: 'right',
+                              lineHeight: '2.3'
+                            } : undefined}
+                            className={currentLang === 'ur' ? "rounded-2xl border border-emerald-200 shadow-xs" : "p-4 sm:p-5 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200/80 dark:border-stone-800 shadow-xs"}
+                          >
+                            <p className={currentLang === 'ur' ? "whitespace-pre-line select-text font-bold" : `text-base sm:text-lg ${activeLangConfig.direction === 'rtl' ? 'font-nastaliq leading-loose text-justify' : 'font-sans leading-relaxed'} text-stone-900 dark:text-stone-100 whitespace-pre-line select-text`}>
                               {displayTranslation || translationText}
                             </p>
                           </div>
