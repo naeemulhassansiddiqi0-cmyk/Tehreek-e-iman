@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url('https://fonts.cdnfonts.com/css/jameel-noori-nastaleeq');
 @import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
@@ -16,7 +17,7 @@
   }
 
   body, p, div, span, button, input, textarea, select {
-    font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif;
+    font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif;
   }
 
   body {
@@ -32,13 +33,15 @@
 }
 
 .urdu-text {
-  font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif !important;
+  font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif !important;
+  font-feature-settings: normal !important;
+  font-stretch: normal !important;
   font-size: var(--urdu-font-size) !important;
   line-height: var(--urdu-line-height) !important;
 }
 
 .font-nastaliq {
-  font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif;
+  font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif;
 }
 
 .font-arabic {

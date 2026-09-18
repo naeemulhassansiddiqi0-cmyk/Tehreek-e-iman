@@ -19,7 +19,7 @@
 
 @layer base {
   body, p, div, span, button, input, textarea, select {
-    font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif;
+    font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif;
   }
 
   body {
@@ -35,7 +35,9 @@
 }
 
 .urdu-text {
-  font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif !important;
+  font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif !important;
+  font-feature-settings: normal !important;
+  font-stretch: normal !important;
   font-size: var(--urdu-font-size) !important;
   line-height: var(--urdu-line-height) !important;
 }

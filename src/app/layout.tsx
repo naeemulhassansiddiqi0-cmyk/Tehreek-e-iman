@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import './globals.css';
 
 export const metadata = {
@@ -19,6 +19,10 @@ export default function RootLayout({
         <link
           href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap"
           rel="stylesheet"
+        />
+        <link
+          rel="stylesheet"
+          href="https://fonts.cdnfonts.com/css/jameel-noori-nastaleeq"
         />
       </head>
       <body className="bg-white text-stone-900 font-nastaliq antialiased">
