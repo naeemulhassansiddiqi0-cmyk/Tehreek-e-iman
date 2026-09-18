@@ -16,7 +16,9 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "next/navigation": ["./src/shims/next-navigation.ts"],
+      "next/link": ["./src/shims/next-link.tsx"]
     }
   },
   "include": ["src"]

@@ -17,8 +17,10 @@ import { booksDatabase } from './data/booksData';
 import { Book, AppTab } from './types';
 import { TehreekImanLogo } from './components/TehreekImanLogo';
 import { formatTextWithTehreekLogo, formatHtmlWithTehreekLogo } from './utils/clipboardHelper';
+import BookDetailPage from './app/books/[slug]/page';
 
 export function App() {
+  const [currentPath, setCurrentPath] = useState<string>(() => typeof window !== 'undefined' ? window.location.pathname : '/');
   const [activeTab, setActiveTab] = useState<AppTab>('dashboard');
   const [selectedBook, setSelectedBook] = useState<Book>(booksDatabase[0]);
   const [apiKey, setApiKey] = useState<string>(() => {
@@ -40,12 +42,16 @@ export function App() {
   const [highlightSegmentId, setHighlightSegmentId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentPath(window.location.pathname);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const handleChatbotSelectBook = (slug: string) => {
-    const found = booksDatabase.find(b => b.id.toLowerCase() === slug.toLowerCase() || b.title.toLowerCase().includes(slug.toLowerCase()));
-    if (found) {
-      setSelectedBook(found);
-    }
-    setActiveTab('reader');
+    window.location.href = `/books/${slug}`;
   };
 
   const handleOpenKharjiBooks = (book?: Book) => {
@@ -284,6 +290,15 @@ export function App() {
     setNotes(prev => prev.filter(n => n.id !== id));
   };
 
+  if (currentPath.startsWith('/books/')) {
+    return (
+      <div dir="rtl" className="min-h-screen bg-white">
+        <BookDetailPage />
+        <Chatbot onSelectBook={handleChatbotSelectBook} apiKey={apiKey} />
+      </div>
+    );
+  }
+
   return (
     <div className={`min-h-screen flex flex-col transition-colors ${
       theme === 'dark'
@@ -318,13 +333,14 @@ export function App() {
           <Dashboard
             searchQuery={searchQuery}
             onSelectBook={(book) => {
+              if (book && (book.slug || book.id)) {
+                window.location.href = `/books/${book.slug || book.id}`;
+                return;
+              }
               if (book && book.chapters) {
                 setSelectedBook(book);
-              } else if (book) {
-                const found = booksDatabase.find(b => b.id.toLowerCase() === (book.slug || book.id).toLowerCase());
-                if (found) setSelectedBook(found);
+                setActiveTab('reader');
               }
-              setActiveTab('reader');
             }}
             setActiveTab={setActiveTab}
             onSendToAI={handleSendToAI}

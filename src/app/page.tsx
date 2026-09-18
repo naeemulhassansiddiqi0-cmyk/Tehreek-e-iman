@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useMemo } from 'react';
 import { BookOpen, ExternalLink, Sparkles, BookMarked, Search } from 'lucide-react';
@@ -138,7 +138,8 @@ export default function HomePage() {
               {filteredPublicBooks.map(book => (
                 <div
                   key={book.id}
-                  className="group bg-white rounded-2xl border border-gray-100 hover:border-emerald-700/40 p-3 sm:p-4 flex flex-col justify-between transition-all duration-200 hover:shadow-xl hover:-translate-y-1"
+                  onClick={() => { window.location.href = `/books/${book.slug}`; }}
+                  className="group bg-white rounded-2xl border border-gray-100 hover:border-emerald-700/40 p-3 sm:p-4 flex flex-col justify-between transition-all duration-200 hover:shadow-xl hover:-translate-y-1 cursor-pointer"
                 >
                   <div className="space-y-3">
                     {/* Cover Image: object-cover h-64 */}
@@ -182,6 +183,10 @@ export default function HomePage() {
                   <div className="pt-4 mt-2 border-t border-gray-50 flex items-center justify-between text-xs font-bold font-nastaliq text-emerald-800 group-hover:text-emerald-900">
                     <a
                       href={`/books/${book.slug}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.location.href = `/books/${book.slug}`;
+                      }}
                       className="flex items-center gap-1 hover:underline"
                     >
                       <BookOpen className="w-3.5 h-3.5 text-amber-500" />

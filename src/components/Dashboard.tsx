@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { BookOpen, ExternalLink, Sparkles, BookMarked } from 'lucide-react';
 import { publicDomainBooks, modernBooks, PublicDomainBook, BookCategoryTitle } from '../data/publicDomainBooks';
 import { AppTab } from '../types';
@@ -26,8 +26,8 @@ const CATEGORY_CHIPS: { id: BookCategoryTitle | 'all'; title_ur: string }[] = [
 ];
 
 export const Dashboard: React.FC<DashboardProps> = ({
-  onSelectPublicBook,
-  onSelectBook,
+  onSelectPublicBook: _onSelectPublicBook,
+  onSelectBook: _onSelectBook,
   setActiveTab: _setActiveTab,
   searchQuery = ''
 }) => {
@@ -156,7 +156,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               {filteredPublicBooks.map(book => (
                 <div
                   key={book.id}
-                  onClick={() => { if (onSelectPublicBook) onSelectPublicBook(book); if (onSelectBook) onSelectBook(book); }}
+                  onClick={() => { window.location.href = `/books/${book.slug}`; }}
                   className="group bg-white rounded-2xl border border-gray-100 hover:border-emerald-700/40 p-3 sm:p-4 flex flex-col justify-between transition-all duration-200 hover:shadow-xl hover:-translate-y-1 cursor-pointer"
                 >
                   <div className="space-y-3">
@@ -199,10 +199,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                   {/* Card Footer Button */}
                   <div className="pt-4 mt-2 border-t border-gray-50 flex items-center justify-between text-xs font-bold font-nastaliq text-emerald-800 group-hover:text-emerald-900">
-                    <span className="flex items-center gap-1">
+                    <a
+                      href={`/books/${book.slug}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.location.href = `/books/${book.slug}`;
+                      }}
+                      className="flex items-center gap-1 hover:underline"
+                    >
                       <BookOpen className="w-3.5 h-3.5 text-amber-500" />
-                      <span>مطالعہ فرمائیں</span>
-                    </span>
+                      <span>کتاب پڑھیں</span>
+                    </a>
                     <span className="text-[11px] text-stone-400">
                       {book.pages.toLocaleString('ur-PK')} ص
                     </span>
