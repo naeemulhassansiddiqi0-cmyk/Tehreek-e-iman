@@ -148,6 +148,7 @@ export default function HomePage() {
                         src={book.cover_url}
                         alt={book.title_ur}
                         loading="lazy"
+                        decoding="async"
                         className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                       <span className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-lg bg-emerald-900/85 backdrop-blur-md text-amber-300 text-[10px] font-bold font-nastaliq shadow-sm">
@@ -244,6 +245,8 @@ export default function HomePage() {
                     <img
                       src={book.cover_url}
                       alt={book.title_ur}
+                      loading="lazy"
+                      decoding="async"
                       className="w-16 h-22 object-cover rounded-xl shadow-xs border border-gray-200 shrink-0"
                     />
                   </div>

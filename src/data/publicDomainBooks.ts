@@ -69,7 +69,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 7563,
     "volumes": 9,
     "intro_ur": "امتِ مسلمہ کا اصح الکتب بعد کتاب اللہ جس میں صرف اور صرف صحیح ترین متصل احادیث کا انتخاب کیا گیا ہے۔ یہ فقہ الحدیث اور ترتیبِ ابواب کا بے مثال شاہکار ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1584281722572-8a9d1fd0bb37?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/bukhari.jpg",
     "source_type": "public"
   },
   {
@@ -83,7 +83,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 7500,
     "volumes": 8,
     "intro_ur": "طرقِ احادیث اور سیاقِ الفاظ کے کمالِ ضبط کا مظہر جس میں ہر حدیث کے تمام طرق اور اسانید ایک ہی مقام پر جمع ہیں۔ حسنِ ترتیب میں اس کا کوئی ثانی نہیں۔",
-    "cover_url": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/muslim.jpg",
     "source_type": "public"
   },
   {
@@ -97,7 +97,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 5274,
     "volumes": 5,
     "intro_ur": "احادیثِ احکام کا سب سے مستند اور معتبر مرجع جس پر ائمہ مجتہدین اور فقہاء کا ہمیشہ سے دار و مدار رہا ہے۔ فقہی استدلال میں بنیادی حیثیت رکھتی ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1532012164546-f432f2e3777a?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/abu-dawood.jpg",
     "source_type": "public"
   },
   {
@@ -111,7 +111,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 3956,
     "volumes": 6,
     "intro_ur": "صحاح ستہ کی وہ جامع کتاب جس میں احادیث کے درجاتِ صحت اور فقہاء کے مذاہب کا مقارنہ انتہائی شستہ اسلوب میں بیان کیا گیا ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/tirmizi.jpg",
     "source_type": "public"
   },
   {
@@ -125,7 +125,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 5758,
     "volumes": 6,
     "intro_ur": "اسانید کی باریکیوں اور علتوں کی شناخت میں بے نظیر کتاب، جس میں امام نسائی نے انتہائی سخت اور کڑی شرائط کے ساتھ روایات کا انتخاب کیا ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/nasai.jpg",
     "source_type": "public"
   },
   {
@@ -139,7 +139,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 4341,
     "volumes": 5,
     "intro_ur": "حسنِ ترتیب اور نادر فقہی زوائد کا گنجینہ جس کی کمال ابواب بندی نے اسے صحاح ستہ کے چھٹے رکن کا درجہ عطا کیا ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/ibn-majah.jpg",
     "source_type": "public"
   },
   {
@@ -153,7 +153,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 1850,
     "volumes": 2,
     "intro_ur": "تدوینِ حدیث کی اولین اور مستند ترین کتاب، جو عملِ اہل مدینہ اور سنتِ نبوی کا متصل ترین چشمہ ہے۔ امام شافعی نے اسے زمین کی اصح کتاب قرار دیا۔",
-    "cover_url": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/muwatta.jpg",
     "source_type": "public"
   },
   {
@@ -167,7 +167,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 27647,
     "volumes": 50,
     "intro_ur": "دنیائے اسلام کا عظیم ترین حدیثی انسائیکلوپیڈیا جس میں ستائیس ہزار سے زائد احادیث صحابہ کرام کی اسانید کے اعتبار سے مدون کی گئی ہیں۔",
-    "cover_url": "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/musnad-ahmad.jpg",
     "source_type": "public"
   },
   {
@@ -181,7 +181,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 3500,
     "volumes": 4,
     "intro_ur": "ثلاثیات اور عالی اسانید کا مرقع جس کے مقدمہ میں اتباعِ سنت اور علمی اصولوں پر نادر و نایاب روایات جمع کی گئی ہیں۔",
-    "cover_url": "https://images.unsplash.com/photo-1476275466078-4007374efbbe?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/darimi.jpg",
     "source_type": "public"
   },
   {
@@ -195,7 +195,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 6285,
     "volumes": 3,
     "intro_ur": "درسِ نظامی کی مرکزی حدیثی کتاب جس میں صحاح و سنن کی منتخب احادیث کو تین فصول میں مرتب کر کے اسانید کی صحت کا تعین کیا گیا ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1495640388908-05fa85288e61?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/mishkat.jpg",
     "source_type": "public"
   },
   {
@@ -209,7 +209,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 1900,
     "volumes": 1,
     "intro_ur": "تزکیہ نفس، اخلاقِ حسنہ اور عبادات پر مبنی احادیث کا دلنشین انتخاب جو ہر مسلمان کے گھر کا لازمی جزو اور عمل کا بہترین رہبر ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/riyad-salihin.jpg",
     "source_type": "public"
   },
   {
@@ -223,7 +223,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 1568,
     "volumes": 1,
     "intro_ur": "فقہی دلائل کی احادیث کا مختصر و جامع ترین متن جس میں احادیث کی تخریج اور صحت و ضعف کا کڑا نقد پیش کیا گیا ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/bulugh-maram.jpg",
     "source_type": "public"
   },
   {
@@ -237,7 +237,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 397,
     "volumes": 1,
     "intro_ur": "سرورِ کونین ﷺ کے اخلاق، اوصاف، عاداتِ طیبہ اور مبارک سراپا کی مستند احادیث کا بے مثال اور محبت انگیز مجموعہ۔",
-    "cover_url": "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/shamail-tirmidhi.jpg",
     "source_type": "public"
   },
   {
@@ -251,7 +251,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 1322,
     "volumes": 1,
     "intro_ur": "معاشرتی آداب، والدین کے حقوق، صلہ رحمی اور باہمی معاملات پر امام بخاری کا خصوصی اور مستند ذخیرہ احادیث۔",
-    "cover_url": "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/adab-mufrad.jpg",
     "source_type": "public"
   },
   {
@@ -265,7 +265,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 21033,
     "volumes": 11,
     "intro_ur": "احادیثِ مرفوعہ، آثارِ صحابہ اور فتاویٰ تابعین کا قدیم ترین سمندر جو فقہی استنباط اور ائمہ سلف کے فتاویٰ کا اصل ماخذ ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1519791883288-dc8bd696e667?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/musannaf-abd-al-razzaq.jpg",
     "source_type": "public"
   },
   {
@@ -279,7 +279,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 37943,
     "volumes": 15,
     "intro_ur": "آثارِ سلف اور احادیثِ احکام کا وہ کثیر المقدار ذخیرہ جس کے بغیر فقہ اور تاریخ کے تقابلی جائزے نامکمل رہتے ہیں۔",
-    "cover_url": "https://images.unsplash.com/photo-1507842229451-79b1be886a20?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/musannaf-ibn-abi-shaybah.jpg",
     "source_type": "public"
   },
   {
@@ -293,7 +293,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 7491,
     "volumes": 18,
     "intro_ur": "تقاسیم و انواع کی انوکھی فقہی و فلسفیانہ ترتیب پر مبنی احادیثِ صحیحہ کا گراں قدر اور وسیع مجموعہ۔",
-    "cover_url": "https://images.unsplash.com/photo-1463320726281-696a485928c7?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/sahih-ibn-hibban.jpg",
     "source_type": "public"
   },
   {
@@ -307,7 +307,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 3000,
     "volumes": 4,
     "intro_ur": "امام الائمہ ابن خزیمہ کی باریک بین شرائط اور دقیق استنباط سے مزین صحیح روایات کا بے عیب اور بلند مرتبہ ذخیرہ۔",
-    "cover_url": "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/sahih-ibn-khuzaymah.jpg",
     "source_type": "public"
   },
   {
@@ -321,7 +321,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 8803,
     "volumes": 4,
     "intro_ur": "ان احادیث کا استدراک جو بخاری و مسلم کی شرائط پر پوری اترتی ہیں مگر ائمہ نے اپنی کتب میں درج نہ کیں۔",
-    "cover_url": "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/mustadrak-al-hakim.jpg",
     "source_type": "public"
   },
   {
@@ -335,7 +335,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 4898,
     "volumes": 5,
     "intro_ur": "احادیثِ احکام کے غوامض، طرق کے اختلافات اور اسانید کی دقیق علتوں کو واضح کرنے والا نقدِ حدیث کا عظیم مرجع۔",
-    "cover_url": "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/sunan-al-daraqutni.jpg",
     "source_type": "public"
   },
   {
@@ -349,7 +349,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 21812,
     "volumes": 10,
     "intro_ur": "احادیثِ فقہیہ کا دائرۃ المعارف جس میں مذاہبِ فقہاء کی تائید میں متون اور اسانید کا محققانہ ذخیرہ اکٹھا کیا گیا ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/sunan-al-kubra-bayhaqi.jpg",
     "source_type": "public"
   },
   {
@@ -363,7 +363,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 11000,
     "volumes": 14,
     "intro_ur": "ایمان کی ستتر شاخوں کی ترتیب پر اخلاق، اعمال، عبادات اور محاسنِ شریعت پر احادیث و آثار کا تفصیلی انسائیکلوپیڈیا۔",
-    "cover_url": "https://images.unsplash.com/photo-1584281722572-8a9d1fd0bb37?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/shuab-al-iman.jpg",
     "source_type": "public"
   },
   {
@@ -377,7 +377,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 7300,
     "volumes": 4,
     "intro_ur": "فقہ حنفی کے حدیثی دلائل اور بظاہر متعارض روایات کے درمیان وزنی تطبیق و ترجیح کا فقہی و حدیثی معجزہ۔",
-    "cover_url": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/sharh-maani-al-athar.jpg",
     "source_type": "public"
   },
   {
@@ -391,7 +391,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 46000,
     "volumes": 16,
     "intro_ur": "ساری حدیثی کتب کو فقہی ابواب کی ترتیب پر مرتب کرنے والا جامع ترین ذخیرہ۔",
-    "cover_url": "https://images.unsplash.com/photo-1532012164546-f432f2e3777a?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/kanz-al-ummal.jpg",
     "source_type": "public"
   },
   {
@@ -405,7 +405,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 1100,
     "volumes": 2,
     "intro_ur": "امام نووی کی چالیس احادیث اور جوامع الکلم کی ایسی ایمان افروز شرح جو علم، حکمت، اخلاص اور سلوک کا حسین امتزاج ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/jami-al-uloom-wal-hikam.jpg",
     "source_type": "public"
   },
   {
@@ -419,7 +419,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 24000,
     "volumes": 26,
     "intro_ur": "تفسیر بالماثور کا اولین اور عظیم ترین انسائیکلوپیڈیا جس میں رسول اللہ ﷺ، صحابہ اور تابعین کی مکمل اسانید کے ساتھ تفسیری روایات درج ہیں۔",
-    "cover_url": "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/tafseer-tabari.jpg",
     "source_type": "public"
   },
   {
@@ -433,7 +433,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 8000,
     "volumes": 8,
     "intro_ur": "قرآن کی قرآن اور صحیح احادیث کے ذریعے تفسیر کا سب سے مقبول اور معتمد عام فہم ذخیرہ جس سے ہر دور کے علماء نے استفادہ کیا۔",
-    "cover_url": "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/tafseer-ibn-kathir.jpg",
     "source_type": "public"
   },
   {
@@ -447,7 +447,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 14000,
     "volumes": 20,
     "intro_ur": "آیاتِ احکام اور فقہی مسائل کی مفصل تحقیق، لغتِ عرب اور قراءات کے دلائل کا فقہی تفسیر میں سب سے مستند مرجع۔",
-    "cover_url": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/tafseer-qurtubi.jpg",
     "source_type": "public"
   },
   {
@@ -461,7 +461,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 6500,
     "volumes": 8,
     "intro_ur": "بدعات اور موضوع روایات سے پاک، سلف صالحین کے معتمد اقوال اور احادیثِ صحیحہ پر مبنی پاکیزہ تفسیر۔",
-    "cover_url": "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/tafseer-baghawi.jpg",
     "source_type": "public"
   },
   {
@@ -475,7 +475,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 18000,
     "volumes": 32,
     "intro_ur": "عقلی و کلامی استدلال، اسرارِ کائنات، بلاغت اور مناسبتِ آیات کا بحر ناپیدا کنار جس میں علوم و معارف کے خزانے پوشیدہ ہیں۔",
-    "cover_url": "https://images.unsplash.com/photo-1476275466078-4007374efbbe?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/tafseer-kabir-razi.jpg",
     "source_type": "public"
   },
   {
@@ -489,7 +489,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 620,
     "volumes": 1,
     "intro_ur": "درسِ نظامی کا لازمی جزو، انتہائی مختصر، بلیغ اور جامع تفسیر جس کا ہر لفظ قرآنی الفاظ کے برابر نپا تلا ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1495640388908-05fa85288e61?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/tafseer-jalalayn.jpg",
     "source_type": "public"
   },
   {
@@ -503,7 +503,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 2500,
     "volumes": 5,
     "intro_ur": "عربی نحو، اعراب اور لطائفِ بلاغت کا دریا جس پر دنیا کے بے شمار اکابر علماء نے حواشی اور شروحات تحریر فرمائیں۔",
-    "cover_url": "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/tafseer-baydawi.jpg",
     "source_type": "public"
   },
   {
@@ -517,7 +517,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 4000,
     "volumes": 4,
     "intro_ur": "اعجازِ قرآن، نظمِ بلاغت اور کلامِ عرب کی نادر تشبیہات کو اجاگر کرنے والا ایسا متن جس کا مثل عربی ادب میں نہیں ملتا۔",
-    "cover_url": "https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/tafseer-kashshaf.jpg",
     "source_type": "public"
   },
   {
@@ -531,7 +531,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 3500,
     "volumes": 6,
     "intro_ur": "اندلس کے عظیم مفسر کی پروقار تفسیر جس نے لغت، قراءت اور روایت کو انتہائی مستند اور اختصار کے ساتھ پیش کیا۔",
-    "cover_url": "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/tafseer-ibn-atiyyah.jpg",
     "source_type": "public"
   },
   {
@@ -545,7 +545,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 15000,
     "volumes": 30,
     "intro_ur": "متاخرین کے تفسیری، فقہی اور صوفیانہ نکات کا بے نظیر دائرۃ المعارف جو تحقیق و تدقیق میں سنگِ میل کی حیثیت رکھتا ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/tafseer-ruh-al-maani.jpg",
     "source_type": "public"
   },
   {
@@ -559,7 +559,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 4200,
     "volumes": 4,
     "intro_ur": "قصصِ انبیاء اور تاریخی روایات کے ساتھ معانیِ قرآن کو سلیس اور عام فہم انداز میں پیش کرنے والی مقبول تفسیر۔",
-    "cover_url": "https://images.unsplash.com/photo-1519791883288-dc8bd696e667?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/tafseer-khazin.jpg",
     "source_type": "public"
   },
   {
@@ -573,7 +573,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 3100,
     "volumes": 3,
     "intro_ur": "احناف کی معتمد درسی تفسیر جس میں بیضاوی اور کشاف کی باریکیوں کو معتزلی آمیزش سے پاک کر کے مرتب کیا گیا ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1507842229451-79b1be886a20?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/tafseer-nasafi.jpg",
     "source_type": "public"
   },
   {
@@ -587,7 +587,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 12000,
     "volumes": 8,
     "intro_ur": "تفسیری روایات کا ایسا بے نظیر ذخیرہ جس میں مفسر نے اپنی رائے کے بجائے صرف احادیث اور صحابہ و تابعین کے اقوال جمع کیے۔",
-    "cover_url": "https://images.unsplash.com/photo-1463320726281-696a485928c7?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/durr-al-manthur.jpg",
     "source_type": "public"
   },
   {
@@ -601,7 +601,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 2200,
     "volumes": 2,
     "intro_ur": "علومِ قرآن (نزول، ناسخ و منسوخ، قراءات، اعجاز، مبہمات) کا حتمی اور مستند ترین انسائیکلوپیڈیا۔",
-    "cover_url": "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/al-itqan-fi-ulum-al-quran.jpg",
     "source_type": "public"
   },
   {
@@ -615,7 +615,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 2000,
     "volumes": 4,
     "intro_ur": "علومِ قرآنیہ کی اصولی تدوین کی بنیاد جس پر بعد کے تمام محققین بالخصوص علامہ سیوطی کا تکیہ رہا ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/al-burhan-fi-ulum-al-quran.jpg",
     "source_type": "public"
   },
   {
@@ -629,7 +629,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 950,
     "volumes": 1,
     "intro_ur": "قرآنی لغت اور غریب الفاظ کا فلسفیانہ و لسانی لغت نامہ جو ہر محقق اور مفسر کی پہلی ضرورت ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/mufradat-alfaz-al-quran.jpg",
     "source_type": "public"
   },
   {
@@ -643,7 +643,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 500,
     "volumes": 1,
     "intro_ur": "آیاتِ قرآنیہ کے پس منظر، اسبابِ نزول اور تاریخی واقعات کی مستند اسانید کے ساتھ اولین مستند تالیف۔",
-    "cover_url": "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/asbab-al-nuzul-wahidi.jpg",
     "source_type": "public"
   },
   {
@@ -657,7 +657,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 3500,
     "volumes": 3,
     "intro_ur": "فقہ حنفی کے مطابق آیاتِ احکام کا سب سے مضبوط، دقیق اور استدلالی تفسیری ذخیرہ جس پر اجتہادی فتاویٰ قائم ہیں۔",
-    "cover_url": "https://images.unsplash.com/photo-1584281722572-8a9d1fd0bb37?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/ahkam-al-quran-jassas.jpg",
     "source_type": "public"
   },
   {
@@ -671,7 +671,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 3000,
     "volumes": 4,
     "intro_ur": "آیاتِ فقہیہ کی گہری اوزان پر تحقیق اور مذاہبِ اربعہ کے دلائل کا عالمانہ و فقیہانہ نقد۔",
-    "cover_url": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/ahkam-al-quran-ibn-arabi.jpg",
     "source_type": "public"
   },
   {
@@ -685,7 +685,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 240,
     "volumes": 1,
     "intro_ur": "قرآنی علوم، پنج گانہ مضامین اور فہمِ کلام الہی کے بنیادی قواعد پر مشتمل برصغیر کا لازوال اور منفرد رسالہ۔",
-    "cover_url": "https://images.unsplash.com/photo-1532012164546-f432f2e3777a?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/al-fawz-al-kabir.jpg",
     "source_type": "public"
   },
   {
@@ -699,7 +699,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 3200,
     "volumes": 4,
     "intro_ur": "فقہ حنفی کی ام الکتب، جس کے بارے میں کہا گیا کہ یہ معجزہ نما کتاب ہے جو شریعت کی باریکیوں کو اپنے دامن میں سمیٹے ہوئے ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/hidayah.jpg",
     "source_type": "public"
   },
   {
@@ -713,7 +713,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 6500,
     "volumes": 6,
     "intro_ur": "مغلیہ سلطنت کے دور میں پانچ سو جید علماء کی کاوش سے مرتب شدہ فقہ حنفی کا سب سے مفصل اور قانونی دستور العمل۔",
-    "cover_url": "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/fatawa-alamgiri.jpg",
     "source_type": "public"
   },
   {
@@ -727,7 +727,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 8200,
     "volumes": 12,
     "intro_ur": "متاخرین فقہاء حنفیہ کے نزدیک افتاء کا سب سے حتمی، معتمد اور فائق ترین مرجع جس پر تمام دار الافتاء اعتماد کرتے ہیں۔",
-    "cover_url": "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/fatawa-shami.jpg",
     "source_type": "public"
   },
   {
@@ -741,7 +741,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 1800,
     "volumes": 2,
     "intro_ur": "انتہائی عمیق اور دقیق فتاویٰ و مسائل کا موجز متن، جو فتاویٰ شامی کا اصل متن بن کر دنیا بھر میں تسلیم کیا گیا۔",
-    "cover_url": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/al-durr-al-mukhtar.jpg",
     "source_type": "public"
   },
   {
@@ -755,7 +755,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 450,
     "volumes": 1,
     "intro_ur": "فقہ حنفی کی متنِ متین جو صدیوں سے درسِ نظامی کا پہلا زینہ اور بارہ ہزار بنیادی فقہی مسائل کا مستحضر متن ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/mukhtasar-al-quduri.jpg",
     "source_type": "public"
   },
   {
@@ -769,7 +769,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 600,
     "volumes": 1,
     "intro_ur": "احناف کے چار بنیادی معتمد متون کا وہ نگینہ جس کے اشارات اور الفاظ میں فقہ کے دریا بند ہیں۔",
-    "cover_url": "https://images.unsplash.com/photo-1476275466078-4007374efbbe?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/kanz-al-daqaiq.jpg",
     "source_type": "public"
   },
   {
@@ -783,7 +783,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 5000,
     "volumes": 7,
     "intro_ur": "منطقی ترتیب اور ہر فقہی مسئلے کے ارکان، شرائط اور احکام کی ایسی بے عیب تقسیم جس کی مثال فقہی لٹریچر میں نایاب ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1495640388908-05fa85288e61?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/badai-al-sanai.jpg",
     "source_type": "public"
   },
   {
@@ -797,7 +797,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 9000,
     "volumes": 30,
     "intro_ur": "امام محمد کی کتبِ ظاہر الروایہ کی وہ ضخیم ترین شرح جسے امام سرخسی نے قید خانے کے کنویں میں بیٹھ کر اپنے حفظ سے املا کرایا۔",
-    "cover_url": "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/al-mabsut-sarakhsi.jpg",
     "source_type": "public"
   },
   {
@@ -811,7 +811,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 2800,
     "volumes": 3,
     "intro_ur": "اہل فتویٰ کا دستِ راست جس کے مسائل کو دیگر تمام کتب پر ترجیح دی جاتی ہے کیونکہ اس میں تصحیح یافتہ اقوال جمع ہیں۔",
-    "cover_url": "https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/fatawa-qazi-khan.jpg",
     "source_type": "public"
   },
   {
@@ -825,7 +825,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 7000,
     "volumes": 10,
     "intro_ur": "ہدایہ کی سب سے گہری، حدیثی اور استدلالی شرح جس نے اجتہاد کے مرتبے پر فائز ہو کر احناف کے دلائل کو ثابت کیا۔",
-    "cover_url": "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/fath-al-qadeer.jpg",
     "source_type": "public"
   },
   {
@@ -839,7 +839,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 650,
     "volumes": 1,
     "intro_ur": "فقہی قواعدِ کلیہ، ضوابط اور نظائر کا ایسا مستند مجموعہ جس سے جدید پیش آمدہ مسائل کے استخراج کا ملکہ پیدا ہوتا ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/al-ashbah-wal-nazair.jpg",
     "source_type": "public"
   },
   {
@@ -853,7 +853,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 6200,
     "volumes": 8,
     "intro_ur": "کنز الدقائق کی وہ گراں قدر شرح جس نے فقہ حنفی کے متون، شروحات اور فتاویٰ کے موتیوں کو ایک لڑی میں پرو دیا۔",
-    "cover_url": "https://images.unsplash.com/photo-1519791883288-dc8bd696e667?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/al-bahr-al-raiq.jpg",
     "source_type": "public"
   },
   {
@@ -867,7 +867,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 4500,
     "volumes": 6,
     "intro_ur": "احناف اور شوافع کے تقابلی فقہی دلائل کا منصفانہ اور محققانہ شاہکار جس میں نصوص سے مسائل کے اخذ کا طریقہ سکھایا گیا ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1507842229451-79b1be886a20?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/tabyeen-al-haqaiq.jpg",
     "source_type": "public"
   },
   {
@@ -881,7 +881,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 3500,
     "volumes": 4,
     "intro_ur": "عثمانی دور کے سرکاری فقہی متن ملتقى الابحر کی ایسی دلکش اور سلجھی ہوئی شرح جس میں فتوے کے راجح اقوال درج ہیں۔",
-    "cover_url": "https://images.unsplash.com/photo-1463320726281-696a485928c7?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/majma-al-anhur.jpg",
     "source_type": "public"
   },
   {
@@ -895,7 +895,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 750,
     "volumes": 1,
     "intro_ur": "عبادات کے فقہی احکام و مسائل کی سب سے پسندیدہ، آسان اور معتبر درسی کتاب۔",
-    "cover_url": "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/maraqi-al-falah.jpg",
     "source_type": "public"
   },
   {
@@ -909,7 +909,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 200,
     "volumes": 1,
     "intro_ur": "ابتدائی طلبہ اور عامۃ المسلمین کے لیے فقہ عبادات کا سب سے بنیادی اور صاف ستھرا متفقہ متن۔",
-    "cover_url": "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/nur-al-idah.jpg",
     "source_type": "public"
   },
   {
@@ -923,7 +923,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 2200,
     "volumes": 4,
     "intro_ur": "مذاہبِ اربعہ کے اختلافات اور ان کے اسباب و علل کو سمجھنے کے لیے دنیائے اسلام کا سب سے فلسفیانہ فقہی تجزیہ۔",
-    "cover_url": "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/bidayat-al-mujtahid.jpg",
     "source_type": "public"
   },
   {
@@ -937,7 +937,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 9000,
     "volumes": 15,
     "intro_ur": "فقہ مقارن کا بحر ذخار جس میں تمام ائمہ کے مذاہب کے دلائل کو مکمل دیانت کے ساتھ بیان کیا گیا ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/al-mughni-ibn-qudamah.jpg",
     "source_type": "public"
   },
   {
@@ -951,7 +951,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 12000,
     "volumes": 23,
     "intro_ur": "فقہ شافعی اور اقوالِ سلف کا عظیم انسائیکلوپیڈیا جس میں حدیث کے نقد اور فقہی تحقیق کا اعلیٰ ترین معیار پیش کیا گیا ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1584281722572-8a9d1fd0bb37?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/al-majmu-sharh-muhadhdhab.jpg",
     "source_type": "public"
   },
   {
@@ -965,7 +965,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 5000,
     "volumes": 8,
     "intro_ur": "مذہبِ شافعی کی اصل بنیاد اور امام شافعی کے اپنے قلم و املا سے مدون شدہ فقہی ذخیرہ۔",
-    "cover_url": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/kitab-al-umm-shafii.jpg",
     "source_type": "public"
   },
   {
@@ -979,7 +979,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 600,
     "volumes": 1,
     "intro_ur": "اصولِ فقہ کی تاریخ میں دنیا کی سب سے پہلی مدون کتاب جس نے شریعت کے دلائل کو قوانین و قواعد کے فریم ورک میں ڈھالا۔",
-    "cover_url": "https://images.unsplash.com/photo-1532012164546-f432f2e3777a?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/al-risalah-shafii.jpg",
     "source_type": "public"
   },
   {
@@ -993,7 +993,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 280,
     "volumes": 1,
     "intro_ur": "درسِ نظامی کے نصاب میں اصولِ فقہ حنفی کی ابتدائی، پختہ اور مثالوں سے بھرپور بنیادی کتاب۔",
-    "cover_url": "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/usul-al-shashi.jpg",
     "source_type": "public"
   },
   {
@@ -1007,7 +1007,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 350,
     "volumes": 1,
     "intro_ur": "احناف کے اصولی قواعد کا وہ مختصر جامع متن جس پر نور الانوار سمیت بیسیوں کبار علماء نے شروح لکھیں۔",
-    "cover_url": "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/al-manar-nasafi.jpg",
     "source_type": "public"
   },
   {
@@ -1021,7 +1021,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 900,
     "volumes": 2,
     "intro_ur": "عثمانی دار القضاء اور جامعات میں رائج اصولِ شریعت کی گہری فلسفیانہ، کلامی اور اصولی تالیف۔",
-    "cover_url": "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/mirat-al-usul.jpg",
     "source_type": "public"
   },
   {
@@ -1035,7 +1035,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 800,
     "volumes": 2,
     "intro_ur": "مقاصدِ شریعت اور انسانوں کی مصلحتوں پر شریعت کے احکام کا تعلق واضح کرنے والی فقہ اسلامی کی عظیم ترین کتاب۔",
-    "cover_url": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/qawaid-al-ahkam-salam.jpg",
     "source_type": "public"
   },
   {
@@ -1049,7 +1049,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 2400,
     "volumes": 4,
     "intro_ur": "سیرتِ مصطفیٰ ﷺ کی تاریخ کا سب سے اولین، مستند اور بنیادی ماخذ جس کے بغیر سیرت کا کوئی کام مکمل نہیں ہو سکتا۔",
-    "cover_url": "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/seerat-ibn-hisham.jpg",
     "source_type": "public"
   },
   {
@@ -1063,7 +1063,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 5600,
     "volumes": 8,
     "intro_ur": "سیرت النبی ﷺ اور صحابہ و تابعین کے احوال و غزوات کا اولین مستند انسائیکلوپیڈیا۔",
-    "cover_url": "https://images.unsplash.com/photo-1476275466078-4007374efbbe?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/al-tabaqat-al-kubra.jpg",
     "source_type": "public"
   },
   {
@@ -1077,7 +1077,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 4200,
     "volumes": 6,
     "intro_ur": "رسول اللہ ﷺ کی عبادات، معاملات، اخلاق اور طب کے فقہی اور عملی احکام کا عدیم النظیر سیرتی مرقع۔",
-    "cover_url": "https://images.unsplash.com/photo-1495640388908-05fa85288e61?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/zad-al-maad.jpg",
     "source_type": "public"
   },
   {
@@ -1091,7 +1091,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 1200,
     "volumes": 2,
     "intro_ur": "عظمتِ مصطفیٰ ﷺ، حقوق النبی اور عشقِ رسول پر امت مسلمہ کی دل پسند اور وجد آفرین کتاب۔",
-    "cover_url": "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/al-shifa-qadi-iyad.jpg",
     "source_type": "public"
   },
   {
@@ -1105,7 +1105,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 3200,
     "volumes": 3,
     "intro_ur": "سیرت و خصائصِ نبویہ پر متاخرین کے تحقیقی مباحث کا جامع سمندر جس کی زرقانی نے عظیم شرح لکھی۔",
-    "cover_url": "https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/al-mawahib-al-ladunniyyah.jpg",
     "source_type": "public"
   },
   {
@@ -1119,7 +1119,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 900,
     "volumes": 2,
     "intro_ur": "حضور اکرم ﷺ کی ولادت، معجزات، فضائل اور عاداتِ کریمہ پر ابن الجوزی کی دل موہ لینے والی تالیف۔",
-    "cover_url": "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/al-wafa-bi-ahwal-al-mustafa.jpg",
     "source_type": "public"
   },
   {
@@ -1133,7 +1133,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 350,
     "volumes": 1,
     "intro_ur": "ابن حزم کی سخت جان نقادانہ بصیرت سے لکھی گئی مستند اور جامع ترین مختصر سیرت۔",
-    "cover_url": "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/jawami-al-seerah-ibn-hazm.jpg",
     "source_type": "public"
   },
   {
@@ -1147,7 +1147,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 4500,
     "volumes": 3,
     "intro_ur": "سیرت، روایات، اشعار اور معجزات کا تفصیلی دائرۃ المعارف جو منابر اور درس میں صدیوں سے پڑھا جاتا رہا ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1519791883288-dc8bd696e667?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/al-seerat-al-halabiyyah.jpg",
     "source_type": "public"
   },
   {
@@ -1161,7 +1161,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 4800,
     "volumes": 7,
     "intro_ur": "معجزاتِ نبویہ اور دلائلِ رسالت کا سب سے بڑا اور صحیح الاسناد مجموعہ۔",
-    "cover_url": "https://images.unsplash.com/photo-1507842229451-79b1be886a20?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/dalail-al-nubuwwah-bayhaqi.jpg",
     "source_type": "public"
   },
   {
@@ -1175,7 +1175,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 1800,
     "volumes": 2,
     "intro_ur": "رسول اکرم ﷺ کی بشارات، کتبِ سابقہ کی گواہیاں اور خوارقِ عادات کا گرانقدر ابتدائی ذخیرہ۔",
-    "cover_url": "https://images.unsplash.com/photo-1463320726281-696a485928c7?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/dalail-al-nubuwwah-isfahani.jpg",
     "source_type": "public"
   },
   {
@@ -1189,7 +1189,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 11000,
     "volumes": 15,
     "intro_ur": "آغازِ کائنات، قصصِ انبیاء، سیرت النبی ﷺ اور فتن و علاماتِ قیامت پر مبنی تاریخِ اسلام کی سب سے مقبول ترین کتاب۔",
-    "cover_url": "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/al-bidaya-wa-nihaya.jpg",
     "source_type": "public"
   },
   {
@@ -1203,7 +1203,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 7200,
     "volumes": 11,
     "intro_ur": "عالمِ اسلام کی تاریخ کا بنیادی ستون جس میں ہر واقعہ کو اس کے راویوں کی متصل اسناد کے ساتھ ریکارڈ کیا گیا ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/tareekh-al-tabari.jpg",
     "source_type": "public"
   },
   {
@@ -1217,7 +1217,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 8000,
     "volumes": 10,
     "intro_ur": "سقوطِ بغداد سے قبل اسلامی تاریخ کا وہ مکمل ترین تذکرہ جس نے طبری کے روایات کو سال بہ سال عمدہ تسلسل عطا کیا۔",
-    "cover_url": "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/al-kamil-fit-tareekh.jpg",
     "source_type": "public"
   },
   {
@@ -1231,7 +1231,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 40000,
     "volumes": 80,
     "intro_ur": "انسانی تاریخ کے چند ضخیم ترین کاموں میں سے ایک، جس میں دمشق سے وابستہ تمام انبیاء، صحابہ اور علماء کا احاطہ کیا گیا۔",
-    "cover_url": "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/tareekh-dimashq.jpg",
     "source_type": "public"
   },
   {
@@ -1245,7 +1245,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 10500,
     "volumes": 16,
     "intro_ur": "دار الخلافہ بغداد کے ائمہ، محدثین، فقہاء اور رجال کا انسائیکلوپیڈیا جس میں نقد و جرح کے نمونے ملتے ہیں۔",
-    "cover_url": "https://images.unsplash.com/photo-1584281722572-8a9d1fd0bb37?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/tareekh-baghdad.jpg",
     "source_type": "public"
   },
   {
@@ -1259,7 +1259,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 16000,
     "volumes": 25,
     "intro_ur": "اسلامی تاریخ کے درخشندہ ستاروں (صحابہ، تابعین، مجتہدین اور علماء) کی سوانح کا سب سے پرکشش شاہکار۔",
-    "cover_url": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/siyar-alam-al-nubala.jpg",
     "source_type": "public"
   },
   {
@@ -1273,7 +1273,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 35000,
     "volumes": 53,
     "intro_ur": "سنہ ہجری کے پہلے سال سے سات سو سال تک کا مکمل اسلامی وقائع نامہ اور ہزاروں اکابر کی وفیات کا ریکارڈ۔",
-    "cover_url": "https://images.unsplash.com/photo-1532012164546-f432f2e3777a?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/tareekh-al-islam-dhahabi.jpg",
     "source_type": "public"
   },
   {
@@ -1287,7 +1287,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 2200,
     "volumes": 4,
     "intro_ur": "صحابہ کرام رضی اللہ عنہم کے اسماء، انساب اور فضائل پر سلف کی اولین اور قابلِ فخر تاریخی تصنیف۔",
-    "cover_url": "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/al-istiab-ibn-abd-al-barr.jpg",
     "source_type": "public"
   },
   {
@@ -1301,7 +1301,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 4500,
     "volumes": 7,
     "intro_ur": "سات ہزار سے زائد صحابہ کرام کے حالاتِ زندگی کا جامع ترین تذکرہ جس نے پچھلی تمام کتب کا احاطہ کر لیا۔",
-    "cover_url": "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/usd-al-ghabah.jpg",
     "source_type": "public"
   },
   {
@@ -1315,7 +1315,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 6000,
     "volumes": 8,
     "intro_ur": "صحابہ کی شناخت اور تفریق کا وہ علمی شاہکار جسے حافظ ابن حجر نے چالیس سال کی عرق ریزی سے مکمل کیا۔",
-    "cover_url": "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/al-isabah.jpg",
     "source_type": "public"
   },
   {
@@ -1329,7 +1329,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 120,
     "volumes": 1,
     "intro_ur": "اہل سنت والجماعت اور ائمہ حنفیہ کا متفقہ اور غیر متنازعہ عقیدہ جس پر ہر مسلک کے علماء نے مہرِ تصدیق ثبت فرمائی۔",
-    "cover_url": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/al-aqeedah-tahawiyyah.jpg",
     "source_type": "public"
   },
   {
@@ -1343,7 +1343,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 90,
     "volumes": 1,
     "intro_ur": "علمِ کلام و عقائد کی اولین بنیاد، جس میں امام اعظم نے توحید، صفاتِ باری تعالیٰ اور تقدیر کے بنیادی اصول واضح کیے۔",
-    "cover_url": "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/al-fiqh-al-akbar.jpg",
     "source_type": "public"
   },
   {
@@ -1357,7 +1357,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 550,
     "volumes": 1,
     "intro_ur": "ماتریدیہ کلامی مکتبہ فکر کا بنیادی اور مستند ستون جس نے عقلی استدلال سے اسلامی عقائد کا دفاع کیا۔",
-    "cover_url": "https://images.unsplash.com/photo-1476275466078-4007374efbbe?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/kitab-al-tawheed-maturidi.jpg",
     "source_type": "public"
   },
   {
@@ -1371,7 +1371,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 320,
     "volumes": 1,
     "intro_ur": "معتزلہ سے رجوع کے بعد امام اشعری کی وہ بنیادی تالیف جس میں انہوں نے سلف اور امام احمد بن حنبل کے منہج کو اپنایا۔",
-    "cover_url": "https://images.unsplash.com/photo-1495640388908-05fa85288e61?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/al-ibanah-ashari.jpg",
     "source_type": "public"
   },
   {
@@ -1385,7 +1385,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 400,
     "volumes": 1,
     "intro_ur": "درسِ نظامی کا سب سے اعلیٰ کلامی متن جس میں ماتریدی و اشعری عقائد کا عمیق فلسفیانہ ثبوت پیش کیا گیا ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/sharh-aqaid-nasafiyyah.jpg",
     "source_type": "public"
   },
   {
@@ -1399,7 +1399,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 180,
     "volumes": 1,
     "intro_ur": "اسماء و صفات اور منہجِ سلف صالحین پر شیخ الاسلام ابن تیمیہ کا وہ قطعی متن جس پر مناظرے ہوئے اور حق واضح ہوا۔",
-    "cover_url": "https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/al-aqeedah-al-wasitiyyah.jpg",
     "source_type": "public"
   },
   {
@@ -1413,7 +1413,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 250,
     "volumes": 1,
     "intro_ur": "گمراہ فرقوں اور باطل کلامی افکار کے رد میں دلائلِ قاطعہ پر مبنی معتبر رسالہ۔",
-    "cover_url": "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/kitab-al-luma-ashari.jpg",
     "source_type": "public"
   },
   {
@@ -1427,7 +1427,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 520,
     "volumes": 1,
     "intro_ur": "ابن الہمام کے مسامرہ متن کی عمیق شرح جو اصولِ دین اور کلامِ حنفی کی باریکیوں کا احاطہ کرتی ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/al-musamarah-musayarah.jpg",
     "source_type": "public"
   },
   {
@@ -1441,7 +1441,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 310,
     "volumes": 1,
     "intro_ur": "اعتدال و توازن کے ساتھ ذات و صفاتِ الٰہیہ کے اثبات پر امام غزالی کی حکیمانہ اور منطقی کلامی تالیف۔",
-    "cover_url": "https://images.unsplash.com/photo-1519791883288-dc8bd696e667?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/al-iqtisad-fil-itiqad.jpg",
     "source_type": "public"
   },
   {
@@ -1455,7 +1455,7 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "pages": 5000,
     "volumes": 5,
     "intro_ur": "علم، عمل، تزکیہ باطن، اخلاق اور اصلاحِ قلب کا وہ شہرہ آفاق شاہکار جس نے صدیوں تک امت کے باطن کو جلا بخشی۔",
-    "cover_url": "https://images.unsplash.com/photo-1507842229451-79b1be886a20?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/ihya-uloom.jpg",
     "source_type": "public"
   }
 ];
@@ -1482,7 +1482,7 @@ export const modernBooks: ModernBook[] = [
     "pages": 2100,
     "volumes": 4,
     "intro_ur": "عصرِ حاضر کے جدید فقہی، معاشی، بینکنگ اور تجارتی معاملات پر مفتی تقی عثمانی کے مدلل اور عصر شناس فتاویٰ۔",
-    "cover_url": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/fatawa-usmani.jpg",
     "source_type": "external",
     "external_link": "https://archive.org/details/fatawa-usmani",
     "publisher": "مکتبہ معارف القرآن کراچی"
@@ -1498,7 +1498,7 @@ export const modernBooks: ModernBook[] = [
     "pages": 3500,
     "volumes": 6,
     "intro_ur": "جامع ترمذی کے ابوابِ فقہیہ کی مفصل تقریر جس میں ائمہ کے دلائل اور دورِ حاضر کے تقاضوں کی تنقیح کی گئی ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/darse-tirmidhi.jpg",
     "source_type": "external",
     "external_link": "https://archive.org/details/DarseTirmizi-Complete",
     "publisher": "دار العلوم کراچی"
@@ -1514,7 +1514,7 @@ export const modernBooks: ModernBook[] = [
     "pages": 6000,
     "volumes": 8,
     "intro_ur": "اردو زبان میں دورِ جدید کی سب سے جامع، متوازن اور معتبر تفسیر جس میں فقہی احکام اور دورِ حاضر کے مسائل کا حل موجود ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1584281722572-8a9d1fd0bb37?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/maariful-quran.jpg",
     "source_type": "external",
     "external_link": "https://archive.org/details/MaarifulQuranUrdu",
     "publisher": "ادارہ المعارف کراچی"
@@ -1530,7 +1530,7 @@ export const modernBooks: ModernBook[] = [
     "pages": 4200,
     "volumes": 10,
     "intro_ur": "ہندوستان کے مشہور و معروف فتاویٰ کا مجموعہ جو پاک و ہند کے دار الافتاء میں کثرت سے مستعمل ہے۔",
-    "cover_url": "https://images.unsplash.com/photo-1532012164546-f432f2e3777a?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/fatawa-rahimiyyah.jpg",
     "source_type": "external",
     "external_link": "https://archive.org/details/fatawa-rahimiyyah",
     "publisher": "مکتبہ رحیمیہ راندیر"
@@ -1546,7 +1546,7 @@ export const modernBooks: ModernBook[] = [
     "pages": 3800,
     "volumes": 9,
     "intro_ur": "فقہ حنفی پر پختہ گرفت اور سائل کے سوال کا نہایت جامع و نپا تلا جواب دینے میں بے مثال فتاویٰ۔",
-    "cover_url": "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/kifayatul-mufti.jpg",
     "source_type": "external",
     "external_link": "https://archive.org/details/kifayat-ul-mufti",
     "publisher": "دار الاشاعت کراچی"
@@ -1562,7 +1562,7 @@ export const modernBooks: ModernBook[] = [
     "pages": 4500,
     "volumes": 6,
     "intro_ur": "حکیم الامت کے غواصانہ فتاویٰ اور فقہی اجتہادات کا گلدستہ جس پر علامہ شبیر احمد عثمانی نے تعلیقات لکھیں۔",
-    "cover_url": "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/imdadul-fatawa.jpg",
     "source_type": "external",
     "external_link": "https://archive.org/details/ImdadUlFatawa-AllVolumes",
     "publisher": "مکتبہ دار العلوم کراچی"
@@ -1578,7 +1578,7 @@ export const modernBooks: ModernBook[] = [
     "pages": 5000,
     "volumes": 10,
     "intro_ur": "تحقیقِ انیق، جدید فقہی تحقیقات اور اصولی بصیرت سے بھرپور دورِ حاضر کا مایہ ناز مجموعہ فتاویٰ۔",
-    "cover_url": "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/ahsanul-fatawa.jpg",
     "source_type": "external",
     "external_link": "https://archive.org/details/Ahsan-ul-Fatawa-1-10",
     "publisher": "ایچ ایم سعید کمپنی کراچی"
@@ -1594,7 +1594,7 @@ export const modernBooks: ModernBook[] = [
     "pages": 3500,
     "volumes": 7,
     "intro_ur": "اردو زبان کا سب سے شاندار تاریخی، ادبی اور محققانہ سیرتی شاہکار جس پر عالمِ اسلام کے اکابر نے فخر کیا۔",
-    "cover_url": "https://images.unsplash.com/photo-1476275466078-4007374efbbe?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/seeratun-nabi-shibli.jpg",
     "source_type": "external",
     "external_link": "https://archive.org/details/Seerat-un-Nabi-Vol-1-7",
     "publisher": "دار المصنفین اعظم گڑھ"
@@ -1610,7 +1610,7 @@ export const modernBooks: ModernBook[] = [
     "pages": 2500,
     "volumes": 5,
     "intro_ur": "عالمِ اسلام کے مجددین، ائمہ اور اولیاء کی تجدیدی خدمات اور دعوت و عزیمت کا سحر انگیز فکری جائزہ۔",
-    "cover_url": "https://images.unsplash.com/photo-1495640388908-05fa85288e61?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/tareekh-dawat-o-azeemat.jpg",
     "source_type": "external",
     "external_link": "https://archive.org/details/TareekhDawatOAzimat",
     "publisher": "مجلس نشریات اسلام کراچی"
@@ -1626,7 +1626,7 @@ export const modernBooks: ModernBook[] = [
     "pages": 600,
     "volumes": 2,
     "intro_ur": "روزمرہ کی زندگی میں درپیش مسائل کو عام فہم اور آسان زبان میں پیش کرنے والی مقبول تربیتی کتاب۔",
-    "cover_url": "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=600&q=80",
+    "cover_url": "/images/books/asan-fiqh-islahi.jpg",
     "source_type": "external",
     "external_link": "https://archive.org/details/AsanFiqhByMaulanaYousufIslahi",
     "publisher": "مرکزی مکتبہ اسلامی دہلی"
