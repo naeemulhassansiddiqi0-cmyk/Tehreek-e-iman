@@ -49,3 +49,45 @@ html, body, * {
 .arabic-text, .arabic-text *, .font-arabic, .font-arabic *, .font-amiri, .font-amiri *, [lang="ar"], [lang="ar"] * {
   font-family: 'Amiri', 'Traditional Arabic', serif !important;
 }
+
+/* Styler box CSS - FIXED size, never changes */
+.urdu-styler-box,
+[data-styler-box="true"] {
+  font-size: 14px !important;
+  width: 320px !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  position: sticky !important;
+}
+
+.urdu-styler-box *,
+[data-styler-box="true"] * {
+  box-sizing: border-box !important;
+}
+
+.urdu-styler-box .urdu-text,
+.urdu-styler-box [lang="ur"],
+.urdu-styler-box .font-nastaliq,
+[data-styler-box="true"] .urdu-text,
+[data-styler-box="true"] [lang="ur"],
+[data-styler-box="true"] .font-nastaliq {
+  font-size: 14px !important;
+  line-height: 20px !important;
+}
+
+/* Scoped Font Scaling: State bookFontSize targets ONLY .book-content div */
+.book-content {
+  --book-font-size: 22px;
+  --book-line-height: 34px;
+  --arabic-font-size: 30px;
+}
+
+.book-content .urdu-text {
+  font-size: var(--book-font-size, var(--urdu-font-size, 22px)) !important;
+  line-height: var(--book-line-height, 34px) !important;
+}
+
+.book-content .arabic-text {
+  font-size: var(--arabic-font-size, 30px) !important;
+  line-height: 2.5 !important;
+}

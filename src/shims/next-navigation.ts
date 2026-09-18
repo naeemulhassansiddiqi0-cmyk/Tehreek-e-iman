@@ -1,12 +1,12 @@
 export function useParams<T = Record<string, string>>(): T {
   if (typeof window !== 'undefined') {
     const path = window.location.pathname;
-    const match = path.match(/\/books\/([^/?#]+)/);
+    const match = path.match(/\/(?:books|book)\/([^/?#]+)/);
     if (match) {
       return { slug: decodeURIComponent(match[1]) } as unknown as T;
     }
     const searchParams = new URLSearchParams(window.location.search);
-    const slug = searchParams.get('slug') || searchParams.get('book');
+    const slug = searchParams.get('slug') || searchParams.get('book') || searchParams.get('id');
     if (slug) {
       return { slug } as unknown as T;
     }

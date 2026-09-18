@@ -97,10 +97,10 @@ export default function BookDetailPage() {
   const readerTopRef = useRef<HTMLDivElement>(null);
   const mainContentRef = useRef<HTMLElement>(null);
 
-  // Urdu Text Font Size (16px to 48px in 2px steps)
-  const [urduFontSize, setUrduFontSize] = useState<number>(() => {
+  // Isolated Book Font Size (16px to 48px in 2px steps) & Line Height (24px to 50px)
+  const [bookFontSize, setBookFontSize] = useState<number>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('urduFontSize') || localStorage.getItem('urdu_font_size');
+      const saved = localStorage.getItem('bookFontSize') || localStorage.getItem('urduFontSize') || localStorage.getItem('urdu_font_size');
       if (saved) {
         const parsed = parseInt(saved, 10);
         if (!isNaN(parsed) && parsed >= 16 && parsed <= 48) return parsed;
@@ -109,37 +109,49 @@ export default function BookDetailPage() {
     return 22;
   });
 
-  const changeUrduFontSize = (delta: number) => {
-    setUrduFontSize(prev => {
+  const [bookLineHeight, setBookLineHeight] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('bookLineHeight') || localStorage.getItem('urdu_line_height');
+      if (saved) {
+        const parsed = parseInt(saved, 10);
+        if (!isNaN(parsed) && parsed >= 24 && parsed <= 50) return parsed;
+      }
+    }
+    return 34;
+  });
+
+  const changeBookFontSize = (delta: number) => {
+    setBookFontSize(prev => {
       const next = Math.min(48, Math.max(16, prev + delta));
-      localStorage.setItem('urduFontSize', next.toString());
-      localStorage.setItem('urdu_font_size', next.toString());
-      document.documentElement.style.setProperty('--urdu-font-size', `${next}px`);
+      try {
+        localStorage.setItem('bookFontSize', next.toString());
+        localStorage.setItem('urduFontSize', next.toString());
+      } catch {
+        // ignore
+      }
       return next;
     });
   };
 
-  const resetUrduFontSize = () => {
-    setUrduFontSize(22);
-    localStorage.setItem('urduFontSize', '22');
-    localStorage.setItem('urdu_font_size', '22');
-    document.documentElement.style.setProperty('--urdu-font-size', '22px');
+  const resetBookFontSize = () => {
+    setBookFontSize(22);
+    setBookLineHeight(34);
+    try {
+      localStorage.setItem('bookFontSize', '22');
+      localStorage.setItem('urduFontSize', '22');
+      localStorage.setItem('bookLineHeight', '34');
+    } catch {
+      // ignore
+    }
   };
 
-  // Sync CSS custom property on mount and change
-  useEffect(() => {
-    if (typeof document !== 'undefined') {
-      document.documentElement.style.setProperty('--urdu-font-size', `${urduFontSize}px`);
-    }
-  }, [urduFontSize]);
-
-  // Mobile two-finger pinch-to-zoom support
+  // Mobile two-finger pinch-to-zoom support (updates isolated bookFontSize only)
   useEffect(() => {
     const el = mainContentRef.current;
     if (!el) return;
 
     let initialDist = 0;
-    let initialSize = urduFontSize;
+    let initialSize = bookFontSize;
 
     const onTouchStart = (e: TouchEvent) => {
       if (e.touches.length === 2) {
@@ -147,7 +159,7 @@ export default function BookDetailPage() {
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY
         );
-        initialSize = urduFontSize;
+        initialSize = bookFontSize;
       }
     };
 
@@ -161,10 +173,13 @@ export default function BookDetailPage() {
         const diff = currentDist - initialDist;
         const stepChange = Math.round(diff / 25) * 2;
         const newSize = Math.min(48, Math.max(16, initialSize + stepChange));
-        setUrduFontSize(newSize);
-        localStorage.setItem('urduFontSize', newSize.toString());
-        localStorage.setItem('urdu_font_size', newSize.toString());
-        document.documentElement.style.setProperty('--urdu-font-size', `${newSize}px`);
+        setBookFontSize(newSize);
+        try {
+          localStorage.setItem('bookFontSize', newSize.toString());
+          localStorage.setItem('urduFontSize', newSize.toString());
+        } catch {
+          // ignore
+        }
       }
     };
 
@@ -183,7 +198,7 @@ export default function BookDetailPage() {
       el.removeEventListener('touchmove', onTouchMove);
       el.removeEventListener('touchend', onTouchEnd);
     };
-  }, [urduFontSize]);
+  }, [bookFontSize]);
 
   // Load 100% full dataset from local JSON files (public/hadith-data/[slug].json)
   useEffect(() => {
@@ -373,12 +388,12 @@ export default function BookDetailPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Zoom In / Out Buttons (A- / {urduFontSize}px / A+) */}
+          {/* Zoom In / Out Buttons (A- / {bookFontSize}px / A+) */}
           <div className="flex items-center bg-stone-50 border border-gray-200 rounded-xl p-0.5 shadow-2xs">
             <button
               type="button"
-              onClick={() => changeUrduFontSize(-2)}
-              disabled={urduFontSize <= 16}
+              onClick={() => changeBookFontSize(-2)}
+              disabled={bookFontSize <= 16}
               className="px-2 py-1 text-xs font-bold text-stone-700 hover:text-emerald-800 hover:bg-white rounded-lg transition disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
               title="اردو فونٹ چھوٹا کریں (A-)"
               aria-label="Font Zoom Out"
@@ -387,16 +402,16 @@ export default function BookDetailPage() {
             </button>
             <button
               type="button"
-              onClick={resetUrduFontSize}
+              onClick={resetBookFontSize}
               className="px-1.5 py-0.5 text-[11px] font-bold font-mono text-emerald-900 hover:bg-white rounded-md transition cursor-pointer"
               title="ڈیفالٹ سائز (22px)"
             >
-              {urduFontSize}px
+              {bookFontSize}px
             </button>
             <button
               type="button"
-              onClick={() => changeUrduFontSize(2)}
-              disabled={urduFontSize >= 48}
+              onClick={() => changeBookFontSize(2)}
+              disabled={bookFontSize >= 48}
               className="px-2 py-1 text-xs font-bold text-stone-700 hover:text-emerald-800 hover:bg-white rounded-lg transition disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
               title="اردو فونٹ بڑا کریں (A+)"
               aria-label="Font Zoom In"
@@ -565,7 +580,6 @@ export default function BookDetailPage() {
         {/* Left 75%: Full Reader Display */}
         <main
           ref={mainContentRef}
-          style={{ '--urdu-font-size': `${urduFontSize}px` } as React.CSSProperties}
           className="w-full lg:w-3/4 flex flex-col bg-white border border-gray-100 rounded-2xl p-4 sm:p-8 shadow-xs space-y-6"
         >
           
@@ -590,8 +604,8 @@ export default function BookDetailPage() {
               <div className="flex items-center bg-stone-50 border border-gray-200 rounded-xl p-0.5 shadow-2xs">
                 <button
                   type="button"
-                  onClick={() => changeUrduFontSize(-2)}
-                  disabled={urduFontSize <= 16}
+                  onClick={() => changeBookFontSize(-2)}
+                  disabled={bookFontSize <= 16}
                   className="px-2 py-1 text-xs font-bold text-stone-700 hover:text-emerald-800 hover:bg-white rounded-lg transition disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
                   title="اردو فونٹ چھوٹا کریں (A-)"
                   aria-label="Font Zoom Out"
@@ -600,16 +614,16 @@ export default function BookDetailPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={resetUrduFontSize}
+                  onClick={resetBookFontSize}
                   className="px-1.5 py-0.5 text-[11px] font-bold font-mono text-emerald-900 hover:bg-white rounded-md transition cursor-pointer"
                   title="ڈیفالٹ سائز (22px)"
                 >
-                  {urduFontSize}px
+                  {bookFontSize}px
                 </button>
                 <button
                   type="button"
-                  onClick={() => changeUrduFontSize(2)}
-                  disabled={urduFontSize >= 48}
+                  onClick={() => changeBookFontSize(2)}
+                  disabled={bookFontSize >= 48}
                   className="px-2 py-1 text-xs font-bold text-stone-700 hover:text-emerald-800 hover:bg-white rounded-lg transition disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
                   title="اردو فونٹ بڑا کریں (A+)"
                   aria-label="Font Zoom In"
@@ -644,7 +658,14 @@ export default function BookDetailPage() {
           </div>
 
           {/* Reader Body Content: Direct Page Render without limits */}
-          <div className="min-h-[550px] space-y-4 py-2">
+          <div
+            className="book-content min-h-[550px] space-y-4 py-2"
+            style={{
+              '--book-font-size': `${bookFontSize}px`,
+              '--book-line-height': `${bookLineHeight}px`,
+              '--arabic-font-size': `${Math.round(bookFontSize * 1.35)}px`
+            } as React.CSSProperties}
+          >
             {loading ? (
               <div className="flex flex-col items-center justify-center py-28 text-center space-y-3">
                 <Loader2 className="w-8 h-8 text-emerald-800 animate-spin" />
@@ -803,11 +824,15 @@ export default function BookDetailPage() {
         </div>
       </footer>
 
-      {/* Urdu Nastaliq Styler Floating Controller */}
+      {/* Urdu Nastaliq Styler Floating Controller (Desktop & Mobile, isolated to .book-content) */}
       <UrduStyler
         isOpen={isStylerOpen}
         onClose={() => setIsStylerOpen(false)}
         onToggle={() => setIsStylerOpen(prev => !prev)}
+        bookFontSize={bookFontSize}
+        onFontSizeChange={setBookFontSize}
+        bookLineHeight={bookLineHeight}
+        onLineHeightChange={setBookLineHeight}
       />
 
     </div>
