@@ -2,6 +2,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
+:root {
+  --urdu-font-size: 21px;
+  --urdu-line-height: 34px;
+}
+
 @layer base {
   :root {
     --primary: #065f46;
@@ -28,8 +33,8 @@
 
 .urdu-text {
   font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif !important;
-  line-height: 2.4;
-  font-size: 1.25rem;
+  font-size: var(--urdu-font-size) !important;
+  line-height: var(--urdu-line-height) !important;
 }
 
 .font-nastaliq {

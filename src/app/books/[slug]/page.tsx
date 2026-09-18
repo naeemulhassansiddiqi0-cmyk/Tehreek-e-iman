@@ -14,8 +14,10 @@ import {
   BookMarked,
   Share2,
   Check,
-  Loader2
+  Loader2,
+  Sliders
 } from "lucide-react";
+import { UrduStyler } from "@/components/UrduStyler";
 
 interface HadithItem {
   hadithnumber?: number;
@@ -91,6 +93,7 @@ export default function BookDetailPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [searchPageQuery, setSearchPageQuery] = useState<string>('');
   const [copied, setCopied] = useState<boolean>(false);
+  const [isStylerOpen, setIsStylerOpen] = useState<boolean>(false);
   const readerTopRef = useRef<HTMLDivElement>(null);
 
   // Load 100% full dataset from local JSON files (public/hadith-data/[slug].json)
@@ -281,6 +284,21 @@ export default function BookDetailPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Urdu Styler Button */}
+          <button
+            type="button"
+            onClick={() => setIsStylerOpen(prev => !prev)}
+            className={`p-2 rounded-xl border transition cursor-pointer text-xs flex items-center gap-1.5 ${
+              isStylerOpen
+                ? 'bg-emerald-800 text-white border-emerald-800 shadow-sm'
+                : 'border-gray-200 hover:border-emerald-700 text-stone-600 hover:text-emerald-800 bg-white'
+            }`}
+            title="اردو فونٹ سائز و سطر کشادگی تبدیل کریں"
+          >
+            <Sliders className="w-3.5 h-3.5 text-amber-500" />
+            <span className="hidden sm:inline font-nastaliq font-bold">فونٹ سائز</span>
+          </button>
+
           {/* Share Button */}
           <button
             type="button"
@@ -347,6 +365,22 @@ export default function BookDetailPage() {
                 جائیں
               </button>
             </div>
+
+            {/* Urdu Styler Trigger in Sidebar */}
+            <button
+              type="button"
+              onClick={() => setIsStylerOpen(true)}
+              className="w-full flex items-center justify-between px-3 py-2 bg-emerald-50 hover:bg-emerald-100/70 border border-emerald-200 rounded-xl text-xs font-bold text-emerald-900 font-nastaliq transition cursor-pointer shadow-2xs"
+              title="فونٹ سائز و سطر کشادگی تبدیل کریں"
+            >
+              <span className="flex items-center gap-1.5">
+                <Sliders className="w-3.5 h-3.5 text-emerald-800" />
+                <span>اردو فونٹ سائز و کشادگی</span>
+              </span>
+              <span className="text-[10px] px-1.5 py-0.5 bg-white text-emerald-800 rounded-md border border-emerald-200 font-mono font-bold">
+                Styler
+              </span>
+            </button>
           </div>
 
           {/* Fehrist Page Grid / List */}
@@ -612,6 +646,13 @@ export default function BookDetailPage() {
           </p>
         </div>
       </footer>
+
+      {/* Urdu Nastaliq Styler Floating Controller */}
+      <UrduStyler
+        isOpen={isStylerOpen}
+        onClose={() => setIsStylerOpen(false)}
+        onToggle={() => setIsStylerOpen(prev => !prev)}
+      />
 
     </div>
   );

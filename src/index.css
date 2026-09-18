@@ -12,6 +12,11 @@
   font-display: swap;
 }
 
+:root {
+  --urdu-font-size: 21px;
+  --urdu-line-height: 34px;
+}
+
 @layer base {
   body, p, div, span, button, input, textarea, select {
     font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif;
@@ -31,8 +36,8 @@
 
 .urdu-text {
   font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif !important;
-  line-height: 2.4;
-  font-size: 1.25rem;
+  font-size: var(--urdu-font-size) !important;
+  line-height: var(--urdu-line-height) !important;
 }
 
 .font-arabic {
