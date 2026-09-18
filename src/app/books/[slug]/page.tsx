@@ -485,9 +485,9 @@ export default function BookDetailPage() {
 
                       {/* Authentic Arabic Text with Amiri Font */}
                       <p
-                        className="text-2xl sm:text-3xl font-arabic text-right leading-loose text-stone-900 select-text"
+                        className="text-2xl sm:text-3xl font-arabic arabic-text text-right leading-loose text-stone-900 select-text"
                         dir="rtl"
-                        style={{ lineHeight: '2.5', fontFamily: "'Amiri', 'Noto Naskh Arabic', serif" }}
+                        style={{ lineHeight: '2.5' }}
                       >
                         {arabText}
                       </p>
@@ -496,9 +496,8 @@ export default function BookDetailPage() {
                       {h.urdu && (
                         <div className="pt-3 mt-2 border-t border-dashed border-gray-100">
                           <p
-                            className="font-nastaliq text-base sm:text-lg text-emerald-950 leading-loose text-right select-text"
+                            className="urdu-text text-emerald-950 text-right select-text"
                             dir="rtl"
-                            style={{ lineHeight: '2.3', fontFamily: "'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif" }}
                           >
                             {h.urdu}
                           </p>
@@ -510,7 +509,7 @@ export default function BookDetailPage() {
 
                 {currentHadiths.length === 0 && (
                   <div className="text-center py-16 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-                    <p className="font-nastaliq text-stone-600">اس صفحہ پر احادیث دستیاب نہیں۔</p>
+                    <p className="urdu-text text-stone-600">اس صفحہ پر احادیث دستیاب نہیں۔</p>
                   </div>
                 )}
               </div>
@@ -523,7 +522,7 @@ export default function BookDetailPage() {
                   if (trimmed.includes('بِسْمِ اللَّهِ') || trimmed.includes('«') || trimmed.startsWith('[صَفْحَة') || trimmed.startsWith('[الباب')) {
                     return (
                       <div key={idx} className="pb-3 mb-2 border-b border-gray-100/80 text-center">
-                        <p className="font-arabic text-xl sm:text-2xl text-emerald-900 leading-relaxed font-bold">
+                        <p className="font-arabic arabic-text text-xl sm:text-2xl text-emerald-900 leading-relaxed font-bold">
                           {trimmed}
                         </p>
                       </div>
@@ -533,7 +532,7 @@ export default function BookDetailPage() {
                   if (trimmed.startsWith('【متنِ کتاب') || trimmed.startsWith('【سلیس') || trimmed.startsWith('【حوالہ') || trimmed.startsWith('【کتاب')) {
                     return (
                       <div key={idx} className="pt-2">
-                        <span className="inline-block px-3.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 font-nastaliq shadow-2xs">
+                        <span className="inline-block px-3.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 urdu-text shadow-2xs">
                           {trimmed.replace(/【|】/g, '')}
                         </span>
                       </div>
@@ -545,7 +544,7 @@ export default function BookDetailPage() {
                     return (
                       <p
                         key={idx}
-                        className="text-2xl sm:text-3xl font-arabic text-right leading-loose text-stone-900 px-1 select-text"
+                        className="text-2xl sm:text-3xl font-arabic arabic-text text-right leading-loose text-stone-900 px-1 select-text"
                         dir="rtl"
                         style={{ lineHeight: '2.5' }}
                       >
@@ -557,9 +556,8 @@ export default function BookDetailPage() {
                   return (
                     <p
                       key={idx}
-                      className="font-nastaliq text-base sm:text-lg text-emerald-950 leading-loose text-right px-1 select-text"
+                      className="urdu-text text-emerald-950 text-right px-1 select-text"
                       dir="rtl"
-                      style={{ lineHeight: '2.3' }}
                     >
                       {trimmed}
                     </p>

@@ -1,5 +1,6 @@
-﻿@import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
 @layer base {
   :root {
@@ -9,8 +10,11 @@
     --text: #111827;
   }
 
+  body, p, div, span, button, input, textarea, select {
+    font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif;
+  }
+
   body {
-    font-family: 'Noto Nastaliq Urdu', 'Noto Naskh Arabic', system-ui, sans-serif;
     direction: rtl;
     text-align: right;
     background-color: #ffffff;
@@ -18,10 +22,20 @@
   }
 }
 
+.arabic-text {
+  font-family: 'Amiri', 'Traditional Arabic', serif !important;
+}
+
+.urdu-text {
+  font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif !important;
+  line-height: 2.4;
+  font-size: 1.25rem;
+}
+
 .font-nastaliq {
-  font-family: 'Noto Nastaliq Urdu', system-ui, sans-serif;
+  font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif;
 }
 
 .font-arabic {
-  font-family: 'Noto Naskh Arabic', serif;
+  font-family: 'Amiri', 'Traditional Arabic', serif;
 }

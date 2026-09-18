@@ -178,7 +178,7 @@ export const Chatbot: React.FC<ChatbotProps> = ({ onSelectBook, apiKey }) => {
         <div
           dir="rtl"
           className="fixed bottom-24 left-6 z-50 w-[92vw] sm:w-[420px] max-h-[640px] h-[80vh] flex flex-col bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-fadeIn"
-          style={{ fontFamily: "'Noto Nastaliq Urdu', 'Amiri', 'Jameel Noori Nastaleeq', system-ui, sans-serif" }}
+          style={{ fontFamily: "'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif" }}
         >
           {/* Header */}
           <div className="bg-emerald-800 text-white px-5 py-3.5 flex items-center justify-between shadow-sm">
@@ -291,7 +291,7 @@ export const Chatbot: React.FC<ChatbotProps> = ({ onSelectBook, apiKey }) => {
                     </div>
                   ) : (
                     /* Normal Markdown-Style Urdu Text */
-                    <div className="space-y-2 text-stone-800 leading-relaxed text-sm whitespace-pre-line">
+                    <div className="space-y-2 urdu-text text-stone-800 leading-relaxed text-sm whitespace-pre-line">
                       {msg.payload.data}
                     </div>
                   )}

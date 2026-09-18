@@ -1531,14 +1531,14 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                               {/* 2. Dedicated Urdu Translation Box for this specific Paragraph */}
                               <div 
                                 style={{
-                                  fontFamily: "'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu'",
-                                  fontSize: '22px',
+                                  fontFamily: "'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif",
+                                  fontSize: '20px',
                                   color: '#14532d',
                                   background: '#f0fdf4',
                                   padding: '16px',
                                   borderRight: '5px solid #16a34a',
                                   textAlign: 'right',
-                                  lineHeight: '2.3'
+                                  lineHeight: '2.4'
                                 }}
                                 className="rounded-2xl shadow-xs space-y-2 border border-emerald-200"
                               >
@@ -1560,14 +1560,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                                 </div>
                                 <p 
                                   dir="rtl"
-                                  style={{
-                                    fontFamily: "'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu'",
-                                    fontSize: '22px',
-                                    color: '#14532d',
-                                    textAlign: 'right',
-                                    lineHeight: '2.3'
-                                  }}
-                                  className="whitespace-pre-line select-text font-bold"
+                                  className="urdu-text whitespace-pre-line select-text font-bold"
                                 >
                                   {paraUrdu}
                                 </p>
@@ -1831,18 +1824,18 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                         ) : (
                           <div 
                             style={currentLang === 'ur' ? {
-                              fontFamily: "'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu'",
-                              fontSize: '22px',
+                              fontFamily: "'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif",
+                              fontSize: '20px',
                               color: '#14532d',
                               background: '#f0fdf4',
                               padding: '16px',
                               borderRight: '5px solid #16a34a',
                               textAlign: 'right',
-                              lineHeight: '2.3'
+                              lineHeight: '2.4'
                             } : undefined}
                             className={currentLang === 'ur' ? "rounded-2xl border border-emerald-200 shadow-xs" : "p-4 sm:p-5 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200/80 dark:border-stone-800 shadow-xs"}
                           >
-                            <p className={currentLang === 'ur' ? "whitespace-pre-line select-text font-bold" : `text-base sm:text-lg ${activeLangConfig.direction === 'rtl' ? 'font-nastaliq leading-loose text-justify' : 'font-sans leading-relaxed'} text-stone-900 dark:text-stone-100 whitespace-pre-line select-text`}>
+                            <p className={currentLang === 'ur' ? "urdu-text whitespace-pre-line select-text font-bold" : `text-base sm:text-lg ${activeLangConfig.direction === 'rtl' ? 'font-nastaliq leading-loose text-justify' : 'font-sans leading-relaxed'} text-stone-900 dark:text-stone-100 whitespace-pre-line select-text`}>
                               {displayTranslation || translationText}
                             </p>
                           </div>
@@ -1859,7 +1852,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                         <h4 className="text-xs font-bold text-emerald-900 dark:text-emerald-300 mb-1 font-nastaliq">
                           جامع درسی تشریح و دلائلِ ائمہ و فتاویٰ:
                         </h4>
-                        <p className="text-sm font-nastaliq text-stone-700 dark:text-stone-300 leading-loose text-justify">
+                        <p className="urdu-text text-sm text-stone-700 dark:text-stone-300 leading-loose text-justify">
                           {segment.tashreeh}
                         </p>
                       </div>
