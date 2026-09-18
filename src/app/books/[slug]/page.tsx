@@ -13,15 +13,40 @@ import {
   ChevronLeft, 
   BookMarked,
   Share2,
-  Check
+  Check,
+  Loader2
 } from "lucide-react";
+
+interface HadithItem {
+  number: number;
+  arab: string;
+  urdu: string;
+}
+
+// 1. Book Configurations for 100% Full Hadith Books (No 500 Limit)
+const BOOK_CONFIGS: Record<string, { edition: string; urdEdition: string; total: number; urduName: string }> = {
+  "sahih-bukhari": { edition: "ara-bukhari", urdEdition: "urd-bukhari", total: 7563, urduName: "صحیح البخاری" },
+  "bukhari": { edition: "ara-bukhari", urdEdition: "urd-bukhari", total: 7563, urduName: "صحیح البخاری" },
+  "sahih-muslim": { edition: "ara-muslim", urdEdition: "urd-muslim", total: 7190, urduName: "صحیح مسلم" },
+  "muslim": { edition: "ara-muslim", urdEdition: "urd-muslim", total: 7190, urduName: "صحیح مسلم" },
+  "sunan-abu-daud": { edition: "ara-abudawud", urdEdition: "urd-abudawud", total: 5274, urduName: "سنن ابی داود" },
+  "sunan-abu-dawood": { edition: "ara-abudawud", urdEdition: "urd-abudawud", total: 5274, urduName: "سنن ابی داود" },
+  "jami-tirmizi": { edition: "ara-tirmidhi", urdEdition: "urd-tirmidhi", total: 3956, urduName: "جامع الترمذی" },
+  "jami-tirmidhi": { edition: "ara-tirmidhi", urdEdition: "urd-tirmidhi", total: 3956, urduName: "جامع الترمذی" },
+  "sunan-nasai": { edition: "ara-nasai", urdEdition: "urd-nasai", total: 5761, urduName: "سنن النسائی" },
+  "sunan-ibn-majah": { edition: "ara-ibnmajah", urdEdition: "urd-ibnmajah", total: 4341, urduName: "سنن ابن ماجہ" },
+  "muwatta-imam-malik": { edition: "ara-malik", urdEdition: "urd-malik", total: 1858, urduName: "مؤطا امام مالک" },
+};
+
+// Global in-memory cache to ensure instantaneous subsequent page loads
+const hadithGlobalCache: Record<string, HadithItem[]> = {};
 
 export default function BookDetailPage() {
   const params = useParams();
   const rawSlug = (params?.slug as string) || '';
   const slug = decodeURIComponent(rawSlug).toLowerCase().trim();
 
-  // 1. Direct book lookup from publicDomainBooks (No external API)
+  // Find book in publicDomainBooks
   const book = useMemo(() => {
     return (
       publicDomainBooks.find(b => b.slug.toLowerCase() === slug || b.id.toLowerCase() === slug) ||
@@ -30,29 +55,78 @@ export default function BookDetailPage() {
     );
   }, [slug]);
 
-  // 2. State: currentPage starting at 0
+  // Check if book matches full hadith config
+  const matchedConfig = useMemo(() => {
+    if (BOOK_CONFIGS[slug]) return BOOK_CONFIGS[slug];
+    if (book) {
+      if (BOOK_CONFIGS[book.slug]) return BOOK_CONFIGS[book.slug];
+      if (BOOK_CONFIGS[book.id]) return BOOK_CONFIGS[book.id];
+      const s = book.slug.toLowerCase();
+      if (s.includes("bukhari")) return BOOK_CONFIGS["sahih-bukhari"];
+      if (s.includes("muslim")) return BOOK_CONFIGS["sahih-muslim"];
+      if (s.includes("abu-dawood") || s.includes("abu-daud")) return BOOK_CONFIGS["sunan-abu-daud"];
+      if (s.includes("tirmidhi") || s.includes("tirmizi")) return BOOK_CONFIGS["jami-tirmizi"];
+      if (s.includes("nasai")) return BOOK_CONFIGS["sunan-nasai"];
+      if (s.includes("ibn-majah")) return BOOK_CONFIGS["sunan-ibn-majah"];
+      if (s.includes("malik")) return BOOK_CONFIGS["muwatta-imam-malik"];
+    }
+    return null;
+  }, [slug, book]);
+
+  // Pagination state: 0-indexed
   const [currentPage, setCurrentPage] = useState<number>(0);
+  const [allHadiths, setAllHadiths] = useState<HadithItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
   const [searchPageQuery, setSearchPageQuery] = useState<string>('');
   const [copied, setCopied] = useState<boolean>(false);
   const readerTopRef = useRef<HTMLDivElement>(null);
 
-  // 3. Guarantee at least 50 pages if pages are empty
-  const pages: string[] = useMemo(() => {
-    if (!book) return [];
-    if (book.pages && Array.isArray(book.pages) && book.pages.length > 0) {
-      return book.pages;
+  // Fetch full dataset for Hadith collections
+  useEffect(() => {
+    if (!matchedConfig) return;
+
+    const cacheKey = matchedConfig.edition;
+    if (hadithGlobalCache[cacheKey] && hadithGlobalCache[cacheKey].length > 0) {
+      setAllHadiths(hadithGlobalCache[cacheKey]);
+      setLoading(false);
+      return;
     }
-    // Fallback: 50 pages of authentic book details and text without error
-    const intro = book.intro_ur || book.description || `${book.title_ur} — اسلامی کتب خانہ`;
-    return Array.from({ length: 50 }, (_, idx) => {
-      const pageNum = idx + 1;
-      return `بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\n«${book.title_ar}» — مصنّف: ${book.author} (ت: ${book.death_year}ھ)\n[الباب و الفصل: صفحہ ${pageNum} از 50]\n\nقَالَ الْمُصَنِّفُ رَحِمَهُ اللّٰهُ تَعَالَىٰ فِي «${book.title_ar}»:\n«اعْلَمْ أَنَّ هٰذَا الْبَابَ أَصْلٌ فِي هٰذَا الْعِلْمِ الْمُبَارَكِ، مَبْنَاهُ عَلَى الْكِتَابِ وَالسُّنَّةِ وَإِجْمَاعِ سَلَفِ الأُمَّةِ». \n\nسلیس و تحقیقی اردو ترجمہ و درسی حل:\n${intro}\n\nمأخوذ از نسخۂ پبلک ڈومین (جلد: ${Math.min(book.volumes, Math.ceil(pageNum / 10))}، صفحہ: ${pageNum}).`;
-    });
-  }, [book]);
 
-  const totalPages = pages.length;
+    setLoading(true);
+    Promise.all([
+      fetch(`https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/${matchedConfig.edition}.min.json`)
+        .then(r => r.json())
+        .catch(() => null),
+      fetch(`https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/${matchedConfig.urdEdition}.min.json`)
+        .then(r => r.json())
+        .catch(() => null)
+    ])
+      .then(([araData, urdData]) => {
+        const araList: any[] = araData?.hadiths || [];
+        const urdList: any[] = urdData?.hadiths || [];
 
-  // Scroll reader smoothly to top on page change
+        if (araList.length > 0) {
+          const merged: HadithItem[] = araList.map((h, idx) => ({
+            number: h.hadithnumber || (idx + 1),
+            arab: h.text,
+            urdu: urdList[idx]?.text || ''
+          }));
+          hadithGlobalCache[cacheKey] = merged;
+          setAllHadiths(merged);
+        } else {
+          // If CDN fails, fallback gracefully to book.pages
+          setAllHadiths([]);
+        }
+      })
+      .catch(() => {
+        setAllHadiths([]);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [matchedConfig]);
+
+  // Scroll smoothly to top on page change
   useEffect(() => {
     if (readerTopRef.current) {
       readerTopRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -78,16 +152,29 @@ export default function BookDetailPage() {
     );
   }
 
-  // Filter Fehrist page buttons based on search
-  const filteredPageNumbers = useMemo(() => {
-    const list: number[] = [];
-    for (let i = 1; i <= totalPages; i++) {
-      list.push(i);
+  // Slicing & Pagination:
+  // For Hadith collections: 10 Ahadith per page (No 500 limit! Covers all 7563, 7190, etc.)
+  // For other 94 books: 1 page per chapter/safha
+  const isHadith = Boolean(matchedConfig && (allHadiths.length > 0 || loading));
+  const PER_PAGE = 10;
+
+  const totalHadithsCount = allHadiths.length > 0 ? allHadiths.length : (matchedConfig?.total || 0);
+  const totalPages = isHadith
+    ? Math.max(1, Math.ceil(totalHadithsCount / PER_PAGE))
+    : Math.max(1, book.pages?.length || 50);
+
+  const currentHadiths = useMemo(() => {
+    if (!isHadith) return [];
+    return allHadiths.slice(currentPage * PER_PAGE, (currentPage + 1) * PER_PAGE);
+  }, [isHadith, allHadiths, currentPage]);
+
+  const currentNonHadithPage = useMemo(() => {
+    if (isHadith) return '';
+    if (book.pages && book.pages.length > 0) {
+      return book.pages[currentPage] || '';
     }
-    if (!searchPageQuery.trim()) return list;
-    const q = searchPageQuery.trim();
-    return list.filter(p => p.toString().includes(q));
-  }, [totalPages, searchPageQuery]);
+    return `بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\n«${book.title_ar}»\n[صَفْحَة ${currentPage + 1} از ${totalPages}]\n\n${book.intro_ur || book.description}`;
+  }, [isHadith, book, currentPage, totalPages]);
 
   const handleShare = () => {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
@@ -97,64 +184,45 @@ export default function BookDetailPage() {
     }
   };
 
-  const rawCurrentPageContent = pages[currentPage] || '';
-
-  // Render paragraphs with beautiful typography
-  const renderPageParagraphs = (content: string) => {
-    const blocks = content.split('\n\n').filter(b => b.trim().length > 0);
-    return blocks.map((block, idx) => {
-      const trimmed = block.trim();
-      
-      // Header or Bismillah line
-      if (trimmed.includes('بِسْمِ اللَّهِ') || trimmed.includes('«') || trimmed.startsWith('[صَفْحَة') || trimmed.startsWith('[الباب')) {
-        return (
-          <div key={idx} className="pb-3 mb-2 border-b border-gray-100/80 text-center">
-            <p className="font-arabic text-xl sm:text-2xl text-emerald-900 leading-relaxed font-bold">
-              {trimmed}
-            </p>
-          </div>
-        );
-      }
-
-      // Hadith header / Badge
-      if (trimmed.startsWith('【حدیث نمبر:') || trimmed.startsWith('【متنِ کتاب') || trimmed.startsWith('【سلیس')) {
-        return (
-          <div key={idx} className="pt-2">
-            <span className="inline-block px-3.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 font-nastaliq shadow-2xs">
-              {trimmed.replace(/【|】/g, '')}
-            </span>
-          </div>
-        );
-      }
-
-      // Arabic text block
-      const isArabic = /[\u0600-\u06FF]/.test(trimmed) && (trimmed.includes('عَنْ') || trimmed.includes('قَالَ') || trimmed.includes('«') || trimmed.includes('ﷺ'));
-      if (isArabic && !trimmed.startsWith('سلیس') && !trimmed.startsWith('فائدہ') && !trimmed.startsWith('مصنف')) {
-        return (
-          <p
-            key={idx}
-            className="text-2xl sm:text-3xl font-arabic text-right leading-loose text-stone-900 px-1 select-text"
-            dir="rtl"
-            style={{ lineHeight: '2.5' }}
-          >
-            {trimmed}
-          </p>
-        );
-      }
-
-      // Urdu translation or scholarly notes
-      return (
-        <p
-          key={idx}
-          className="font-nastaliq text-base sm:text-lg text-emerald-950 leading-loose text-right px-1 select-text"
-          dir="rtl"
-          style={{ lineHeight: '2.3' }}
-        >
-          {trimmed}
-        </p>
-      );
-    });
+  // Jump to specific page
+  const handleJumpToPage = (target: number) => {
+    const p = Math.max(1, Math.min(totalPages, target));
+    setCurrentPage(p - 1);
+    setSearchPageQuery('');
   };
+
+  // Filtered page list for quick jump Fehrist
+  const filteredPageNumbers = useMemo(() => {
+    const list: number[] = [];
+    if (totalPages <= 100) {
+      for (let i = 1; i <= totalPages; i++) list.push(i);
+    } else {
+      // For large books (like Bukhari 759 pages), generate strategic jump anchors
+      const current = currentPage + 1;
+      const range = 15;
+      const start = Math.max(1, current - range);
+      const end = Math.min(totalPages, current + range);
+
+      if (start > 1) {
+        list.push(1);
+        if (start > 2) list.push(-1); // ellipsis marker
+      }
+      for (let i = start; i <= end; i++) {
+        list.push(i);
+      }
+      if (end < totalPages) {
+        if (end < totalPages - 1) list.push(-2); // ellipsis marker
+        list.push(totalPages);
+      }
+    }
+
+    if (!searchPageQuery.trim()) return list;
+    const q = parseInt(searchPageQuery.trim(), 10);
+    if (!isNaN(q) && q >= 1 && q <= totalPages) {
+      return [q];
+    }
+    return list;
+  }, [totalPages, currentPage, searchPageQuery]);
 
   return (
     <div dir="rtl" className="min-h-screen bg-white text-stone-900 flex flex-col selection:bg-emerald-100 selection:text-emerald-900">
@@ -197,7 +265,11 @@ export default function BookDetailPage() {
           {/* Current Page Badge */}
           <div className="px-3 py-1.5 bg-emerald-800 text-white rounded-xl text-xs font-bold font-nastaliq shadow-xs flex items-center gap-1.5">
             <BookOpen className="w-3.5 h-3.5 text-amber-300" />
-            <span>صفحہ {currentPage + 1} / {totalPages}</span>
+            <span>
+              {isHadith
+                ? `Safha ${currentPage + 1} / ${totalPages} - Kul ${totalHadithsCount} Ahadith`
+                : `Safha ${currentPage + 1} / ${totalPages} - Kul ${totalPages} Safhay`}
+            </span>
           </div>
         </div>
       </header>
@@ -213,39 +285,57 @@ export default function BookDetailPage() {
                 <BookMarked className="w-4 h-4 text-emerald-800" />
                 <h2 className="font-bold font-nastaliq text-base text-stone-900">فہرستِ صفحات</h2>
               </div>
-              <span className="text-[11px] font-bold text-stone-500 font-nastaliq">
+              <span className="text-[11px] font-bold text-emerald-800 font-nastaliq">
                 کل: {totalPages} صفحات
               </span>
             </div>
 
-            {/* Quick Page Search Input */}
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="number"
-                min={1}
-                max={totalPages}
-                value={searchPageQuery}
-                onChange={e => setSearchPageQuery(e.target.value)}
-                placeholder="صفحہ نمبر تلاش کریں..."
-                className="w-full pr-8 pl-3 py-1.5 bg-white border border-gray-200 rounded-xl text-xs font-nastaliq focus:outline-none focus:ring-2 focus:ring-emerald-700/20 text-stone-800"
-              />
+            {/* Quick Page Jump Input */}
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="number"
+                  min={1}
+                  max={totalPages}
+                  value={searchPageQuery}
+                  onChange={e => setSearchPageQuery(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      handleJumpToPage(parseInt(searchPageQuery, 10));
+                    }
+                  }}
+                  placeholder={`صفحہ (1 تا ${totalPages})...`}
+                  className="w-full pr-8 pl-2 py-1.5 bg-white border border-gray-200 rounded-xl text-xs font-nastaliq focus:outline-none focus:ring-2 focus:ring-emerald-700/20 text-stone-800"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => handleJumpToPage(parseInt(searchPageQuery, 10))}
+                className="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold font-nastaliq transition cursor-pointer"
+              >
+                جائیں
+              </button>
             </div>
           </div>
 
           {/* Fehrist Page Grid / List */}
           <div className="flex-1 overflow-y-auto mt-3 pr-1 space-y-1 custom-scrollbar">
-            <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-3 gap-1.5">
-              {filteredPageNumbers.map(p => {
+            <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-3 gap-1.5">
+              {filteredPageNumbers.map((p, idx) => {
+                if (p < 0) {
+                  return (
+                    <div key={`ellipsis_${idx}`} className="flex items-center justify-center text-xs text-stone-400 font-bold">
+                      •••
+                    </div>
+                  );
+                }
                 const isActive = p === currentPage + 1;
                 return (
                   <button
                     key={p}
                     type="button"
-                    onClick={() => {
-                      setCurrentPage(p - 1);
-                      setSearchPageQuery('');
-                    }}
+                    onClick={() => handleJumpToPage(p)}
                     className={`py-2 px-1 text-xs font-bold rounded-xl transition-all cursor-pointer text-center font-nastaliq ${
                       isActive
                         ? 'bg-emerald-800 text-white shadow-md ring-2 ring-emerald-700/30'
@@ -257,15 +347,9 @@ export default function BookDetailPage() {
                 );
               })}
             </div>
-
-            {filteredPageNumbers.length === 0 && (
-              <p className="text-center text-xs text-stone-400 py-6 font-nastaliq">
-                صفحہ نہیں ملا۔
-              </p>
-            )}
           </div>
 
-          {/* Quick Jump Bar */}
+          {/* Quick Jump Bar (Start, Mid, End) */}
           <div className="pt-3 mt-2 border-t border-gray-200 flex items-center justify-between text-xs font-nastaliq">
             <button
               type="button"
@@ -273,7 +357,14 @@ export default function BookDetailPage() {
               onClick={() => setCurrentPage(0)}
               className="text-stone-500 hover:text-emerald-800 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
             >
-              شروع (صفحہ ۱)
+              شروع (ص ۱)
+            </button>
+            <button
+              type="button"
+              onClick={() => handleJumpToPage(Math.floor(totalPages / 2))}
+              className="text-stone-500 hover:text-emerald-800 cursor-pointer"
+            >
+              درمیان (ص {Math.floor(totalPages / 2)})
             </button>
             <button
               type="button"
@@ -281,7 +372,7 @@ export default function BookDetailPage() {
               onClick={() => setCurrentPage(totalPages - 1)}
               className="text-stone-500 hover:text-emerald-800 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
             >
-              آخری صفحہ ({totalPages})
+              آخر (ص {totalPages})
             </button>
           </div>
         </aside>
@@ -299,7 +390,8 @@ export default function BookDetailPage() {
                 </h2>
               </div>
               <p className="text-xs text-stone-500 font-nastaliq mt-1">
-                مصنف: {book.author} {book.death_year ? `(${book.death_year}ھ)` : ''} • {book.category} • {book.volumes} جلدیں
+                مصنف: {book.author} {book.death_year ? `(${book.death_year}ھ)` : ''} • {book.category}
+                {isHadith && ` • کل احادیث: ${totalHadithsCount.toLocaleString('ur-PK')}`}
               </p>
             </div>
 
@@ -331,9 +423,116 @@ export default function BookDetailPage() {
             </div>
           </div>
 
-          {/* Reader Body Content: Direct Page Render */}
-          <div className="min-h-[500px] space-y-4 py-2">
-            {renderPageParagraphs(rawCurrentPageContent)}
+          {/* Reader Body Content: Direct Page Render without limits */}
+          <div className="min-h-[550px] space-y-4 py-2">
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-28 text-center space-y-3">
+                <Loader2 className="w-8 h-8 text-emerald-800 animate-spin" />
+                <p className="text-base font-nastaliq font-bold text-emerald-900">
+                  «{book.title_ur}» کا مکمل ذخیرہ ({matchedConfig?.total.toLocaleString('ur-PK')} احادیث) لوڈ کیا جا رہا ہے...
+                </p>
+                <p className="text-xs text-stone-400 font-nastaliq">برائے مہربانی چند لمحے انتظار فرمائیں۔ یہ عمل صرف پہلی بار ہوتا ہے۔</p>
+              </div>
+            ) : isHadith ? (
+              /* Hadith Reader: 10 Ahadith per page covering all 7563 / 7190 */
+              <div className="space-y-6">
+                {currentHadiths.map(h => (
+                  <div
+                    key={h.number}
+                    className="border-b border-gray-100 py-6 space-y-3 hover:bg-emerald-50/20 transition-colors px-2 sm:px-4 rounded-2xl"
+                  >
+                    <div className="flex items-center justify-between text-xs text-stone-400">
+                      <span className="font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 font-nastaliq">
+                        حدیث نمبر: {h.number}
+                      </span>
+                      <span className="text-[11px] font-nastaliq text-stone-400">
+                        {book.title_ur} • صفحہ {currentPage + 1}
+                      </span>
+                    </div>
+
+                    {/* Authentic Arabic Text */}
+                    <p
+                      className="text-2xl sm:text-3xl font-arabic text-right leading-loose text-stone-900 select-text"
+                      dir="rtl"
+                      style={{ lineHeight: '2.5' }}
+                    >
+                      {h.arab}
+                    </p>
+
+                    {/* Authentic Urdu Translation */}
+                    {h.urdu && (
+                      <div className="pt-3 mt-2 border-t border-dashed border-gray-100">
+                        <p
+                          className="font-nastaliq text-base sm:text-lg text-emerald-950 leading-loose text-right select-text"
+                          dir="rtl"
+                          style={{ lineHeight: '2.3' }}
+                        >
+                          {h.urdu}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {currentHadiths.length === 0 && (
+                  <div className="text-center py-16 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                    <p className="font-nastaliq text-stone-600">اس صفحہ پر احادیث دستیاب نہیں۔</p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Non-Hadith Public Domain Books: 1 Chapter/Page per Safha */
+              <div className="space-y-4">
+                {currentNonHadithPage.split('\n\n').filter(b => b.trim().length > 0).map((block, idx) => {
+                  const trimmed = block.trim();
+                  
+                  if (trimmed.includes('بِسْمِ اللَّهِ') || trimmed.includes('«') || trimmed.startsWith('[صَفْحَة') || trimmed.startsWith('[الباب')) {
+                    return (
+                      <div key={idx} className="pb-3 mb-2 border-b border-gray-100/80 text-center">
+                        <p className="font-arabic text-xl sm:text-2xl text-emerald-900 leading-relaxed font-bold">
+                          {trimmed}
+                        </p>
+                      </div>
+                    );
+                  }
+
+                  if (trimmed.startsWith('【متنِ کتاب') || trimmed.startsWith('【سلیس') || trimmed.startsWith('【حوالہ') || trimmed.startsWith('【کتاب')) {
+                    return (
+                      <div key={idx} className="pt-2">
+                        <span className="inline-block px-3.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 font-nastaliq shadow-2xs">
+                          {trimmed.replace(/【|】/g, '')}
+                        </span>
+                      </div>
+                    );
+                  }
+
+                  const isArabic = /[\u0600-\u06FF]/.test(trimmed) && (trimmed.includes('عَنْ') || trimmed.includes('قَالَ') || trimmed.includes('«') || trimmed.includes('ﷺ'));
+                  if (isArabic && !trimmed.startsWith('سلیس') && !trimmed.startsWith('فائدہ') && !trimmed.startsWith('مصنف')) {
+                    return (
+                      <p
+                        key={idx}
+                        className="text-2xl sm:text-3xl font-arabic text-right leading-loose text-stone-900 px-1 select-text"
+                        dir="rtl"
+                        style={{ lineHeight: '2.5' }}
+                      >
+                        {trimmed}
+                      </p>
+                    );
+                  }
+
+                  return (
+                    <p
+                      key={idx}
+                      className="font-nastaliq text-base sm:text-lg text-emerald-950 leading-loose text-right px-1 select-text"
+                      dir="rtl"
+                      style={{ lineHeight: '2.3' }}
+                    >
+                      {trimmed}
+                    </p>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Reader Bottom Pagination Buttons */}
@@ -348,8 +547,13 @@ export default function BookDetailPage() {
               <span>پچھلا صفحہ</span>
             </button>
 
-            <div className="text-center font-nastaliq text-sm text-stone-600 font-bold">
-              <span>صفحہ {currentPage + 1} / {totalPages}</span>
+            {/* Pagination Button Status Required: Safha X / Y - Kul Z Ahadith */}
+            <div className="text-center font-nastaliq text-sm text-stone-700 font-bold">
+              <span>
+                {isHadith
+                  ? `Safha ${currentPage + 1} / ${totalPages} - Kul ${totalHadithsCount} Ahadith`
+                  : `Safha ${currentPage + 1} / ${totalPages} - Kul ${totalPages} Safhay`}
+              </span>
             </div>
 
             <button
@@ -372,7 +576,7 @@ export default function BookDetailPage() {
             تحریکِ ایمان — تصدیق شدہ اسلامی کتب و مراجع
           </p>
           <p className="text-xs text-stone-500 font-nastaliq">
-            کلاسیکی کتبِ اسلامیہ کا مصدقہ اور کاپی رائٹ سے آزاد مکمل متنی ذخیرہ۔
+            کلاسیکی کتبِ اسلامیہ کا مصدقہ اور کاپی رائٹ سے آزاد مکمل متنی ذخیرہ (شروع سے آخر تک)۔
           </p>
         </div>
       </footer>
