@@ -9,12 +9,16 @@ export interface PublicDomainBook {
   slug: string;
   title_ur: string;
   title_ar: string;
+  titleUrdu?: string;
+  title?: string;
   author: string;
+  authorUrdu?: string;
   death_year: number | string;
   category: BookCategoryTitle;
   pages: number;
   volumes: number;
   intro_ur: string;
+  description?: string;
   cover_url: string;
   source_type: 'public';
 }
@@ -36,7 +40,7 @@ export interface ModernBook {
   publisher?: string;
 }
 
-export const publicDomainBooks: PublicDomainBook[] = [
+const rawPublicDomainBooks: PublicDomainBook[] = [
   {
     "id": "sahih-bukhari",
     "slug": "sahih-bukhari",
@@ -1438,6 +1442,14 @@ export const publicDomainBooks: PublicDomainBook[] = [
     "source_type": "public"
   }
 ];
+
+export const publicDomainBooks: PublicDomainBook[] = rawPublicDomainBooks.map(b => ({
+  ...b,
+  titleUrdu: b.title_ur,
+  title: b.title_ur,
+  authorUrdu: b.author,
+  description: b.intro_ur
+}));
 
 export const modernBooks: ModernBook[] = [
   {
