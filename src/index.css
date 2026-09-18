@@ -1,7 +1,7 @@
+@import url('https://fonts.cdnfonts.com/css/jameel-noori-nastaleeq');
 @import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap');
-@import url('https://fonts.cdnfonts.com/css/jameel-noori-nastaleeq');
 @import "tailwindcss";
 
 @font-face {
@@ -17,11 +17,15 @@
   --urdu-line-height: 34px;
 }
 
-@layer base {
-  body, p, div, span, button, input, textarea, select {
-    font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif;
-  }
+html, body, * {
+  font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif !important;
+  font-feature-settings: normal !important;
+  font-stretch: normal !important;
+  font-variation-settings: normal !important;
+  text-rendering: optimizeLegibility !important;
+}
 
+@layer base {
   body {
     direction: rtl;
     text-align: right;
@@ -30,16 +34,17 @@
   }
 }
 
-.arabic-text {
-  font-family: 'Amiri', 'Traditional Arabic', serif !important;
-}
-
-.urdu-text {
+.urdu-text, .urdu, [lang="ur"] {
   font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif !important;
+  line-height: 2.2 !important;
   font-feature-settings: normal !important;
   font-stretch: normal !important;
-  font-size: var(--urdu-font-size) !important;
-  line-height: var(--urdu-line-height) !important;
+  font-variation-settings: normal !important;
+  text-rendering: optimizeLegibility !important;
+}
+
+.arabic-text, .arabic-text *, .font-arabic, .font-arabic *, .font-amiri, .font-amiri *, [lang="ar"], [lang="ar"] * {
+  font-family: 'Amiri', 'Traditional Arabic', serif !important;
 }
 
 .font-arabic {

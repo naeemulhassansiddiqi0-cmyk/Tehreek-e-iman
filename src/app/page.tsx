@@ -174,7 +174,7 @@ export default function HomePage() {
                     </p>
 
                     {/* 2-Line Intro */}
-                    <p className="text-[11px] text-stone-600 font-nastaliq line-clamp-2 leading-relaxed text-justify">
+                    <p className="text-[11px] text-stone-600 font-nastaliq line-clamp-2 leading-relaxed text-right">
                       {book.intro_ur}
                     </p>
                   </div>
@@ -248,7 +248,7 @@ export default function HomePage() {
                     />
                   </div>
 
-                  <p className="text-xs text-stone-700 font-nastaliq leading-relaxed line-clamp-3 text-justify">
+                  <p className="text-xs text-stone-700 font-nastaliq leading-relaxed line-clamp-3 text-right">
                     {book.intro_ur}
                   </p>
 
