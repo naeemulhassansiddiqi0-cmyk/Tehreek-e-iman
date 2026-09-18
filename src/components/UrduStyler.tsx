@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Type, X, RotateCcw, Plus, Minus, Sliders } from 'lucide-react';
 
 interface UrduStylerProps {
@@ -9,6 +9,26 @@ interface UrduStylerProps {
   onFontSizeChange?: (size: number) => void;
   bookLineHeight?: number;
   onLineHeightChange?: (lh: number) => void;
+}
+
+function getValidBookFontSize(): number {
+  if (typeof window === 'undefined') return 20;
+  try {
+    localStorage.removeItem('bookFontSize');
+    localStorage.removeItem('urduFontSize');
+    localStorage.removeItem('urdu_font_size');
+
+    const saved = localStorage.getItem('bookFontSize_v2');
+    if (saved !== null && saved !== undefined) {
+      const parsed = parseInt(saved, 10);
+      if (!isNaN(parsed) && parsed >= 16 && parsed <= 28) {
+        return parsed;
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return 20;
 }
 
 export const UrduStyler: React.FC<UrduStylerProps> = ({
@@ -39,16 +59,27 @@ export const UrduStyler: React.FC<UrduStylerProps> = ({
     }
   };
 
-  const [localFontSize, setLocalFontSize] = useState<number>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('bookFontSize') || localStorage.getItem('urduFontSize') || localStorage.getItem('urdu_font_size');
-      if (saved) {
-        const parsed = parseInt(saved, 10);
-        if (!isNaN(parsed) && parsed >= 16 && parsed <= 48) return parsed;
-      }
+  const [localFontSize, setLocalFontSize] = useState<number>(getValidBookFontSize);
+
+  // On mount: read from localStorage, force reset to 20 if invalid, cleanup old keys, apply CSS variable
+  useEffect(() => {
+    const size = getValidBookFontSize();
+    setLocalFontSize(size);
+    try {
+      localStorage.setItem('bookFontSize_v2', size.toString());
+      localStorage.removeItem('bookFontSize');
+      localStorage.removeItem('urduFontSize');
+      localStorage.removeItem('urdu_font_size');
+    } catch {
+      // ignore
     }
-    return 22;
-  });
+    if (typeof document !== 'undefined') {
+      document.documentElement.style.setProperty('--book-font-size', `${size}px`);
+    }
+    if (onFontSizeChange) {
+      onFontSizeChange(size);
+    }
+  }, []);
 
   const [localLineHeight, setLocalLineHeight] = useState<number>(() => {
     if (typeof window !== 'undefined') {
@@ -65,16 +96,25 @@ export const UrduStyler: React.FC<UrduStylerProps> = ({
   const currentLineHeight = bookLineHeight !== undefined ? bookLineHeight : localLineHeight;
 
   const handleUpdateFontSize = (newSize: number) => {
-    const clamped = Math.min(48, Math.max(16, newSize));
+    let size = typeof newSize === 'number' ? newSize : 20;
+    if (isNaN(size) || size < 16 || size > 28) {
+      size = Math.min(28, Math.max(16, isNaN(size) ? 20 : size));
+    }
+    const clamped = Math.min(28, Math.max(16, size));
     setLocalFontSize(clamped);
     if (onFontSizeChange) {
       onFontSizeChange(clamped);
     }
     try {
-      localStorage.setItem('bookFontSize', clamped.toString());
-      localStorage.setItem('urduFontSize', clamped.toString());
+      localStorage.setItem('bookFontSize_v2', clamped.toString());
+      localStorage.removeItem('bookFontSize');
+      localStorage.removeItem('urduFontSize');
+      localStorage.removeItem('urdu_font_size');
     } catch {
       // ignore
+    }
+    if (typeof document !== 'undefined') {
+      document.documentElement.style.setProperty('--book-font-size', `${clamped}px`);
     }
   };
 
@@ -93,7 +133,7 @@ export const UrduStyler: React.FC<UrduStylerProps> = ({
   };
 
   const handleReset = () => {
-    handleUpdateFontSize(22);
+    handleUpdateFontSize(20);
     handleUpdateLineHeight(34);
   };
 
@@ -186,7 +226,7 @@ export const UrduStyler: React.FC<UrduStylerProps> = ({
                   cursor: 'pointer',
                   boxSizing: 'border-box'
                 }}
-                title="ری سیٹ ڈیفالٹ (22px / 34px)"
+                title="ری سیٹ ڈیفالٹ (20px / 34px)"
               >
                 <RotateCcw style={{ width: '14px', height: '14px' }} />
               </button>
@@ -288,7 +328,7 @@ export const UrduStyler: React.FC<UrduStylerProps> = ({
                 <input
                   type="range"
                   min={16}
-                  max={48}
+                  max={28}
                   step={2}
                   value={currentFontSize}
                   onChange={e => handleUpdateFontSize(parseInt(e.target.value, 10))}
@@ -304,7 +344,7 @@ export const UrduStyler: React.FC<UrduStylerProps> = ({
                 <button
                   type="button"
                   onClick={() => handleUpdateFontSize(currentFontSize + 2)}
-                  disabled={currentFontSize >= 48}
+                  disabled={currentFontSize >= 28}
                   style={{
                     width: '32px',
                     height: '32px',
@@ -318,8 +358,8 @@ export const UrduStyler: React.FC<UrduStylerProps> = ({
                     fontSize: '13px',
                     fontWeight: 'bold',
                     fontFamily: 'monospace',
-                    cursor: currentFontSize >= 48 ? 'not-allowed' : 'pointer',
-                    opacity: currentFontSize >= 48 ? 0.3 : 1,
+                    cursor: currentFontSize >= 28 ? 'not-allowed' : 'pointer',
+                    opacity: currentFontSize >= 28 ? 0.3 : 1,
                     boxSizing: 'border-box'
                   }}
                   title="اردو فونٹ بڑا کریں (A+)"

@@ -97,16 +97,23 @@ export default function BookDetailPage() {
   const readerTopRef = useRef<HTMLDivElement>(null);
   const mainContentRef = useRef<HTMLElement>(null);
 
-  // Isolated Book Font Size (16px to 48px in 2px steps) & Line Height (24px to 50px)
+  // Isolated Book Font Size (16px to 28px in 2px steps, default 20px) & Line Height (24px to 50px)
   const [bookFontSize, setBookFontSize] = useState<number>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('bookFontSize') || localStorage.getItem('urduFontSize') || localStorage.getItem('urdu_font_size');
-      if (saved) {
-        const parsed = parseInt(saved, 10);
-        if (!isNaN(parsed) && parsed >= 16 && parsed <= 48) return parsed;
+      try {
+        localStorage.removeItem('bookFontSize');
+        localStorage.removeItem('urduFontSize');
+        localStorage.removeItem('urdu_font_size');
+        const saved = localStorage.getItem('bookFontSize_v2');
+        if (saved !== null && saved !== undefined) {
+          const parsed = parseInt(saved, 10);
+          if (!isNaN(parsed) && parsed >= 16 && parsed <= 28) return parsed;
+        }
+      } catch {
+        // ignore
       }
     }
-    return 22;
+    return 20;
   });
 
   const [bookLineHeight, setBookLineHeight] = useState<number>(() => {
@@ -120,28 +127,52 @@ export default function BookDetailPage() {
     return 34;
   });
 
+  // Apply CSS variable on mount and on bookFontSize change
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.style.setProperty('--book-font-size', `${bookFontSize}px`);
+    }
+    try {
+      localStorage.setItem('bookFontSize_v2', bookFontSize.toString());
+      localStorage.removeItem('bookFontSize');
+      localStorage.removeItem('urduFontSize');
+      localStorage.removeItem('urdu_font_size');
+    } catch {
+      // ignore
+    }
+  }, [bookFontSize]);
+
   const changeBookFontSize = (delta: number) => {
     setBookFontSize(prev => {
-      const next = Math.min(48, Math.max(16, prev + delta));
+      const next = Math.min(28, Math.max(16, prev + delta));
       try {
-        localStorage.setItem('bookFontSize', next.toString());
-        localStorage.setItem('urduFontSize', next.toString());
+        localStorage.setItem('bookFontSize_v2', next.toString());
+        localStorage.removeItem('bookFontSize');
+        localStorage.removeItem('urduFontSize');
+        localStorage.removeItem('urdu_font_size');
       } catch {
         // ignore
+      }
+      if (typeof document !== 'undefined') {
+        document.documentElement.style.setProperty('--book-font-size', `${next}px`);
       }
       return next;
     });
   };
 
   const resetBookFontSize = () => {
-    setBookFontSize(22);
+    setBookFontSize(20);
     setBookLineHeight(34);
     try {
-      localStorage.setItem('bookFontSize', '22');
-      localStorage.setItem('urduFontSize', '22');
-      localStorage.setItem('bookLineHeight', '34');
+      localStorage.setItem('bookFontSize_v2', '20');
+      localStorage.removeItem('bookFontSize');
+      localStorage.removeItem('urduFontSize');
+      localStorage.removeItem('urdu_font_size');
     } catch {
       // ignore
+    }
+    if (typeof document !== 'undefined') {
+      document.documentElement.style.setProperty('--book-font-size', '20px');
     }
   };
 
@@ -404,14 +435,14 @@ export default function BookDetailPage() {
               type="button"
               onClick={resetBookFontSize}
               className="px-1.5 py-0.5 text-[11px] font-bold font-mono text-emerald-900 hover:bg-white rounded-md transition cursor-pointer"
-              title="ڈیفالٹ سائز (22px)"
+              title="ڈیفالٹ سائز (20px)"
             >
               {bookFontSize}px
             </button>
             <button
               type="button"
               onClick={() => changeBookFontSize(2)}
-              disabled={bookFontSize >= 48}
+              disabled={bookFontSize >= 28}
               className="px-2 py-1 text-xs font-bold text-stone-700 hover:text-emerald-800 hover:bg-white rounded-lg transition disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
               title="اردو فونٹ بڑا کریں (A+)"
               aria-label="Font Zoom In"
@@ -616,14 +647,14 @@ export default function BookDetailPage() {
                   type="button"
                   onClick={resetBookFontSize}
                   className="px-1.5 py-0.5 text-[11px] font-bold font-mono text-emerald-900 hover:bg-white rounded-md transition cursor-pointer"
-                  title="ڈیفالٹ سائز (22px)"
+                  title="ڈیفالٹ سائز (20px)"
                 >
                   {bookFontSize}px
                 </button>
                 <button
                   type="button"
                   onClick={() => changeBookFontSize(2)}
-                  disabled={bookFontSize >= 48}
+                  disabled={bookFontSize >= 28}
                   className="px-2 py-1 text-xs font-bold text-stone-700 hover:text-emerald-800 hover:bg-white rounded-lg transition disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
                   title="اردو فونٹ بڑا کریں (A+)"
                   aria-label="Font Zoom In"
