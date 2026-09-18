@@ -75,18 +75,24 @@ html, body, * {
 
 /* Scoped Font Scaling: State bookFontSize targets ONLY .book-content div */
 .book-content {
+  font-size: 22px;
+  line-height: 2;
   --book-font-size: 22px;
-  --book-line-height: 34px;
-  --arabic-font-size: 30px;
+  --book-line-height: 2;
+  --arabic-font-size: 26px;
 }
 
-.book-content .urdu-text {
-  font-size: var(--book-font-size, var(--urdu-font-size, 22px)) !important;
-  line-height: var(--book-line-height, 34px) !important;
+.book-content .urdu-text,
+.book-content [lang="ur"],
+.book-content .font-nastaliq {
+  font-size: var(--book-font-size, inherit) !important;
+  line-height: var(--book-line-height, 2) !important;
 }
 
-.book-content .arabic-text {
-  font-size: var(--arabic-font-size, 30px) !important;
+.book-content .arabic-text,
+.book-content .font-arabic,
+.book-content [lang="ar"] {
+  font-size: var(--arabic-font-size, inherit) !important;
   line-height: 2.5 !important;
 }
 

@@ -661,9 +661,11 @@ export default function BookDetailPage() {
           <div
             className="book-content min-h-[550px] space-y-4 py-2"
             style={{
-              '--book-font-size': `${bookFontSize}px`,
-              '--book-line-height': `${bookLineHeight}px`,
-              '--arabic-font-size': `${Math.round(bookFontSize * 1.35)}px`
+              fontSize: bookFontSize + 'px',
+              lineHeight: '2',
+              '--book-font-size': bookFontSize + 'px',
+              '--arabic-font-size': (bookFontSize + 4) + 'px',
+              '--book-line-height': '2'
             } as React.CSSProperties}
           >
             {loading ? (
@@ -696,9 +698,9 @@ export default function BookDetailPage() {
 
                       {/* Authentic Arabic Text with Amiri Font */}
                       <p
-                        className="text-2xl sm:text-3xl font-arabic arabic-text text-right leading-loose text-stone-900 select-text"
+                        className="font-arabic arabic-text text-right leading-loose text-stone-900 select-text"
                         dir="rtl"
-                        style={{ lineHeight: '2.5' }}
+                        style={{ fontSize: (bookFontSize + 4) + 'px', lineHeight: '2.5' }}
                       >
                         {arabText}
                       </p>
@@ -709,6 +711,7 @@ export default function BookDetailPage() {
                           <p
                             className="urdu-text text-emerald-950 text-right select-text"
                             dir="rtl"
+                            style={{ fontSize: bookFontSize + 'px', lineHeight: '2' }}
                           >
                             {h.urdu}
                           </p>
@@ -733,7 +736,10 @@ export default function BookDetailPage() {
                   if (trimmed.includes('بِسْمِ اللَّهِ') || trimmed.includes('«') || trimmed.startsWith('[صَفْحَة') || trimmed.startsWith('[الباب')) {
                     return (
                       <div key={idx} className="pb-3 mb-2 border-b border-gray-100/80 text-center">
-                        <p className="font-arabic arabic-text text-xl sm:text-2xl text-emerald-900 leading-relaxed font-bold">
+                        <p
+                          className="font-arabic arabic-text text-emerald-900 leading-relaxed font-bold"
+                          style={{ fontSize: (bookFontSize + 4) + 'px', lineHeight: '2' }}
+                        >
                           {trimmed}
                         </p>
                       </div>
@@ -755,9 +761,9 @@ export default function BookDetailPage() {
                     return (
                       <p
                         key={idx}
-                        className="text-2xl sm:text-3xl font-arabic arabic-text text-right leading-loose text-stone-900 px-1 select-text"
+                        className="font-arabic arabic-text text-right leading-loose text-stone-900 px-1 select-text"
                         dir="rtl"
-                        style={{ lineHeight: '2.5' }}
+                        style={{ fontSize: (bookFontSize + 4) + 'px', lineHeight: '2.5' }}
                       >
                         {trimmed}
                       </p>
@@ -769,6 +775,7 @@ export default function BookDetailPage() {
                       key={idx}
                       className="urdu-text text-emerald-950 text-right px-1 select-text"
                       dir="rtl"
+                      style={{ fontSize: bookFontSize + 'px', lineHeight: '2' }}
                     >
                       {trimmed}
                     </p>

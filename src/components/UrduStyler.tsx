@@ -66,10 +66,9 @@ export const UrduStyler: React.FC<UrduStylerProps> = ({
 
   const handleUpdateFontSize = (newSize: number) => {
     const clamped = Math.min(48, Math.max(16, newSize));
+    setLocalFontSize(clamped);
     if (onFontSizeChange) {
       onFontSizeChange(clamped);
-    } else {
-      setLocalFontSize(clamped);
     }
     try {
       localStorage.setItem('bookFontSize', clamped.toString());
@@ -81,10 +80,9 @@ export const UrduStyler: React.FC<UrduStylerProps> = ({
 
   const handleUpdateLineHeight = (newLh: number) => {
     const clamped = Math.min(50, Math.max(24, newLh));
+    setLocalLineHeight(clamped);
     if (onLineHeightChange) {
       onLineHeightChange(clamped);
-    } else {
-      setLocalLineHeight(clamped);
     }
     try {
       localStorage.setItem('bookLineHeight', clamped.toString());
