@@ -6,6 +6,9 @@ interface FloatingReaderControlsProps {
   onToggleTheme?: () => void;
   onZoomChange?: (scale: number) => void;
   currentZoom?: number;
+  urduFontSize?: number;
+  onUrduZoomChange?: (delta: number) => void;
+  onResetUrduZoom?: () => void;
   viewportRef?: React.RefObject<HTMLDivElement | null>;
   onNextPage?: () => void;
   hasNextPage?: boolean;
@@ -18,6 +21,9 @@ export const FloatingReaderControls: React.FC<FloatingReaderControlsProps> = ({
   onToggleTheme,
   onZoomChange,
   currentZoom = 1.0,
+  urduFontSize: controlledUrduFontSize,
+  onUrduZoomChange,
+  onResetUrduZoom,
   viewportRef,
   onNextPage,
   hasNextPage = true,
@@ -25,13 +31,45 @@ export const FloatingReaderControls: React.FC<FloatingReaderControlsProps> = ({
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState<number>(1.0);
-  const [zoomScale, setZoomScale] = useState<number>(() => {
-    try {
-      const saved = localStorage.getItem('tehreek_reader_zoom');
-      if (saved) return parseFloat(saved);
-    } catch {}
-    return currentZoom;
+  const [internalUrduFontSize, setInternalUrduFontSize] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('urduFontSize') || localStorage.getItem('urdu_font_size');
+      if (saved) {
+        const parsed = parseInt(saved, 10);
+        if (!isNaN(parsed) && parsed >= 16 && parsed <= 48) return parsed;
+      }
+    }
+    return Math.round(22 * (currentZoom || 1.0));
   });
+
+  const activeUrduFontSize = controlledUrduFontSize !== undefined ? controlledUrduFontSize : internalUrduFontSize;
+
+  const handleUrduZoom = (delta: number) => {
+    if (onUrduZoomChange) {
+      onUrduZoomChange(delta);
+    } else {
+      setInternalUrduFontSize(prev => {
+        const next = Math.min(48, Math.max(16, prev + delta));
+        localStorage.setItem('urduFontSize', next.toString());
+        localStorage.setItem('urdu_font_size', next.toString());
+        document.documentElement.style.setProperty('--urdu-font-size', `${next}px`);
+        return next;
+      });
+    }
+    if (onZoomChange) onZoomChange(delta);
+  };
+
+  const handleResetUrduZoom = () => {
+    if (onResetUrduZoom) {
+      onResetUrduZoom();
+    } else {
+      setInternalUrduFontSize(22);
+      localStorage.setItem('urduFontSize', '22');
+      localStorage.setItem('urdu_font_size', '22');
+      document.documentElement.style.setProperty('--urdu-font-size', '22px');
+    }
+  };
+
   const [pageTransitionNotice, setPageTransitionNotice] = useState<string | null>(null);
 
   const animFrameRef = useRef<number | null>(null);
@@ -58,24 +96,6 @@ export const FloatingReaderControls: React.FC<FloatingReaderControlsProps> = ({
   useEffect(() => {
     hasNextPageRef.current = hasNextPage;
   }, [hasNextPage]);
-
-  // Zoom management
-  const handleZoom = (delta: number) => {
-    setZoomScale((prev) => {
-      const next = Math.min(Math.max(parseFloat((prev + delta).toFixed(1)), 0.8), 1.6);
-      localStorage.setItem('tehreek_reader_zoom', next.toString());
-      if (onZoomChange) onZoomChange(next);
-      document.documentElement.style.setProperty('--reader-font-scale', `${next}rem`);
-      return next;
-    });
-  };
-
-  const handleResetZoom = () => {
-    setZoomScale(1.0);
-    localStorage.setItem('tehreek_reader_zoom', '1.0');
-    if (onZoomChange) onZoomChange(1.0);
-    document.documentElement.style.setProperty('--reader-font-scale', '1rem');
-  };
 
   // Stop auto scroll
   const stopAutoScroll = () => {
@@ -271,26 +291,33 @@ export const FloatingReaderControls: React.FC<FloatingReaderControlsProps> = ({
 
           <div className="h-5 w-[1px] bg-stone-200 dark:bg-stone-700 mx-0.5" />
 
-          {/* Font Zoom Controls (A- / 100% / A+) */}
+          {/* Font Zoom Controls (A- / {activeUrduFontSize}px / A+) */}
           <div className="flex items-center gap-1">
             <button
-              onClick={() => handleZoom(-0.1)}
-              className="px-2 py-1 rounded-lg text-xs font-bold text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 border border-stone-200/80 dark:border-stone-700 transition cursor-pointer"
-              title="فونٹ چھوٹا کریں"
+              type="button"
+              onClick={() => handleUrduZoom(-2)}
+              disabled={activeUrduFontSize <= 16}
+              className="px-2 py-1 rounded-lg text-xs font-bold text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 border border-stone-200/80 dark:border-stone-700 transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+              title="اردو فونٹ چھوٹا کریں (A-)"
+              aria-label="A minus"
             >
               A-
             </button>
             <button
-              onClick={handleResetZoom}
-              className="px-2 py-1 rounded-lg text-[10px] font-bold text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition cursor-pointer"
-              title="اصل سائز"
+              type="button"
+              onClick={handleResetUrduZoom}
+              className="px-2 py-1 rounded-lg text-[11px] font-bold text-emerald-800 dark:text-emerald-300 font-mono hover:bg-stone-100 dark:hover:bg-stone-800 transition cursor-pointer"
+              title="اصل سائز (22px)"
             >
-              {Math.round(zoomScale * 100)}%
+              {activeUrduFontSize}px
             </button>
             <button
-              onClick={() => handleZoom(0.1)}
-              className="px-2 py-1 rounded-lg text-xs font-bold text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 border border-stone-200/80 dark:border-stone-700 transition cursor-pointer"
-              title="فونٹ بڑا کریں"
+              type="button"
+              onClick={() => handleUrduZoom(2)}
+              disabled={activeUrduFontSize >= 48}
+              className="px-2 py-1 rounded-lg text-xs font-bold text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 border border-stone-200/80 dark:border-stone-700 transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+              title="اردو فونٹ بڑا کریں (A+)"
+              aria-label="A plus"
             >
               A+
             </button>

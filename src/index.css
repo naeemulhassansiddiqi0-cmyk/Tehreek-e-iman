@@ -36,7 +36,8 @@ html, body, * {
 
 .urdu-text, .urdu, [lang="ur"] {
   font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif !important;
-  line-height: 2.2 !important;
+  font-size: var(--urdu-font-size, 22px) !important;
+  line-height: var(--urdu-line-height, 2.2) !important;
   font-feature-settings: normal !important;
   font-stretch: normal !important;
   font-variation-settings: normal !important;

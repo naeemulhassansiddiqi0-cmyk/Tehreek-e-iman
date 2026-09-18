@@ -33,13 +33,13 @@ export const UrduStyler: React.FC<UrduStylerProps> = ({
 
   const [fontSize, setFontSize] = useState<number>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('urdu_font_size');
+      const saved = localStorage.getItem('urduFontSize') || localStorage.getItem('urdu_font_size');
       if (saved) {
         const parsed = parseInt(saved, 10);
-        if (!isNaN(parsed) && parsed >= 14 && parsed <= 32) return parsed;
+        if (!isNaN(parsed) && parsed >= 16 && parsed <= 48) return parsed;
       }
     }
-    return 21;
+    return 22;
   });
 
   const [lineHeight, setLineHeight] = useState<number>(() => {
@@ -59,6 +59,7 @@ export const UrduStyler: React.FC<UrduStylerProps> = ({
       document.documentElement.style.setProperty('--urdu-font-size', `${fontSize}px`);
       document.documentElement.style.setProperty('--urdu-line-height', `${lineHeight}px`);
       try {
+        localStorage.setItem('urduFontSize', fontSize.toString());
         localStorage.setItem('urdu_font_size', fontSize.toString());
         localStorage.setItem('urdu_line_height', lineHeight.toString());
       } catch {
@@ -68,7 +69,7 @@ export const UrduStyler: React.FC<UrduStylerProps> = ({
   }, [fontSize, lineHeight]);
 
   const handleReset = () => {
-    setFontSize(21);
+    setFontSize(22);
     setLineHeight(34);
   };
 
@@ -139,7 +140,7 @@ export const UrduStyler: React.FC<UrduStylerProps> = ({
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => setFontSize(prev => Math.max(14, prev - 1))}
+                  onClick={() => setFontSize(prev => Math.max(16, prev - 2))}
                   className="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-emerald-100 hover:text-emerald-900 text-stone-700 transition cursor-pointer border border-gray-200 text-xs font-bold"
                   title="سائز چھوٹا کریں"
                 >
@@ -148,8 +149,9 @@ export const UrduStyler: React.FC<UrduStylerProps> = ({
 
                 <input
                   type="range"
-                  min={14}
-                  max={32}
+                  min={16}
+                  max={48}
+                  step={2}
                   value={fontSize}
                   onChange={e => setFontSize(parseInt(e.target.value, 10))}
                   className="flex-1 accent-emerald-700 cursor-pointer h-1.5 bg-gray-200 rounded-lg"
@@ -157,7 +159,7 @@ export const UrduStyler: React.FC<UrduStylerProps> = ({
 
                 <button
                   type="button"
-                  onClick={() => setFontSize(prev => Math.min(32, prev + 1))}
+                  onClick={() => setFontSize(prev => Math.min(48, prev + 2))}
                   className="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-emerald-100 hover:text-emerald-900 text-stone-700 transition cursor-pointer border border-gray-200 text-xs font-bold"
                   title="سائز بڑا کریں"
                 >

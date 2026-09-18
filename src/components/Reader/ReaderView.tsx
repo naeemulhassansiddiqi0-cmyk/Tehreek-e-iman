@@ -78,8 +78,96 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
 
   // Default to Full Width (Stacked Mode) so Arabic Matn has expansive room and crystal-clear presentation
   const [isDualPane, setIsDualPane] = useState(false);
-  const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xlarge'>('large');
+  const [fontSize] = useState<'normal' | 'large' | 'xlarge'>('large');
   const [fontFamily, setFontFamily] = useState<'amiri' | 'scheherazade' | 'lateef'>('amiri');
+
+  // Urdu Text Font Size (16px to 48px in 2px steps)
+  const [urduFontSize, setUrduFontSize] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('urduFontSize') || localStorage.getItem('urdu_font_size');
+      if (saved) {
+        const parsed = parseInt(saved, 10);
+        if (!isNaN(parsed) && parsed >= 16 && parsed <= 48) return parsed;
+      }
+    }
+    return 22;
+  });
+
+  const handleUrduZoom = (delta: number) => {
+    setUrduFontSize(prev => {
+      const next = Math.min(48, Math.max(16, prev + delta));
+      localStorage.setItem('urduFontSize', next.toString());
+      localStorage.setItem('urdu_font_size', next.toString());
+      document.documentElement.style.setProperty('--urdu-font-size', `${next}px`);
+      return next;
+    });
+  };
+
+  const handleResetUrduZoom = () => {
+    setUrduFontSize(22);
+    localStorage.setItem('urduFontSize', '22');
+    localStorage.setItem('urdu_font_size', '22');
+    document.documentElement.style.setProperty('--urdu-font-size', '22px');
+  };
+
+  // Sync CSS custom property on mount and change
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.style.setProperty('--urdu-font-size', `${urduFontSize}px`);
+    }
+  }, [urduFontSize]);
+
+  // Mobile two-finger pinch-to-zoom on main Urdu content container
+  useEffect(() => {
+    const el = readerViewportRef.current;
+    if (!el) return;
+
+    let initialDist = 0;
+    let initialSize = urduFontSize;
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        initialDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        initialSize = urduFontSize;
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2 && initialDist > 0) {
+        e.preventDefault();
+        const currentDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        const diff = currentDist - initialDist;
+        const stepChange = Math.round(diff / 25) * 2;
+        const newSize = Math.min(48, Math.max(16, initialSize + stepChange));
+        setUrduFontSize(newSize);
+        localStorage.setItem('urduFontSize', newSize.toString());
+        localStorage.setItem('urdu_font_size', newSize.toString());
+        document.documentElement.style.setProperty('--urdu-font-size', `${newSize}px`);
+      }
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      if (e.touches.length < 2) {
+        initialDist = 0;
+      }
+    };
+
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    el.addEventListener('touchend', onTouchEnd, { passive: true });
+
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [urduFontSize]);
 
   // Offline Books Storage State
   const [isSavedOffline, setIsSavedOffline] = useState<boolean>(false);
@@ -991,26 +1079,30 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
             <span>{isMatnBold ? 'جلی اعراب (Bold)' : 'معتدل'}</span>
           </button>
 
-          {/* Font Controls */}
+          {/* Urdu Font Zoom Controls (16px to 48px in 2px steps) */}
           <div className="flex items-center border border-stone-300 dark:border-stone-700 rounded-xl p-0.5 bg-stone-50 dark:bg-stone-800">
             <button
-              onClick={() => setFontSize('normal')}
-              className={`px-2 py-1 text-xs rounded-lg ${fontSize === 'normal' ? 'bg-white dark:bg-stone-700 shadow-xs font-bold text-emerald-950 dark:text-emerald-300' : 'text-stone-500'}`}
-              title="متوسط فونٹ"
+              onClick={() => handleUrduZoom(-2)}
+              disabled={urduFontSize <= 16}
+              className="px-2.5 py-1 text-xs rounded-lg hover:bg-white dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 font-bold transition disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+              title="اردو فونٹ چھوٹا کریں (A-)"
+              aria-label="Font Zoom Out"
             >
               A-
             </button>
             <button
-              onClick={() => setFontSize('large')}
-              className={`px-2 py-1 text-xs rounded-lg ${fontSize === 'large' ? 'bg-white dark:bg-stone-700 shadow-xs font-bold text-emerald-950 dark:text-emerald-300' : 'text-stone-500'}`}
-              title="معیاری بڑا فونٹ"
+              onClick={handleResetUrduZoom}
+              className="px-2 py-1 text-xs rounded-lg font-bold font-mono text-emerald-800 dark:text-emerald-300 hover:bg-white dark:hover:bg-stone-700 transition cursor-pointer"
+              title="ڈیفالٹ سائز (22px)"
             >
-              A
+              {urduFontSize}px
             </button>
             <button
-              onClick={() => setFontSize('xlarge')}
-              className={`px-2 py-1 text-xs rounded-lg ${fontSize === 'xlarge' ? 'bg-white dark:bg-stone-700 shadow-xs font-bold text-emerald-950 dark:text-emerald-300' : 'text-stone-500'}`}
-              title="انتہائی جلی و کلاں فونٹ"
+              onClick={() => handleUrduZoom(2)}
+              disabled={urduFontSize >= 48}
+              className="px-2.5 py-1 text-xs rounded-lg hover:bg-white dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 font-bold transition disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+              title="اردو فونٹ بڑا کریں (A+)"
+              aria-label="Font Zoom In"
             >
               A+
             </button>
@@ -1281,7 +1373,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
         ref={readerViewportRef}
         id="reader-page-viewport"
         className="space-y-6 max-h-[78vh] overflow-y-auto pr-1 sm:pr-2 scroll-smooth rounded-3xl"
-        style={{ scrollbarWidth: 'thin', scrollbarColor: '#b45309 transparent' }}
+        style={{ scrollbarWidth: 'thin', scrollbarColor: '#b45309 transparent', '--urdu-font-size': `${urduFontSize}px` } as React.CSSProperties}
       >
         {(readingMode === 'page' ? (currentSegment ? [currentSegment] : []) : segmentsList).map((segment: BookSegment, sIdx: number) => {
           const effectiveIndex = readingMode === 'page' ? safeSegmentIndex : sIdx;
@@ -1824,8 +1916,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                         ) : (
                           <div 
                             style={currentLang === 'ur' ? {
-                              fontFamily: "'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif",
-                              fontSize: '20px',
+                              fontFamily: "'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif",
                               color: '#14532d',
                               background: '#f0fdf4',
                               padding: '16px',
@@ -2225,6 +2316,9 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
         bookTitle={selectedBook.title}
         pageLabel={isHadith ? `حدیث ${currentHadithNumber}` : isQuran ? `رکوع ${safeSegmentIndex + 1}` : `صفحہ ${safeSegmentIndex + 1}`}
         theme={theme}
+        urduFontSize={urduFontSize}
+        onUrduZoomChange={handleUrduZoom}
+        onResetUrduZoom={handleResetUrduZoom}
       />
 
     </div>

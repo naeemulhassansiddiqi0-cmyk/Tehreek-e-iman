@@ -95,6 +95,95 @@ export default function BookDetailPage() {
   const [copied, setCopied] = useState<boolean>(false);
   const [isStylerOpen, setIsStylerOpen] = useState<boolean>(false);
   const readerTopRef = useRef<HTMLDivElement>(null);
+  const mainContentRef = useRef<HTMLElement>(null);
+
+  // Urdu Text Font Size (16px to 48px in 2px steps)
+  const [urduFontSize, setUrduFontSize] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('urduFontSize') || localStorage.getItem('urdu_font_size');
+      if (saved) {
+        const parsed = parseInt(saved, 10);
+        if (!isNaN(parsed) && parsed >= 16 && parsed <= 48) return parsed;
+      }
+    }
+    return 22;
+  });
+
+  const changeUrduFontSize = (delta: number) => {
+    setUrduFontSize(prev => {
+      const next = Math.min(48, Math.max(16, prev + delta));
+      localStorage.setItem('urduFontSize', next.toString());
+      localStorage.setItem('urdu_font_size', next.toString());
+      document.documentElement.style.setProperty('--urdu-font-size', `${next}px`);
+      return next;
+    });
+  };
+
+  const resetUrduFontSize = () => {
+    setUrduFontSize(22);
+    localStorage.setItem('urduFontSize', '22');
+    localStorage.setItem('urdu_font_size', '22');
+    document.documentElement.style.setProperty('--urdu-font-size', '22px');
+  };
+
+  // Sync CSS custom property on mount and change
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.style.setProperty('--urdu-font-size', `${urduFontSize}px`);
+    }
+  }, [urduFontSize]);
+
+  // Mobile two-finger pinch-to-zoom support
+  useEffect(() => {
+    const el = mainContentRef.current;
+    if (!el) return;
+
+    let initialDist = 0;
+    let initialSize = urduFontSize;
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        initialDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        initialSize = urduFontSize;
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2 && initialDist > 0) {
+        e.preventDefault();
+        const currentDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        const diff = currentDist - initialDist;
+        const stepChange = Math.round(diff / 25) * 2;
+        const newSize = Math.min(48, Math.max(16, initialSize + stepChange));
+        setUrduFontSize(newSize);
+        localStorage.setItem('urduFontSize', newSize.toString());
+        localStorage.setItem('urdu_font_size', newSize.toString());
+        document.documentElement.style.setProperty('--urdu-font-size', `${newSize}px`);
+      }
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      if (e.touches.length < 2) {
+        initialDist = 0;
+      }
+    };
+
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    el.addEventListener('touchend', onTouchEnd, { passive: true });
+
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [urduFontSize]);
 
   // Load 100% full dataset from local JSON files (public/hadith-data/[slug].json)
   useEffect(() => {
@@ -284,6 +373,38 @@ export default function BookDetailPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Zoom In / Out Buttons (A- / {urduFontSize}px / A+) */}
+          <div className="flex items-center bg-stone-50 border border-gray-200 rounded-xl p-0.5 shadow-2xs">
+            <button
+              type="button"
+              onClick={() => changeUrduFontSize(-2)}
+              disabled={urduFontSize <= 16}
+              className="px-2 py-1 text-xs font-bold text-stone-700 hover:text-emerald-800 hover:bg-white rounded-lg transition disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+              title="اردو فونٹ چھوٹا کریں (A-)"
+              aria-label="Font Zoom Out"
+            >
+              A-
+            </button>
+            <button
+              type="button"
+              onClick={resetUrduFontSize}
+              className="px-1.5 py-0.5 text-[11px] font-bold font-mono text-emerald-900 hover:bg-white rounded-md transition cursor-pointer"
+              title="ڈیفالٹ سائز (22px)"
+            >
+              {urduFontSize}px
+            </button>
+            <button
+              type="button"
+              onClick={() => changeUrduFontSize(2)}
+              disabled={urduFontSize >= 48}
+              className="px-2 py-1 text-xs font-bold text-stone-700 hover:text-emerald-800 hover:bg-white rounded-lg transition disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+              title="اردو فونٹ بڑا کریں (A+)"
+              aria-label="Font Zoom In"
+            >
+              A+
+            </button>
+          </div>
+
           {/* Urdu Styler Button */}
           <button
             type="button"
@@ -442,7 +563,11 @@ export default function BookDetailPage() {
         </aside>
 
         {/* Left 75%: Full Reader Display */}
-        <main className="w-full lg:w-3/4 flex flex-col bg-white border border-gray-100 rounded-2xl p-4 sm:p-8 shadow-xs space-y-6">
+        <main
+          ref={mainContentRef}
+          style={{ '--urdu-font-size': `${urduFontSize}px` } as React.CSSProperties}
+          className="w-full lg:w-3/4 flex flex-col bg-white border border-gray-100 rounded-2xl p-4 sm:p-8 shadow-xs space-y-6"
+        >
           
           {/* Reader Top Bar Controls */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
@@ -459,8 +584,39 @@ export default function BookDetailPage() {
               </p>
             </div>
 
-            {/* Pagination Controls Top */}
-            <div className="flex items-center gap-2 self-start sm:self-auto">
+            {/* Pagination Controls Top & Zoom Controls */}
+            <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+              {/* Zoom Buttons */}
+              <div className="flex items-center bg-stone-50 border border-gray-200 rounded-xl p-0.5 shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => changeUrduFontSize(-2)}
+                  disabled={urduFontSize <= 16}
+                  className="px-2 py-1 text-xs font-bold text-stone-700 hover:text-emerald-800 hover:bg-white rounded-lg transition disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                  title="اردو فونٹ چھوٹا کریں (A-)"
+                  aria-label="Font Zoom Out"
+                >
+                  A-
+                </button>
+                <button
+                  type="button"
+                  onClick={resetUrduFontSize}
+                  className="px-1.5 py-0.5 text-[11px] font-bold font-mono text-emerald-900 hover:bg-white rounded-md transition cursor-pointer"
+                  title="ڈیفالٹ سائز (22px)"
+                >
+                  {urduFontSize}px
+                </button>
+                <button
+                  type="button"
+                  onClick={() => changeUrduFontSize(2)}
+                  disabled={urduFontSize >= 48}
+                  className="px-2 py-1 text-xs font-bold text-stone-700 hover:text-emerald-800 hover:bg-white rounded-lg transition disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                  title="اردو فونٹ بڑا کریں (A+)"
+                  aria-label="Font Zoom In"
+                >
+                  A+
+                </button>
+              </div>
               <button
                 type="button"
                 disabled={currentPage <= 0}
