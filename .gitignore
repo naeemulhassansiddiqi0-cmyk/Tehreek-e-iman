@@ -10,3 +10,7 @@ dist-ssr/
 .netlify
 .wrangler
 
+# Environment variables
+.env
+.env.*
+!.env.example
