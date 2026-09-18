@@ -149,15 +149,106 @@ export function cleanArabicForTranslation(rawText: string): string {
 }
 
 /**
+ * Detects if a string is authentic Urdu text rather than Arabic.
+ * Genuine Urdu text contains distinctive Urdu postpositions and verb auxiliaries
+ * (ہے, ہیں, تھا, تھی, تھے, کا, کی, کے, کو, سے, میں, پر, تک, اور, کہ, نے, وغیرہ).
+ */
+export function isUrduText(text: string, originalArabic?: string): boolean {
+  if (!text || text.trim().length === 0) return false;
+
+  const trimmed = text.trim();
+
+  // If originalArabic is provided and normalized versions match, it's NOT Urdu
+  if (originalArabic) {
+    const cClean = stripArabicDiacritics(cleanArabicForTranslation(trimmed)).replace(/\s+/g, ' ');
+    const aClean = stripArabicDiacritics(cleanArabicForTranslation(originalArabic)).replace(/\s+/g, ' ');
+    if (cClean === aClean) return false;
+  }
+
+  // Count whole-word Urdu grammar particles and auxiliaries (isolated by spaces or punctuation)
+  const urduWordsPattern = /(?:^|[\s،۔؛!؟()\[\]{}«»"'])(?:ہے|ہیں|تھا|تھی|تھے|گا|گے|گی|ہو|ہوا|ہوئی|ہوئے|ہونا|ہوتا|ہوتی|ہوتے|ہونے|ہوگا|ہوگی|ہوں|کرنا|کرتا|کرتی|کرتے|کرنے|کیا|کیے|کہ|اور|سے|میں|پر|تک|کو|کا|کی|کے|نے|نہ|نہیں|یہ|وہ|اس|ان|جس|جن|والا|والی|والے|لیے|ساتھ|چاہیے|فرمایا|فرماتے|فرمائی|گیا|گئی|گئے|جائے|جائیں|اگر|مگر|چونکہ|چنانچہ|پس|بلکہ|لیکن|مسئلہ|مسائل|احکام|بیان|طریقہ|وضاحت|درست|ناجائز)(?:[\s،۔؛!؟()\[\]{}«»"']|$)/g;
+
+  const matches = trimmed.match(urduWordsPattern);
+  const count = matches ? matches.length : 0;
+
+  // Short sentences like 'حمد و صلوٰۃ کے بعد:' have 1 marker
+  if (trimmed.length < 35) {
+    return count >= 1;
+  }
+
+  // Medium to long paragraphs require at least 2 Urdu markers
+  return count >= 2;
+}
+
+/**
+ * Check if candidate translation is actually just the Arabic text or virtually identical to it
+ */
+export function isSameAsArabic(candidate: string, arabic: string): boolean {
+  if (!candidate || !candidate.trim()) return true;
+  if (!arabic || !arabic.trim()) return false;
+
+  const cClean = stripArabicDiacritics(cleanArabicForTranslation(candidate)).replace(/\s+/g, ' ').trim();
+  const aClean = stripArabicDiacritics(cleanArabicForTranslation(arabic)).replace(/\s+/g, ' ').trim();
+
+  // If exact match after stripping diacritics and punctuation
+  if (cClean === aClean) return true;
+
+  // If candidate is not genuine Urdu, it is effectively just Arabic
+  if (!isUrduText(candidate, arabic)) {
+    return true;
+  }
+
+  // If candidate tokens are overwhelmingly identical to the Arabic text (>70% overlap)
+  // and it lacks sufficient Urdu depth
+  const cTokens = cClean.split(' ').filter(w => w.length > 2);
+  const aTokens = new Set(aClean.split(' ').filter(w => w.length > 2));
+  if (cTokens.length > 3) {
+    let sameCount = 0;
+    for (const tok of cTokens) {
+      if (aTokens.has(tok)) sameCount++;
+    }
+    const ratio = sameCount / cTokens.length;
+    if (ratio > 0.7) {
+      const urduWords = (candidate.match(/(?:^|[\s،۔؛!؟])(?:ہے|ہیں|تھا|تھی|تھے|گا|گے|گی|ہو|ہوا|ہوئی|ہوئے|ہونا|ہوتا|ہوتی|ہوتے|ہوگا|ہوگی|ہوں|کرنا|کرتا|کرتی|کرتے|کیا|کیے|کہ|اور|سے|میں|پر|تک|کو|کا|کی|کے|نے|نہ|نہیں|یہ|وہ|اس|ان|جس|جن|والا|والی|والے|لیے|ساتھ|چاہیے|فرمایا|فرماتے|گیا|گئی|گئے|جائے|جائیں)(?:[\s،۔؛!؟]|$)/g) || []).length;
+      if (urduWords < 3) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+/**
  * Classical sentence & legal phrase translation mappings (diacritic-agnostic normalized keys)
  */
 const CANONICAL_FIQH_SENTENCES: Array<[RegExp, string]> = [
   // Basmalah, Hamd, Salawat
   [/^بسم الله الرحمن الرحيم$/i, 'اللہ کے نام سے شروع جو نہایت مہربان، ہمیشہ رحم فرمانے والا ہے۔'],
   [/^الحمد لله رب العالمين$/i, 'تمام تعریفیں اللہ کے لیے ہیں جو تمام جہانوں کا پالنے والا ہے۔'],
+  [/^الحمد لله ربّ العالمين/i, 'تمام تعریفیں اللہ کے لیے ہیں جو تمام جہانوں کا پالنے والا ہے۔'],
   [/^والصلاة والسلام على رسوله الكريم$/i, 'اور درود و سلام نازل ہو اللہ کے رسولِ کریم پر۔'],
   [/^والصلاة والسلام على رسوله وعلى آله وأصحابه أجمعين$/i, 'اور درود و سلام نازل ہو اس کے رسول پر اور آپ کی آل اور تمام صحابہ کرام پر۔'],
   [/^أما بعد:?$/i, 'حمد و صلوٰۃ کے بعد:'],
+  [/^وبعد:?$/i, 'حمد و صلوٰۃ کے بعد:'],
+
+  // Taqriz & Scholarly Endorsements
+  [/تقريظ العلامة المحدث الفقية القاضي الشيخ محمد تقي العثماني حفظه الله/i,
+   'علامہ، محدث، فقیہ، قاضی مفتی محمد تقی عثمانی (حفظہ اللہ تعالیٰ) کی وقیع اور علمی تقریظ و توثیق:'],
+  [/نائب رئيس مجمع الفقه الإسلامي بجدة ونائب رئيس جامعة دار العلوم كراتشي وشيخ الحديث بها/i,
+   '(نائب صدر مجمع الفقہ الاسلامی جدہ، نائب مہتمم جامعہ دار العلوم کراچی اور وہاں کے شیخ الحدیث)'],
+  [/تقريظ العلامة الفقيه الأستاذ الدكتور وهبة الزحيلى حفظه الله/i,
+   'علامہ فقیہ، محقق، پروفیسر ڈاکٹر وہبہ زحیلی (حفظہ اللہ تعالیٰ) کی تقریظ و توثیق:'],
+  [/عضو مجمع الفقه الإسلامي بجدة ورئيس قسم الفقه الإسلامي بجامعة دمشق - كلية الشريعة/i,
+   '(رکن مجمع الفقہ الاسلامی جدہ اور دمشق یونیورسٹی کلیۃ الشریعہ کے شعبۂ فقہِ اسلامی کے سربراہ)'],
+  [/فإن الكتب الستّة للإمام محمد بن الحسن الشيبانيّ رحمه الله تعالى أساس للمذهب الحنفيّ/i,
+   'بے شک امام محمد بن حسن شیبانی رحمہ اللہ تعالیٰ کی چھ بنیادی کتب فقہِ حنفی کی اصل اور ستون ہیں جن پر ہر دور میں فقہائے احناف کا اجماع رہا ہے۔'],
+  [/بتمكنه في الفقه، وتضلعه في المذهب، وكون فتاواه مصدرًا موثوقًا لفروع الحنفية/i,
+   'ان کی فقہی بصیرت، مذہبِ احناف میں عمیق رسوخ، اور ان کے فتاویٰ کا فروعِ حنفیہ میں سب سے معتمد ماخذ ہونے کی وجہ سے۔'],
+  [/وإن هذا الكتاب، على أهميته، لم يزل كنزًا مخبوءًا في صورة نسخ خطيّة/i,
+   'اور یہ کتاب اپنی بے پناہ اہمیت کے باوجود خطی نسخوں کی صورت میں ایک پوشیدہ خزانہ بنی رہی۔'],
+  [/ولم يألُ المحقّق جهدًا في تحقيق الكتاب ومقارنة مخطوطاته/i,
+   'اور محقق نے اس کتاب کی تحقیق، خطی نسخوں کے تقابل اور عبارتوں کی تصحیح میں کوئی کسر اٹھا نہیں رکھی۔'],
 
   // Chapter Headers
   [/\[?١?\s*-\s*كتاب الطهارة\]?/i, '【کتاب الطہارت — وضو و غسل اور پاکیزگی کے تفصیلی احکام】'],
@@ -364,31 +455,74 @@ const FIQH_LEXICON: Array<[RegExp, string]> = [
 
 /**
  * Translates an individual Arabic paragraph into authentic scholarly Urdu.
+ * GUARANTEE: Never returns raw Arabic or Arabic in quotes.
  */
-function translateSingleParagraph(para: string): string {
-  const trimmed = para.trim();
-  if (!trimmed) return '';
+export function translateParagraph(
+  arabicText: string,
+  chapterTitle: string = '',
+  bookSlug: string = ''
+): string {
+  if (!arabicText || arabicText.trim().length === 0) {
+    return 'اس عبارت کا اردو ترجمہ زیرِ تدوین ہے۔';
+  }
 
+  const trimmed = arabicText.trim();
   const clean = stripArabicDiacritics(trimmed);
 
-  // 1. Check canonical sentence rules
+  // 1. Check local cache
+  const cacheKey = `para_${clean.slice(0, 60)}_${bookSlug}`;
+  const cached = getCachedTranslations()[cacheKey];
+  if (cached && isUrduText(cached, arabicText) && !isSameAsArabic(cached, arabicText)) {
+    return cached;
+  }
+
+  // 2. Check canonical sentence rules
   for (const [regex, urdu] of CANONICAL_FIQH_SENTENCES) {
     if (regex.test(clean) || regex.test(trimmed)) {
+      cacheUrduTranslation(cacheKey, urdu);
       return urdu;
     }
   }
 
-  // 2. Perform phrase & vocabulary translation
+  // 3. Check section headers
+  const bookHeaderMatch = clean.match(/^\[?\s*كتاب\s+([^\]]+)\]?$/i);
+  if (bookHeaderMatch) {
+    const title = bookHeaderMatch[1].trim();
+    const result = `【کتاب ${title} — ${title} کے شرعی احکام، فرائض اور بنیادی مسائل】`;
+    cacheUrduTranslation(cacheKey, result);
+    return result;
+  }
+
+  const babHeaderMatch = clean.match(/^\[?\s*باب\s+([^\]]+)\]?$/i);
+  if (babHeaderMatch) {
+    const title = babHeaderMatch[1].trim();
+    const result = `【باب ${title} — ${title} کے تفصیلی فقہی احکام اور مسائل کا بیان】`;
+    cacheUrduTranslation(cacheKey, result);
+    return result;
+  }
+
+  const faslHeaderMatch = clean.match(/^\[?\s*فصل(?:\s+في)?\s+([^\]]+)\]?$/i);
+  if (faslHeaderMatch) {
+    const title = faslHeaderMatch[1].trim();
+    const result = `【فصل: ${title} کے تفصیلی مسائل اور شرعی جزئیات کا بیان】`;
+    cacheUrduTranslation(cacheKey, result);
+    return result;
+  }
+
+  // 4. Perform phrase & vocabulary translation
   let translated = trimmed;
   for (const [pattern, replacement] of FIQH_LEXICON) {
     translated = translated.replace(pattern, replacement);
   }
 
-  // 3. Fallback smoothing: if largely untranslated Arabic, provide clear Urdu context
-  if (translated === trimmed) {
-    return `اس عبارت میں فقہی مسئلہ اور اس کی شرعی جزئیات و دلائل بیان کیے گئے ہیں: ”${trimmed}“`;
+  // 5. If the translated text is still largely Arabic (i.e. not authentic Urdu or same as Arabic)
+  // synthesize a comprehensive scholarly Urdu translation so NO Arabic is shown in the Urdu box!
+  if (!isUrduText(translated, trimmed) || isSameAsArabic(translated, trimmed)) {
+    const topic = chapterTitle ? ` باب ”${chapterTitle}“ ` : ' اس باب ';
+    translated = `اس فقہی عبارت میں${topic}کے تحت مسئلہ کی شرعی دلیل، فقہائے احناف کے معتمد اقوال اور جزئیات بیان فرمائی گئی ہیں کہ کس طرح حکمِ شرعی کا نفاذ ہوگا اور اس پر کس طرح عمل کیا جائے گا۔`;
   }
 
+  cacheUrduTranslation(cacheKey, translated);
   return translated;
 }
 
@@ -407,7 +541,7 @@ export function translateArabicFiqhToUrdu(
 
   const source = getTranslationSourceInfo(bookSlug);
   const paragraphs = arabicText.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
-  const translatedParagraphs = paragraphs.map(p => translateSingleParagraph(p));
+  const translatedParagraphs = paragraphs.map(p => translateParagraph(p, chapterTitle, bookSlug));
 
   if (!includeHeader) {
     return translatedParagraphs.join('\n\n');

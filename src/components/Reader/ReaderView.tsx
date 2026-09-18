@@ -37,7 +37,7 @@ import { saveBookOffline, removeBookOffline, isBookSavedOffline } from '../../ut
 import { OfflineBooksManagerModal } from './OfflineBooksManagerModal';
 import { searchInsideBook } from '../../services/databaseService';
 import { hasFiqhFullText, loadFiqhFullText, convertFullTextToChapters, getFiqhFullTextSlug } from '../../services/fiqhFullTextService';
-import { getTranslationSourceInfo, translateArabicFiqhToUrdu } from '../../services/fiqhUrduTranslator';
+import { getTranslationSourceInfo, translateArabicFiqhToUrdu, translateParagraph, isUrduText, isSameAsArabic } from '../../services/fiqhUrduTranslator';
 
 interface ReaderViewProps {
   selectedBook: Book;
@@ -1291,9 +1291,9 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
           const isTranslatingThis = Boolean(translatingIds[transKey] && !dynamicTranslations[transKey] && currentLang !== 'ur');
 
           // 1. Take urdu_tarjuma from segment.urduTranslation (Cloudflare D1 / bundle)
-          // 2. If empty or missing, fallback immediately to fiqhUrduTranslator for AI translation!
+          // 2. If empty or same as Arabic, fallback immediately to fiqhUrduTranslator for AI translation!
           let effectiveUrdu = segment.urduTranslation?.trim() || '';
-          if (!effectiveUrdu && isFiqh && segment.arabicText) {
+          if (isFiqh && (!effectiveUrdu || isSameAsArabic(effectiveUrdu, segment.arabicText) || !isUrduText(effectiveUrdu, segment.arabicText))) {
             effectiveUrdu = translateArabicFiqhToUrdu(
               segment.arabicText,
               currentChapter?.titleArabic || currentChapter?.titleUrdu || '',
@@ -1323,19 +1323,17 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
             ? cleanUrduTarjuma.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean)
             : [];
 
-          const getParaUrduTranslation = (pIdx: number, arText: string) => {
+          const getParaUrduTranslation = (pIdx: number, arText: string): string => {
+            // 1) First try to get urdu_tarjuma from D1 / static bundle
             const candidate = urduParas[pIdx]?.trim();
-            if (candidate && candidate.length > 0 && candidate !== arText.trim()) {
-              const hasUrdu = /(?:ہے|ہیں|کا|کی|کے|کو|سے|میں|پر|تک|اور|کہ|نے|کر|ہو|یا|نہ|تھا|تھی|تھے|گے|گی|فرائض|سنتیں|مسائل|بیان)/.test(candidate);
-              if (hasUrdu) {
-                return candidate;
-              }
+            // 2) If empty or same as Arabic (or not authentic Urdu), immediately call fiqhUrduTranslator.translateParagraph(arabicText) to generate Urdu
+            if (candidate && candidate.length > 0 && !isSameAsArabic(candidate, arText) && isUrduText(candidate, arText)) {
+              return candidate;
             }
-            return translateArabicFiqhToUrdu(
+            return translateParagraph(
               arText,
               currentChapter?.titleArabic || currentChapter?.titleUrdu || '',
-              selectedBook.id,
-              false
+              selectedBook.id
             );
           };
 
@@ -1495,23 +1493,49 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                               </div>
 
                               {/* 2. Dedicated Urdu Translation Box for this specific Paragraph */}
-                              <div className="rounded-2xl p-4 sm:p-5 bg-gradient-to-r from-amber-50/95 via-stone-50 to-amber-50/80 dark:from-stone-850 dark:via-stone-900 dark:to-stone-850 border border-amber-300/80 dark:border-amber-700/60 shadow-xs border-r-4 border-r-amber-500 space-y-2">
-                                <div className="flex items-center justify-between border-b border-amber-200/60 dark:border-stone-800 pb-1.5">
-                                  <div className="flex items-center gap-1.5 text-xs font-nastaliq font-bold text-amber-950 dark:text-amber-200">
-                                    <BookOpen className="w-3.5 h-3.5 text-amber-600" />
-                                    <span>اردو ترجمہ و سلیس مفہوم (پیراگراف {pIdx + 1}):</span>
+                              <div 
+                                style={{
+                                  backgroundColor: '#FFFBEA',
+                                  color: '#000000',
+                                  border: '2px solid #E6D28C',
+                                  borderRight: '6px solid #D97706',
+                                  filter: 'none',
+                                  WebkitBackdropFilter: 'none',
+                                  backdropFilter: 'none'
+                                }}
+                                className="rounded-2xl p-4 sm:p-5 shadow-xs space-y-2"
+                              >
+                                <div className="flex items-center justify-between border-b border-amber-300/70 pb-2">
+                                  <div className="flex items-center gap-2 text-xs font-nastaliq font-bold" style={{ color: '#000000' }}>
+                                    <BookOpen className="w-4 h-4 text-amber-700 shrink-0" />
+                                    <span className="font-bold text-sm">اردو ترجمہ و شرعی مفہوم (پیراگراف {pIdx + 1}):</span>
                                   </div>
                                   <button
                                     type="button"
                                     onClick={() => onSendToAI(arPara, selectedBook.title)}
-                                    className="text-[11px] text-amber-900 dark:text-amber-300 hover:underline font-nastaliq flex items-center gap-1 cursor-pointer"
+                                    className="text-xs hover:underline font-nastaliq font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                                    style={{ color: '#000000' }}
                                     title="اے آئی سے اس پیراگراف کا تفصیلی حل پوچھیں"
                                   >
-                                    <Sparkles className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                                    <Sparkles className="w-3.5 h-3.5 text-amber-700" />
                                     <span>AI سے فقرہ حل کروائیں</span>
                                   </button>
                                 </div>
-                                <p className="text-base sm:text-lg font-nastaliq leading-loose text-justify text-stone-900 dark:text-stone-100 whitespace-pre-line select-text">
+                                <p 
+                                  dir="rtl"
+                                  style={{
+                                    color: '#000000',
+                                    fontFamily: "'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Urdu Typesetting', serif",
+                                    fontSize: '18px',
+                                    fontWeight: 'bold',
+                                    lineHeight: '2.4',
+                                    textAlign: 'justify',
+                                    filter: 'none',
+                                    WebkitBackdropFilter: 'none',
+                                    backdropFilter: 'none'
+                                  }}
+                                  className="whitespace-pre-line select-text font-nastaliq font-bold text-[18px] text-black"
+                                >
                                   {paraUrdu}
                                 </p>
                               </div>

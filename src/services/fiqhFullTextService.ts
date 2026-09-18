@@ -7,7 +7,7 @@
  */
 
 import { BookChapter, BookSegment } from '../types';
-import { translateArabicFiqhToUrdu } from './fiqhUrduTranslator';
+import { translateArabicFiqhToUrdu, isUrduText, isSameAsArabic } from './fiqhUrduTranslator';
 
 export interface FullTextPage {
   pageNumber: number;
@@ -120,7 +120,7 @@ export function convertFullTextToChapters(bundle: FullTextBookBundle, _bookId?: 
     const segments: BookSegment[] = pages.map((p) => ({
       id: `${bundle.slug}_p${p.pageNumber}`,
       arabicText: p.arabicMatn,
-      urduTranslation: (p.urduTarjuma && p.urduTarjuma.trim().length > 0)
+      urduTranslation: (p.urduTarjuma && isUrduText(p.urduTarjuma, p.arabicMatn) && !isSameAsArabic(p.urduTarjuma, p.arabicMatn))
         ? p.urduTarjuma
         : translateArabicFiqhToUrdu(p.arabicMatn, p.chapterTitle, bundle.slug),
       translations: {
