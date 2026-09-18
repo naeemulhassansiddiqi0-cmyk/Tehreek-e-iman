@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useMemo } from 'react';
 import { publicDomainBooks, modernBooks, ModernBook } from '../../../data/publicDomainBooks';
@@ -151,7 +151,7 @@ export default function AdminBooksPage() {
                       </span>
                     </td>
                     <td className="py-3 px-4 text-stone-500 font-sans">
-                      {b.volumes} جلد / {b.pages} ص
+                      {b.volumes} جلد / {Array.isArray(b.pages) ? b.pages.length : b.pages} ص
                     </td>
                     <td className="py-3 px-4 text-center">
                       {b.source_type === 'public' ? (

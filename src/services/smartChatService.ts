@@ -1,4 +1,4 @@
-﻿import { allCatalogBooks, PublicDomainBook, ModernBook } from '../data/publicDomainBooks';
+import { allCatalogBooks, PublicDomainBook, ModernBook } from '../data/publicDomainBooks';
 
 export type ChatResponsePayload =
   | {
@@ -218,7 +218,7 @@ export async function processChatMessage(
         fullName: book.title_ur + ' / ' + book.title_ar,
         author: book.author + ' (وفات: ' + book.death_year + 'ھ)',
         intro: book.intro_ur,
-        meta: book.volumes + ' جلدیں، ' + book.pages.toLocaleString('ur-PK') + ' صفحات | موضوع: ' + book.category,
+        meta: book.volumes + ' جلدیں، ' + (Array.isArray(book.pages) ? book.pages.length : book.pages).toLocaleString('ur-PK') + ' صفحات | موضوع: ' + book.category,
         cover_url: book.cover_url,
         action: {
           label: actionLabel,

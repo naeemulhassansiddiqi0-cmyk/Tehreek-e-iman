@@ -193,7 +193,7 @@ export default function HomePage() {
                       <span>کتاب پڑھیں</span>
                     </a>
                     <span className="text-[11px] text-stone-400">
-                      {book.pages.toLocaleString('ur-PK')} ص
+                      {(Array.isArray(book.pages) ? book.pages.length : book.pages).toLocaleString('ur-PK')} ص
                     </span>
                   </div>
                 </div>

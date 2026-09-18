@@ -1,6 +1,7 @@
 // تحریکِ ایمان — تصدیق شدہ 100 پبلک ڈومین کتب اور جدید کتب کا مستند ذخیرہ
 // تمام پبلک ڈومین کتب کاپی رائٹ سے آزاد ہیں اور تاریخی متون ہیں۔
 // جدید کتب صرف بیرونی مصدقہ روابط (Original Sources) پر پڑھنے کے لیے فراہم کی گئی ہیں۔
+import { generateBookPages } from './bookContentProvider';
 
 export type BookCategoryTitle = 'Quran & Tafseer' | 'Hadith' | 'Seerat' | 'Fiqh' | 'Tareekh' | 'Aqeedah';
 
@@ -15,10 +16,26 @@ export interface PublicDomainBook {
   authorUrdu?: string;
   death_year: number | string;
   category: BookCategoryTitle;
-  pages: number;
+  totalPages?: number;
+  pages: string[];
   volumes: number;
   intro_ur: string;
   description?: string;
+  cover_url: string;
+  source_type: 'public';
+}
+
+interface RawPublicDomainBook {
+  id: string;
+  slug: string;
+  title_ur: string;
+  title_ar: string;
+  author: string;
+  death_year: number | string;
+  category: BookCategoryTitle;
+  pages: number;
+  volumes: number;
+  intro_ur: string;
   cover_url: string;
   source_type: 'public';
 }
@@ -40,7 +57,7 @@ export interface ModernBook {
   publisher?: string;
 }
 
-const rawPublicDomainBooks: PublicDomainBook[] = [
+const rawPublicDomainBooks: RawPublicDomainBook[] = [
   {
     "id": "sahih-bukhari",
     "slug": "sahih-bukhari",
@@ -1448,7 +1465,9 @@ export const publicDomainBooks: PublicDomainBook[] = rawPublicDomainBooks.map(b 
   titleUrdu: b.title_ur,
   title: b.title_ur,
   authorUrdu: b.author,
-  description: b.intro_ur
+  description: b.intro_ur,
+  totalPages: b.pages,
+  pages: generateBookPages(b as any)
 }));
 
 export const modernBooks: ModernBook[] = [
