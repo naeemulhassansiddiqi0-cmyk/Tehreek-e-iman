@@ -1,0 +1,27 @@
+﻿@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    --primary: #065f46;
+    --accent: #fbbf24;
+    --background: #ffffff;
+    --text: #111827;
+  }
+
+  body {
+    font-family: 'Noto Nastaliq Urdu', 'Noto Naskh Arabic', system-ui, sans-serif;
+    direction: rtl;
+    text-align: right;
+    background-color: #ffffff;
+    color: #111827;
+  }
+}
+
+.font-nastaliq {
+  font-family: 'Noto Nastaliq Urdu', system-ui, sans-serif;
+}
+
+.font-arabic {
+  font-family: 'Noto Naskh Arabic', serif;
+}

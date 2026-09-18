@@ -12,6 +12,7 @@ import { AdminPanelModal } from './components/Admin/AdminPanelModal';
 import { GlobalAIAssistantDrawer } from './components/AITutor/GlobalAIAssistantDrawer';
 import { PrayerTimesView } from './components/PrayerTimes/PrayerTimesView';
 import { SacredAudioPlayer } from './components/AudioPlayer/SacredAudioPlayer';
+import { Chatbot } from './components/Chatbot';
 import { booksDatabase } from './data/booksData';
 import { Book, AppTab } from './types';
 import { TehreekImanLogo } from './components/TehreekImanLogo';
@@ -37,6 +38,15 @@ export function App() {
   const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false);
   const [kharjiModalInitialBook, setKharjiModalInitialBook] = useState<Book | null>(null);
   const [highlightSegmentId, setHighlightSegmentId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
+  const handleChatbotSelectBook = (slug: string) => {
+    const found = booksDatabase.find(b => b.id.toLowerCase() === slug.toLowerCase() || b.title.toLowerCase().includes(slug.toLowerCase()));
+    if (found) {
+      setSelectedBook(found);
+    }
+    setActiveTab('reader');
+  };
 
   const handleOpenKharjiBooks = (book?: Book) => {
     setKharjiModalInitialBook(book || null);
@@ -287,6 +297,8 @@ export function App() {
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
         apiKey={apiKey}
         setApiKey={setApiKey}
         theme={theme}
@@ -304,8 +316,14 @@ export function App() {
       <main className="flex-1 pb-16">
         {activeTab === 'dashboard' && (
           <Dashboard
+            searchQuery={searchQuery}
             onSelectBook={(book) => {
-              setSelectedBook(book);
+              if (book && book.chapters) {
+                setSelectedBook(book);
+              } else if (book) {
+                const found = booksDatabase.find(b => b.id.toLowerCase() === (book.slug || book.id).toLowerCase());
+                if (found) setSelectedBook(found);
+              }
               setActiveTab('reader');
             }}
             setActiveTab={setActiveTab}
@@ -417,6 +435,9 @@ export function App() {
         onNavigateTab={(tab) => setActiveTab(tab)}
         onSelectBook={(book) => setSelectedBook(book)}
       />
+
+      {/* Smart AI Chatbot - Clean Emerald Circle Bottom-Left */}
+      <Chatbot onSelectBook={handleChatbotSelectBook} apiKey={apiKey} />
 
       {/* Global Sacred Quran & Hadith Audio Recitation Player */}
       <SacredAudioPlayer />

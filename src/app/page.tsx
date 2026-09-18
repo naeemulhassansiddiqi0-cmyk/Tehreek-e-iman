@@ -1,19 +1,8 @@
-﻿import React, { useState, useMemo } from 'react';
-import { BookOpen, ExternalLink, Sparkles, BookMarked } from 'lucide-react';
-import { publicDomainBooks, modernBooks, PublicDomainBook, BookCategoryTitle } from '../data/publicDomainBooks';
-import { AppTab } from '../types';
+﻿'use client';
 
-interface DashboardProps {
-  onSelectPublicBook?: (book: PublicDomainBook) => void;
-  onSelectBook?: (book: any) => void;
-  setActiveTab: (tab: AppTab) => void;
-  searchQuery?: string;
-  onSendToAI?: (arabicText: string, bookName: string) => void;
-  onOpenKharjiBooks?: (book?: any) => void;
-  onOpenAdmin?: () => void;
-  userName?: string;
-  customLogoSrc?: string;
-}
+import { useState, useMemo } from 'react';
+import { BookOpen, ExternalLink, Sparkles, BookMarked, Search } from 'lucide-react';
+import { publicDomainBooks, modernBooks, BookCategoryTitle } from '../data/publicDomainBooks';
 
 const CATEGORY_CHIPS: { id: BookCategoryTitle | 'all'; title_ur: string }[] = [
   { id: 'all', title_ur: 'تمام کتب' },
@@ -25,18 +14,11 @@ const CATEGORY_CHIPS: { id: BookCategoryTitle | 'all'; title_ur: string }[] = [
   { id: 'Aqeedah', title_ur: 'عقائد و کلام' }
 ];
 
-export const Dashboard: React.FC<DashboardProps> = ({
-  onSelectPublicBook,
-  onSelectBook,
-  setActiveTab: _setActiveTab,
-  searchQuery = ''
-}) => {
+export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState<BookCategoryTitle | 'all'>('all');
-  const [localSearch, setLocalSearch] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const effectiveSearch = (searchQuery || localSearch).trim().toLowerCase();
-
-  // FIX CRITICAL BUG: Strict deduplication ensuring 1 book = 1 card only
+  // FIX CRITICAL BUG: Guaranteed deduplication: 1 book = 1 card only
   const uniquePublicBooks = useMemo(() => {
     return publicDomainBooks.filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
   }, []);
@@ -45,44 +27,43 @@ export const Dashboard: React.FC<DashboardProps> = ({
     return modernBooks.filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
   }, []);
 
-  // Filter public domain books
   const filteredPublicBooks = useMemo(() => {
     return uniquePublicBooks.filter(book => {
       const matchCat = selectedCategory === 'all' || book.category === selectedCategory;
       if (!matchCat) return false;
-      if (!effectiveSearch) return true;
+      if (!searchQuery.trim()) return true;
+      const q = searchQuery.toLowerCase().trim();
       return (
-        book.title_ur.toLowerCase().includes(effectiveSearch) ||
-        book.title_ar.toLowerCase().includes(effectiveSearch) ||
-        book.author.toLowerCase().includes(effectiveSearch) ||
-        book.intro_ur.toLowerCase().includes(effectiveSearch) ||
-        book.category.toLowerCase().includes(effectiveSearch)
+        book.title_ur.toLowerCase().includes(q) ||
+        book.title_ar.toLowerCase().includes(q) ||
+        book.author.toLowerCase().includes(q) ||
+        book.intro_ur.toLowerCase().includes(q)
       );
     });
-  }, [uniquePublicBooks, selectedCategory, effectiveSearch]);
+  }, [uniquePublicBooks, selectedCategory, searchQuery]);
 
-  // Filter modern books
   const filteredModernBooks = useMemo(() => {
     return uniqueModernBooks.filter(book => {
       const matchCat = selectedCategory === 'all' || book.category === selectedCategory;
       if (!matchCat) return false;
-      if (!effectiveSearch) return true;
+      if (!searchQuery.trim()) return true;
+      const q = searchQuery.toLowerCase().trim();
       return (
-        book.title_ur.toLowerCase().includes(effectiveSearch) ||
-        book.title_ar.toLowerCase().includes(effectiveSearch) ||
-        book.author.toLowerCase().includes(effectiveSearch) ||
-        book.intro_ur.toLowerCase().includes(effectiveSearch)
+        book.title_ur.toLowerCase().includes(q) ||
+        book.title_ar.toLowerCase().includes(q) ||
+        book.author.toLowerCase().includes(q) ||
+        book.intro_ur.toLowerCase().includes(q)
       );
     });
-  }, [uniqueModernBooks, selectedCategory, effectiveSearch]);
+  }, [uniqueModernBooks, selectedCategory, searchQuery]);
 
   return (
     <div className="bg-white min-h-screen text-stone-900 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-12">
         
-        {/* Top: 6 Category Chips Filter */}
+        {/* Top: 6 Category Chips Filter & Search */}
         <div className="flex flex-col items-center gap-4 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-800 text-xs font-semibold">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-800 text-xs font-semibold">
             <Sparkles className="w-3.5 h-3.5 text-amber-500" />
             <span>مکتبہ شاملہ طرز — کتبِ علومِ اسلامیہ</span>
           </div>
@@ -91,8 +72,20 @@ export const Dashboard: React.FC<DashboardProps> = ({
             تحریکِ ایمان ڈیجیٹل کتب خانہ
           </h1>
           <p className="max-w-2xl text-stone-500 text-sm sm:text-base font-nastaliq leading-loose">
-            مستند اسلامی تراث کا جامع ذخیرہ۔ تمام کلاسیکی کتب کاپی رائٹ سے آزاد اور پبلک ڈومین ہیں، جبکہ جدید کتب اصل مراجع کے ذریعے فراہم کی گئی ہیں۔
+            مستند اسلامی کتب کا صاف ستھرا ذخیرہ۔ تمام کلاسیکی کتب پبلک ڈومین ہیں، جبکہ جدید کتب اصل مراجع کے ساتھ فراہم کی گئی ہیں۔
           </p>
+
+          {/* Search Bar */}
+          <div className="w-full max-w-md relative my-2">
+            <Search className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="کتاب، مصنف یا موضوع تلاش کریں..."
+              className="w-full pr-10 pl-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-nastaliq focus:outline-none focus:ring-2 focus:ring-emerald-700/20"
+            />
+          </div>
 
           {/* 6 Category Chips */}
           <div className="flex flex-wrap items-center justify-center gap-2.5 pt-2">
@@ -116,9 +109,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
         </div>
 
-        {/* ========================================================================= */}
-        {/* Main Section: Public Domain کتب خانہ (4 columns desktop, 2 mobile) */}
-        {/* ========================================================================= */}
+        {/* Section 1: Public Domain کتب خانہ (4 columns desktop, 2 mobile) */}
         <section className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-gray-100 pb-4">
             <div>
@@ -141,23 +132,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <div className="text-center py-16 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
               <BookMarked className="w-10 h-10 text-gray-400 mx-auto mb-2" />
               <p className="text-base font-nastaliq text-stone-600">آپ کی تلاش سے مطابقت رکھنے والی کوئی کتاب نہیں ملی۔</p>
-              <button
-                onClick={() => {
-                  setSelectedCategory('all');
-                  setLocalSearch('');
-                }}
-                className="mt-3 px-4 py-1.5 text-xs font-nastaliq font-bold bg-emerald-800 text-white rounded-xl hover:bg-emerald-900 transition"
-              >
-                تمام کتب دیکھیں
-              </button>
             </div>
           ) : (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
               {filteredPublicBooks.map(book => (
                 <div
                   key={book.id}
-                  onClick={() => { if (onSelectPublicBook) onSelectPublicBook(book); if (onSelectBook) onSelectBook(book); }}
-                  className="group bg-white rounded-2xl border border-gray-100 hover:border-emerald-700/40 p-3 sm:p-4 flex flex-col justify-between transition-all duration-200 hover:shadow-xl hover:-translate-y-1 cursor-pointer"
+                  className="group bg-white rounded-2xl border border-gray-100 hover:border-emerald-700/40 p-3 sm:p-4 flex flex-col justify-between transition-all duration-200 hover:shadow-xl hover:-translate-y-1"
                 >
                   <div className="space-y-3">
                     {/* Cover Image: object-cover h-64 */}
@@ -199,10 +180,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                   {/* Card Footer Button */}
                   <div className="pt-4 mt-2 border-t border-gray-50 flex items-center justify-between text-xs font-bold font-nastaliq text-emerald-800 group-hover:text-emerald-900">
-                    <span className="flex items-center gap-1">
+                    <a
+                      href={`/books/${book.slug}`}
+                      className="flex items-center gap-1 hover:underline"
+                    >
                       <BookOpen className="w-3.5 h-3.5 text-amber-500" />
-                      <span>مطالعہ فرمائیں</span>
-                    </span>
+                      <span>کتاب پڑھیں</span>
+                    </a>
                     <span className="text-[11px] text-stone-400">
                       {book.pages.toLocaleString('ur-PK')} ص
                     </span>
@@ -213,9 +197,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           )}
         </section>
 
-        {/* ========================================================================= */}
-        {/* Section 2: Link Library - جدید کتب (Different Style + External Link Button) */}
-        {/* ========================================================================= */}
+        {/* Section 2: Link Library — جدید کتب */}
         <section className="space-y-6 pt-6">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-gray-100 pb-4">
             <div>
@@ -278,7 +260,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   </div>
                 </div>
 
-                {/* UI must show button "اصل ماخذ پر پڑھیں" which opens external_link in new tab */}
                 <div className="pt-4 mt-4 border-t border-emerald-100/70">
                   <a
                     href={book.external_link}
@@ -298,4 +279,4 @@ export const Dashboard: React.FC<DashboardProps> = ({
       </div>
     </div>
   );
-};
+}
