@@ -36,7 +36,8 @@ import { ExportPrintModal } from './ExportPrintModal';
 import { saveBookOffline, removeBookOffline, isBookSavedOffline } from '../../utils/offlineStorage';
 import { OfflineBooksManagerModal } from './OfflineBooksManagerModal';
 import { searchInsideBook } from '../../services/databaseService';
-import { hasFiqhFullText, loadFiqhFullText, convertFullTextToChapters } from '../../services/fiqhFullTextService';
+import { hasFiqhFullText, loadFiqhFullText, convertFullTextToChapters, getFiqhFullTextSlug } from '../../services/fiqhFullTextService';
+import { getTranslationSourceInfo, translateArabicFiqhToUrdu } from '../../services/fiqhUrduTranslator';
 
 interface ReaderViewProps {
   selectedBook: Book;
@@ -159,6 +160,8 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
   const isQuran = selectedBook.id === 'quran' || selectedBook.category === 'quran_tafseer';
   const isHadith = selectedBook.category === 'sittah' || selectedBook.subject === 'hadith';
   const isFiqh = selectedBook.category === 'fatawa' || selectedBook.subject === 'fatawa' || selectedBook.subject === 'fiqh' || hasFiqhFullText(selectedBook.id);
+  const fiqhSlug = isFiqh ? (getFiqhFullTextSlug(selectedBook.id) || selectedBook.id) : null;
+  const fiqhSource = fiqhSlug ? getTranslationSourceInfo(fiqhSlug) : null;
 
   const hadithBookMeta = isHadith ? getHadithBookMeta(selectedBook.id) : null;
   const totalHadithsInBook = hadithBookMeta?.totalHadiths || 7563;
@@ -512,10 +515,10 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
         <div className="p-3 rounded-2xl bg-emerald-950/70 border border-emerald-500/60 text-amber-200 text-xs sm:text-sm font-nastaliq flex items-center justify-between gap-2 shadow-xs">
           <div className="flex items-center gap-2">
             <BookOpen className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>ماشاء اللہ! «{selectedBook.title}» کا مکمل عربی متن مع {fullTextStats.pages} صفحات و {fullTextStats.chapters} ابواب مطالعہ کے لیے مکمل دستیاب ہے۔</span>
+            <span>ماشاء اللہ! «{selectedBook.title}» کا مکمل عربی متن مع {fullTextStats.pages} صفحات، {fullTextStats.chapters} ابواب اور مستند اردو ترجمہ مطالعہ کے لیے دستیاب ہے۔</span>
           </div>
           <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40 font-serif font-bold">
-            {fullTextStats.pages} صفحات
+            {fullTextStats.pages} صفحات • مع اردو ترجمہ
           </span>
         </div>
       )}
@@ -1285,9 +1288,26 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
           // Get translation in selected language
           const transKey = `${segment.id}___${currentLang}`;
           const isTranslatingThis = Boolean(translatingIds[transKey] && !dynamicTranslations[transKey] && currentLang !== 'ur');
+
+          // 1. Take urdu_tarjuma from segment.urduTranslation (Cloudflare D1 / bundle)
+          // 2. If empty or missing, fallback immediately to fiqhUrduTranslator for AI translation!
+          let effectiveUrdu = segment.urduTranslation?.trim() || '';
+          if (!effectiveUrdu && isFiqh && segment.arabicText) {
+            effectiveUrdu = translateArabicFiqhToUrdu(
+              segment.arabicText,
+              currentChapter?.titleArabic || currentChapter?.titleUrdu || '',
+              selectedBook.id,
+              false
+            );
+          }
+
           const translationText = currentLang === 'ur'
-            ? segment.urduTranslation
-            : (segment.translations?.[currentLang] || dynamicTranslations[transKey] || segment.urduTranslation);
+            ? effectiveUrdu
+            : (segment.translations?.[currentLang] || dynamicTranslations[transKey] || effectiveUrdu);
+
+          const displayTranslation = fiqhSource && currentLang === 'ur' && translationText
+            ? translationText.replace(/^【[\s\S]*?】\s*\n\([^)]+\)\s*\n\s*/, '').trim()
+            : translationText;
 
 
           return (
@@ -1402,6 +1422,56 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                       })}
                     </div>
                   </div>
+
+                  {/* Dedicated Immediate Urdu Translation Box for Fiqh Books (Visible immediately on page load, no tab click needed) */}
+                  {isFiqh && (
+                    <div className="rounded-3xl p-5 sm:p-6 bg-gradient-to-b from-amber-50/95 via-stone-50 to-amber-50/70 dark:from-stone-850 dark:via-stone-900 dark:to-stone-850 border-2 border-amber-300/80 dark:border-amber-700/60 shadow-md space-y-4 animate-fadeIn">
+                      {/* Scholarly Header & Attribution */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-200/80 dark:border-stone-700 pb-3">
+                        <div className="flex items-center gap-2">
+                          <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-bold font-nastaliq shadow-xs ${
+                            fiqhSource?.isPublishedClassical
+                              ? 'bg-emerald-900 text-amber-200 ring-1 ring-amber-400/50'
+                              : 'bg-amber-600 text-white ring-1 ring-amber-300/50'
+                          }`}>
+                            {fiqhSource?.isPublishedClassical ? '📜 مستند مطبوعہ درسی اردو ترجمہ' : '✨ AI فقہی ترجمہ بر اصولِ احناف'}
+                          </span>
+                          <div className="text-xs font-nastaliq">
+                            <span className="text-stone-600 dark:text-stone-400">مترجم و ماخذ: </span>
+                            <strong className="text-emerald-950 dark:text-emerald-300 font-black">
+                              {fiqhSource?.translatorName || 'علمائے احناف و معتمد اردو تراجم'}
+                            </strong>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => onSendToAI(segment.arabicText, selectedBook.title)}
+                            className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500 hover:bg-amber-600 text-stone-950 text-xs font-bold shadow-xs transition-transform active:scale-95 font-nastaliq cursor-pointer"
+                            title="اے آئی سے اس عبارت کا تفصیلی حل و مفہوم پوچھیں"
+                          >
+                            <Sparkles className="w-3.5 h-3.5 text-stone-950" />
+                            <span>✨ AI سے حل و تفہیم</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Translation Body */}
+                      <div className="p-4 sm:p-5 bg-white/95 dark:bg-stone-900/95 rounded-2xl border border-amber-200/70 dark:border-stone-800 shadow-inner">
+                        <p className="text-base sm:text-lg font-nastaliq leading-loose text-justify text-stone-900 dark:text-stone-100 whitespace-pre-line select-text">
+                          {displayTranslation || effectiveUrdu}
+                        </p>
+                      </div>
+
+                      {fiqhSource?.notes && (
+                        <div className="text-[11px] text-stone-600 dark:text-stone-400 font-nastaliq flex items-center gap-1.5 pt-1">
+                          <span className="text-amber-600 dark:text-amber-400">📖</span>
+                          <span>{fiqhSource.notes}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Actions Toolbar */}
                   <div className="flex flex-wrap gap-2 pt-2">
@@ -1540,16 +1610,43 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                         </div>
                       </div>
 
-                      {/* Loading State or Translation Content */}
-                      {isTranslatingThis ? (
-                        <div className="flex items-center justify-center gap-2 py-6 text-xs text-amber-800 dark:text-amber-300 font-nastaliq animate-pulse">
-                          <Loader2 className="w-4 h-4 animate-spin text-amber-600" />
-                          <span>بزبان «{activeLangConfig.nameNative} ({activeLangConfig.nameUrdu})» سلیس ترجمہ تیار ہو رہا ہے...</span>
+                      {/* Notice if viewing Fiqh with Urdu: Already shown directly above */}
+                      {isFiqh && currentLang === 'ur' ? (
+                        <div className="p-4 rounded-2xl bg-emerald-50/80 dark:bg-stone-850/90 border border-emerald-300 dark:border-stone-700 text-center space-y-2">
+                          <p className="text-xs sm:text-sm font-nastaliq text-emerald-950 dark:text-emerald-300 font-bold">
+                            ماشاء اللہ! «{selectedBook.title}» کا مکمل اور مستند اردو ترجمہ اوپر عربی عبارت کے نیچے ہی بلا کسی بٹن کے کھلا ہوا ہے۔
+                          </p>
+                          <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+                            <button
+                              type="button"
+                              onClick={() => setSegmentTab(segment.id, 'tashreeh')}
+                              className="px-3.5 py-1.5 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-amber-200 text-xs font-nastaliq font-bold shadow-xs transition-transform active:scale-95 cursor-pointer"
+                            >
+                              2. جامع تشریح و دلائل ملاحظہ فرمائیں ⬅
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setSegmentTab(segment.id, 'iraab')}
+                              className="px-3.5 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 text-xs font-nastaliq font-bold border border-stone-300 dark:border-stone-600 transition-transform active:scale-95 cursor-pointer"
+                            >
+                              3. جدولِ محلِ اعراب دیکھیں ⬅
+                            </button>
+                          </div>
                         </div>
                       ) : (
-                        <p className={`text-sm ${activeLangConfig.direction === 'rtl' ? 'font-nastaliq leading-loose' : 'font-sans leading-relaxed'} text-stone-800 dark:text-stone-200`}>
-                          {translationText}
-                        </p>
+                        /* Loading State or Translation Content for other books / other languages */
+                        isTranslatingThis ? (
+                          <div className="flex items-center justify-center gap-2 py-6 text-xs text-amber-800 dark:text-amber-300 font-nastaliq animate-pulse">
+                            <Loader2 className="w-4 h-4 animate-spin text-amber-600" />
+                            <span>بزبان «{activeLangConfig.nameNative} ({activeLangConfig.nameUrdu})» سلیس ترجمہ تیار ہو رہا ہے...</span>
+                          </div>
+                        ) : (
+                          <div className="p-4 sm:p-5 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200/80 dark:border-stone-800 shadow-xs">
+                            <p className={`text-base sm:text-lg ${activeLangConfig.direction === 'rtl' ? 'font-nastaliq leading-loose text-justify' : 'font-sans leading-relaxed'} text-stone-900 dark:text-stone-100 whitespace-pre-line select-text`}>
+                              {displayTranslation || translationText}
+                            </p>
+                          </div>
+                        )
                       )}
                     </div>
                   )}

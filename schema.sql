@@ -66,6 +66,16 @@ CREATE TABLE IF NOT EXISTS user_progress (
   FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS books_full_text (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  book_slug TEXT NOT NULL,
+  chapter_title TEXT,
+  page_number INTEGER,
+  arabic_matn TEXT NOT NULL,
+  urdu_tarjuma TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Essential Performance Indexes
 CREATE INDEX IF NOT EXISTS idx_books_category ON books(category);
 CREATE INDEX IF NOT EXISTS idx_books_subject ON books(subject);
@@ -73,3 +83,5 @@ CREATE INDEX IF NOT EXISTS idx_chapters_book_id ON book_chapters(book_id);
 CREATE INDEX IF NOT EXISTS idx_segments_chapter_id ON book_segments(chapter_id);
 CREATE INDEX IF NOT EXISTS idx_segments_book_id ON book_segments(book_id);
 CREATE INDEX IF NOT EXISTS idx_user_progress_user ON user_progress(user_id);
+CREATE INDEX IF NOT EXISTS idx_books_full_text_slug ON books_full_text(book_slug);
+

@@ -7,11 +7,13 @@
  */
 
 import { BookChapter, BookSegment } from '../types';
+import { translateArabicFiqhToUrdu } from './fiqhUrduTranslator';
 
 export interface FullTextPage {
   pageNumber: number;
   chapterTitle: string;
   arabicMatn: string;
+  urduTarjuma?: string;
 }
 
 export interface FullTextBookBundle {
@@ -118,7 +120,9 @@ export function convertFullTextToChapters(bundle: FullTextBookBundle, _bookId?: 
     const segments: BookSegment[] = pages.map((p) => ({
       id: `${bundle.slug}_p${p.pageNumber}`,
       arabicText: p.arabicMatn,
-      urduTranslation: `«${bundle.title} — ${p.chapterTitle} (صفحہ ${p.pageNumber})»\n\nاس صفحے میں متذکرہ فقہی مسائل و نصوصِ شرعیہ کی تفصیلات پیش کی گئی ہیں۔`,
+      urduTranslation: (p.urduTarjuma && p.urduTarjuma.trim().length > 0)
+        ? p.urduTarjuma
+        : translateArabicFiqhToUrdu(p.arabicMatn, p.chapterTitle, bundle.slug),
       translations: {
         en: `${bundle.title} — Page ${p.pageNumber}: Detailed legal rulings and jurisprudential reasoning in authentic Islamic jurisprudence.`
       },
