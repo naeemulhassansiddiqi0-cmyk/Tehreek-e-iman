@@ -1291,7 +1291,13 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
           const isTranslatingThis = Boolean(translatingIds[transKey] && !dynamicTranslations[transKey] && currentLang !== 'ur');
 
           const isGenericTemplate = (text: string) => {
-            return text.includes('اس فقہی عبارت میں') || text.includes('اس عبارت میں فقہی مسئلہ');
+            return (
+              text.includes('اس فقہی عبارت میں') ||
+              text.includes('اس عبارت میں فقہی مسئلہ') ||
+              text.includes('(اس کا)') ||
+              text.includes('(وہ سب)') ||
+              text.includes('(ان کا)')
+            );
           };
 
           // 1. Take urdu_tarjuma from segment.urduTranslation (Cloudflare D1 / bundle)
