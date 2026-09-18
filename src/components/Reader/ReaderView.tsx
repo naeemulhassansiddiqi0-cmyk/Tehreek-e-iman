@@ -1290,10 +1290,14 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
           const transKey = `${segment.id}___${currentLang}`;
           const isTranslatingThis = Boolean(translatingIds[transKey] && !dynamicTranslations[transKey] && currentLang !== 'ur');
 
+          const isGenericTemplate = (text: string) => {
+            return text.includes('اس فقہی عبارت میں') || text.includes('اس عبارت میں فقہی مسئلہ');
+          };
+
           // 1. Take urdu_tarjuma from segment.urduTranslation (Cloudflare D1 / bundle)
           // 2. If empty or same as Arabic, fallback immediately to fiqhUrduTranslator for AI translation!
           let effectiveUrdu = segment.urduTranslation?.trim() || '';
-          if (isFiqh && (!effectiveUrdu || isSameAsArabic(effectiveUrdu, segment.arabicText) || !isUrduText(effectiveUrdu, segment.arabicText))) {
+          if (isFiqh && (!effectiveUrdu || isSameAsArabic(effectiveUrdu, segment.arabicText) || !isUrduText(effectiveUrdu, segment.arabicText) || isGenericTemplate(effectiveUrdu))) {
             effectiveUrdu = translateArabicFiqhToUrdu(
               segment.arabicText,
               currentChapter?.titleArabic || currentChapter?.titleUrdu || '',
@@ -1326,8 +1330,14 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
           const getParaUrduTranslation = (pIdx: number, arText: string): string => {
             // 1) First try to get urdu_tarjuma from D1 / static bundle
             const candidate = urduParas[pIdx]?.trim();
-            // 2) If empty or same as Arabic (or not authentic Urdu), immediately call fiqhUrduTranslator.translateParagraph(arabicText) to generate Urdu
-            if (candidate && candidate.length > 0 && !isSameAsArabic(candidate, arText) && isUrduText(candidate, arText)) {
+            // 2) If empty, same as Arabic, not authentic Urdu, or stale template, immediately call fiqhUrduTranslator.translateParagraph(arabicText) to generate unique Urdu
+            if (
+              candidate &&
+              candidate.length > 0 &&
+              !isSameAsArabic(candidate, arText) &&
+              isUrduText(candidate, arText) &&
+              !isGenericTemplate(candidate)
+            ) {
               return candidate;
             }
             return translateParagraph(
