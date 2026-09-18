@@ -1282,7 +1282,8 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
       >
         {(readingMode === 'page' ? (currentSegment ? [currentSegment] : []) : segmentsList).map((segment: BookSegment, sIdx: number) => {
           const effectiveIndex = readingMode === 'page' ? safeSegmentIndex : sIdx;
-          const currentTab = activePillarTab[segment.id] || 'translation';
+          const defaultTab = (isFiqh && currentLang === 'ur') ? 'tashreeh' : 'translation';
+          const currentTab = activePillarTab[segment.id] || defaultTab;
           const isHighlighted = highlightSegmentId === segment.id;
 
           // Get translation in selected language
@@ -1308,6 +1309,35 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
           const displayTranslation = fiqhSource && currentLang === 'ur' && translationText
             ? translationText.replace(/^【[\s\S]*?】\s*\n\([^)]+\)\s*\n\s*/, '').trim()
             : translationText;
+
+          // Paragraph breakdown for Fiqh
+          const arabicParas = segment.arabicText
+            ? segment.arabicText.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean)
+            : [];
+
+          const cleanUrduTarjuma = (segment.urduTranslation || '')
+            .replace(/^【[\s\S]*?】\s*\n\([^)]+\)\s*\n\s*/, '')
+            .trim();
+
+          const urduParas = cleanUrduTarjuma
+            ? cleanUrduTarjuma.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean)
+            : [];
+
+          const getParaUrduTranslation = (pIdx: number, arText: string) => {
+            const candidate = urduParas[pIdx]?.trim();
+            if (candidate && candidate.length > 0 && candidate !== arText.trim()) {
+              const hasUrdu = /(?:ہے|ہیں|کا|کی|کے|کو|سے|میں|پر|تک|اور|کہ|نے|کر|ہو|یا|نہ|تھا|تھی|تھے|گے|گی|فرائض|سنتیں|مسائل|بیان)/.test(candidate);
+              if (hasUrdu) {
+                return candidate;
+              }
+            }
+            return translateArabicFiqhToUrdu(
+              arText,
+              currentChapter?.titleArabic || currentChapter?.titleUrdu || '',
+              selectedBook.id,
+              false
+            );
+          };
 
 
           return (
@@ -1349,85 +1379,11 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                 {/* Arabic Matn Column with Complete Diacritics (High Contrast & Clear Typography) */}
                 <div className={`space-y-4 ${isDualPane ? 'border-b lg:border-b-0 lg:border-l lg:border-stone-200 dark:lg:border-stone-800 pb-5 lg:pb-0 lg:pl-6' : ''}`}>
                   
-                  {/* Dedicated High-Contrast Matn Frame */}
-                  <div className={`${getMatnBoxClass()} rounded-3xl p-5 sm:p-8 space-y-4 transition-all`}>
-                    
-                    {/* Header inside Matn Frame with Quick In-Place Theme Switcher */}
-                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-200/80 dark:border-stone-800 pb-2.5">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 dark:bg-amber-400 animate-pulse"></span>
-                        <span className="text-xs sm:text-sm text-emerald-950 dark:text-emerald-300 font-bold font-arabic">
-                          النَّصُّ المَتْنِيُّ بِالتَّشْكِيلِ وَالإِعْرَابِ التَّامِّ
-                        </span>
-                      </div>
-
-                      {/* In-place quick theme selector right above text */}
-                      <div className="flex items-center gap-1 bg-stone-100 dark:bg-stone-850 p-0.5 rounded-lg text-[11px] font-nastaliq border border-stone-200 dark:border-stone-700">
-                        <button
-                          onClick={() => handleSetMatnTheme('mushaf')}
-                          className={`px-2 py-0.5 rounded font-bold transition-all ${matnTheme === 'mushaf' ? 'bg-white text-stone-950 shadow-xs ring-1 ring-amber-500/40' : 'text-stone-500 hover:text-stone-900 dark:hover:text-stone-200'}`}
-                          title="مصحفی سفید: سفید پس منظر اور گہری کالی سیاہی"
-                        >
-                          مصحفی سفید
-                        </button>
-                        <button
-                          onClick={() => handleSetMatnTheme('parchment')}
-                          className={`px-2 py-0.5 rounded font-bold transition-all ${matnTheme === 'parchment' ? 'bg-amber-100 text-emerald-950 shadow-xs ring-1 ring-emerald-600/40' : 'text-stone-500 hover:text-stone-900 dark:hover:text-stone-200'}`}
-                          title="عنبری قرطاس: روایتی قلمی نسخہ"
-                        >
-                          عنبری قرطاس
-                        </button>
-                        <button
-                          onClick={() => handleSetMatnTheme('night')}
-                          className={`px-2 py-0.5 rounded font-bold transition-all ${matnTheme === 'night' ? 'bg-stone-900 text-amber-300 shadow-xs ring-1 ring-amber-400/40' : 'text-stone-500 hover:text-stone-900 dark:hover:text-stone-200'}`}
-                          title="شبینہ طلائی: ڈارک کنٹراسٹ"
-                        >
-                          شبینہ طلائی
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Words with High-Contrast Click-to-lookup */}
-                    <div 
-                      dir="rtl"
-                      className={`${getFontSizeClass()} ${
-                        fontFamily === 'amiri' 
-                          ? 'font-amiri' 
-                          : fontFamily === 'scheherazade' 
-                          ? 'font-scheherazade' 
-                          : 'font-lateef'
-                      } ${getMatnTextClass()} selection:bg-amber-300 selection:text-stone-950 text-right`}
-                    >
-                      {segment.arabicText.split(' ').map((word, wIdx) => {
-                        const cleanTarget = lookupWord ? lookupWord.replace(/[.,:;!?()،؛؟"«»۝0-9٠-٩]/g, '').trim() : '';
-                        const cleanW = word.replace(/[.,:;!?()،؛؟"«»۝0-9٠-٩]/g, '').trim();
-                        const isSelected = cleanTarget && (cleanW === cleanTarget);
-
-                        return (
-                          <span
-                            key={wIdx}
-                            onClick={() => handleWordClick(word, segment)}
-                            className={`cursor-pointer rounded-lg px-1.5 py-0.5 transition-all inline-block ${
-                              isSelected
-                                ? 'bg-amber-300 text-stone-950 font-bold ring-2 ring-amber-600 shadow-sm scale-105'
-                                : matnTheme === 'night'
-                                ? 'hover:bg-amber-400/30 hover:text-amber-200'
-                                : 'hover:bg-amber-200 hover:text-stone-950'
-                            }`}
-                            title="لغت و درسی تحقیق کے لیے کلک فرمائیں"
-                          >
-                            {word}{' '}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Dedicated Immediate Urdu Translation Box for Fiqh Books (Visible immediately on page load, no tab click needed) */}
-                  {isFiqh && (
-                    <div className="rounded-3xl p-5 sm:p-6 bg-gradient-to-b from-amber-50/95 via-stone-50 to-amber-50/70 dark:from-stone-850 dark:via-stone-900 dark:to-stone-850 border-2 border-amber-300/80 dark:border-amber-700/60 shadow-md space-y-4 animate-fadeIn">
-                      {/* Scholarly Header & Attribution */}
-                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-200/80 dark:border-stone-700 pb-3">
+                  {/* Dedicated Content Column: Paragraph-by-Paragraph for Fiqh, Monolithic for Quran/Hadith */}
+                  {isFiqh ? (
+                    <div className="space-y-6">
+                      {/* Dedicated Scholarly Attribution Header & Quick Theme Switcher */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 p-3.5 sm:p-4 rounded-2xl bg-amber-50/90 dark:bg-stone-850/90 border border-amber-300/80 dark:border-amber-700/60 shadow-xs">
                         <div className="flex items-center gap-2">
                           <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-bold font-nastaliq shadow-xs ${
                             fiqhSource?.isPublishedClassical
@@ -1438,38 +1394,211 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                           </span>
                           <div className="text-xs font-nastaliq">
                             <span className="text-stone-600 dark:text-stone-400">مترجم و ماخذ: </span>
-                            <strong className="text-emerald-950 dark:text-emerald-300 font-black">
+                            <strong className="text-emerald-950 dark:text-emerald-300 font-bold">
                               {fiqhSource?.translatorName || 'علمائے احناف و معتمد اردو تراجم'}
                             </strong>
                           </div>
                         </div>
 
                         <div className="flex items-center gap-2">
+                          {/* Quick theme selector */}
+                          <div className="flex items-center gap-1 bg-white dark:bg-stone-800 p-0.5 rounded-lg text-[11px] font-nastaliq border border-stone-200 dark:border-stone-700">
+                            <button
+                              onClick={() => handleSetMatnTheme('mushaf')}
+                              className={`px-2 py-0.5 rounded font-bold transition-all ${matnTheme === 'mushaf' ? 'bg-amber-100 text-stone-950 shadow-xs ring-1 ring-amber-500/40' : 'text-stone-500 hover:text-stone-900 dark:hover:text-stone-200'}`}
+                              title="مصحفی سفید"
+                            >
+                              مصحفی سفید
+                            </button>
+                            <button
+                              onClick={() => handleSetMatnTheme('parchment')}
+                              className={`px-2 py-0.5 rounded font-bold transition-all ${matnTheme === 'parchment' ? 'bg-amber-200 text-emerald-950 shadow-xs ring-1 ring-emerald-600/40' : 'text-stone-500 hover:text-stone-900 dark:hover:text-stone-200'}`}
+                              title="عنبری قرطاس"
+                            >
+                              عنبری قرطاس
+                            </button>
+                            <button
+                              onClick={() => handleSetMatnTheme('night')}
+                              className={`px-2 py-0.5 rounded font-bold transition-all ${matnTheme === 'night' ? 'bg-stone-900 text-amber-300 shadow-xs ring-1 ring-amber-400/40' : 'text-stone-500 hover:text-stone-900 dark:hover:text-stone-200'}`}
+                              title="شبینہ طلائی"
+                            >
+                              شبینہ طلائی
+                            </button>
+                          </div>
+
                           <button
                             type="button"
                             onClick={() => onSendToAI(segment.arabicText, selectedBook.title)}
                             className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500 hover:bg-amber-600 text-stone-950 text-xs font-bold shadow-xs transition-transform active:scale-95 font-nastaliq cursor-pointer"
-                            title="اے آئی سے اس عبارت کا تفصیلی حل و مفہوم پوچھیں"
+                            title="اے آئی سے اس صفحے کا فقہی حل پوچھیں"
                           >
                             <Sparkles className="w-3.5 h-3.5 text-stone-950" />
-                            <span>✨ AI سے حل و تفہیم</span>
+                            <span>AI سے حل</span>
                           </button>
                         </div>
                       </div>
 
-                      {/* Translation Body */}
-                      <div className="p-4 sm:p-5 bg-white/95 dark:bg-stone-900/95 rounded-2xl border border-amber-200/70 dark:border-stone-800 shadow-inner">
-                        <p className="text-base sm:text-lg font-nastaliq leading-loose text-justify text-stone-900 dark:text-stone-100 whitespace-pre-line select-text">
-                          {displayTranslation || effectiveUrdu}
-                        </p>
+                      {/* Paragraph-by-Paragraph Stream: Each Arabic paragraph followed directly by its Urdu translation box */}
+                      <div className="space-y-6">
+                        {(arabicParas.length > 0 ? arabicParas : [segment.arabicText]).map((arPara, pIdx) => {
+                          const paraUrdu = getParaUrduTranslation(pIdx, arPara);
+                          return (
+                            <div key={pIdx} className="space-y-3">
+                              {/* 1. Arabic Matn Paragraph Card */}
+                              <div className={`${getMatnBoxClass()} rounded-3xl p-5 sm:p-7 space-y-3 transition-all border shadow-xs`}>
+                                <div className="flex items-center justify-between border-b border-stone-200/80 dark:border-stone-800 pb-2">
+                                  <div className="flex items-center gap-2">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-amber-400 animate-pulse"></span>
+                                    <span className="text-xs text-emerald-950 dark:text-emerald-300 font-bold font-arabic">
+                                      عربی عبارت (فقرہ {pIdx + 1})
+                                    </span>
+                                  </div>
+                                  <span className="text-[11px] text-stone-600 dark:text-stone-400 font-nastaliq">
+                                    لغت و تحقیق کے لیے کسی بھی لفظ پر کلک کریں
+                                  </span>
+                                </div>
+
+                                {/* Clickable Words */}
+                                <div
+                                  dir="rtl"
+                                  className={`${getFontSizeClass()} ${
+                                    fontFamily === 'amiri' 
+                                      ? 'font-amiri' 
+                                      : fontFamily === 'scheherazade' 
+                                      ? 'font-scheherazade' 
+                                      : 'font-lateef'
+                                  } ${getMatnTextClass()} selection:bg-amber-300 selection:text-stone-950 text-right leading-loose`}
+                                >
+                                  {arPara.split(' ').map((word, wIdx) => {
+                                    const cleanTarget = lookupWord ? lookupWord.replace(/[.,:;!?()،؛؟"«»۝0-9٠-٩]/g, '').trim() : '';
+                                    const cleanW = word.replace(/[.,:;!?()،؛؟"«»۝0-9٠-٩]/g, '').trim();
+                                    const isSelected = cleanTarget && (cleanW === cleanTarget);
+
+                                    return (
+                                      <span
+                                        key={wIdx}
+                                        onClick={() => handleWordClick(word, segment)}
+                                        className={`cursor-pointer rounded-lg px-1.5 py-0.5 transition-all inline-block ${
+                                          isSelected
+                                            ? 'bg-amber-300 text-stone-950 font-bold ring-2 ring-amber-600 shadow-sm scale-105'
+                                            : matnTheme === 'night'
+                                            ? 'hover:bg-amber-400/30 hover:text-amber-200'
+                                            : 'hover:bg-amber-200 hover:text-stone-950'
+                                        }`}
+                                        title="لغت و درسی تحقیق کے لیے کلک فرمائیں"
+                                      >
+                                        {word}{' '}
+                                      </span>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+
+                              {/* 2. Dedicated Urdu Translation Box for this specific Paragraph */}
+                              <div className="rounded-2xl p-4 sm:p-5 bg-gradient-to-r from-amber-50/95 via-stone-50 to-amber-50/80 dark:from-stone-850 dark:via-stone-900 dark:to-stone-850 border border-amber-300/80 dark:border-amber-700/60 shadow-xs border-r-4 border-r-amber-500 space-y-2">
+                                <div className="flex items-center justify-between border-b border-amber-200/60 dark:border-stone-800 pb-1.5">
+                                  <div className="flex items-center gap-1.5 text-xs font-nastaliq font-bold text-amber-950 dark:text-amber-200">
+                                    <BookOpen className="w-3.5 h-3.5 text-amber-600" />
+                                    <span>اردو ترجمہ و سلیس مفہوم (پیراگراف {pIdx + 1}):</span>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => onSendToAI(arPara, selectedBook.title)}
+                                    className="text-[11px] text-amber-900 dark:text-amber-300 hover:underline font-nastaliq flex items-center gap-1 cursor-pointer"
+                                    title="اے آئی سے اس پیراگراف کا تفصیلی حل پوچھیں"
+                                  >
+                                    <Sparkles className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                                    <span>AI سے فقرہ حل کروائیں</span>
+                                  </button>
+                                </div>
+                                <p className="text-base sm:text-lg font-nastaliq leading-loose text-justify text-stone-900 dark:text-stone-100 whitespace-pre-line select-text">
+                                  {paraUrdu}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
 
                       {fiqhSource?.notes && (
-                        <div className="text-[11px] text-stone-600 dark:text-stone-400 font-nastaliq flex items-center gap-1.5 pt-1">
-                          <span className="text-amber-600 dark:text-amber-400">📖</span>
+                        <div className="text-xs text-stone-600 dark:text-stone-400 font-nastaliq flex items-center gap-1.5 p-3 bg-stone-100/80 dark:bg-stone-800/60 rounded-xl border border-stone-200 dark:border-stone-700">
+                          <span className="text-amber-600 dark:text-amber-400 font-bold">📖 ماخذ و نسخہ:</span>
                           <span>{fiqhSource.notes}</span>
                         </div>
                       )}
+                    </div>
+                  ) : (
+                    /* Standard Monolithic Matn Frame for Quran / Hadith */
+                    <div className={`${getMatnBoxClass()} rounded-3xl p-5 sm:p-8 space-y-4 transition-all`}>
+                      {/* Header inside Matn Frame with Quick In-Place Theme Switcher */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-200/80 dark:border-stone-800 pb-2.5">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 dark:bg-amber-400 animate-pulse"></span>
+                          <span className="text-xs sm:text-sm text-emerald-950 dark:text-emerald-300 font-bold font-arabic">
+                            النَّصُّ المَتْنِيُّ بِالتَّشْكِيلِ وَالإِعْرَابِ التَّامِّ
+                          </span>
+                        </div>
+
+                        {/* In-place quick theme selector right above text */}
+                        <div className="flex items-center gap-1 bg-stone-100 dark:bg-stone-850 p-0.5 rounded-lg text-[11px] font-nastaliq border border-stone-200 dark:border-stone-700">
+                          <button
+                            onClick={() => handleSetMatnTheme('mushaf')}
+                            className={`px-2 py-0.5 rounded font-bold transition-all ${matnTheme === 'mushaf' ? 'bg-white text-stone-950 shadow-xs ring-1 ring-amber-500/40' : 'text-stone-500 hover:text-stone-900 dark:hover:text-stone-200'}`}
+                            title="مصحفی سفید: سفید پس منظر اور گہری کالی سیاہی"
+                          >
+                            مصحفی سفید
+                          </button>
+                          <button
+                            onClick={() => handleSetMatnTheme('parchment')}
+                            className={`px-2 py-0.5 rounded font-bold transition-all ${matnTheme === 'parchment' ? 'bg-amber-100 text-emerald-950 shadow-xs ring-1 ring-emerald-600/40' : 'text-stone-500 hover:text-stone-900 dark:hover:text-stone-200'}`}
+                            title="عنبری قرطاس: روایتی قلمی نسخہ"
+                          >
+                            عنبری قرطاس
+                          </button>
+                          <button
+                            onClick={() => handleSetMatnTheme('night')}
+                            className={`px-2 py-0.5 rounded font-bold transition-all ${matnTheme === 'night' ? 'bg-stone-900 text-amber-300 shadow-xs ring-1 ring-amber-400/40' : 'text-stone-500 hover:text-stone-900 dark:hover:text-stone-200'}`}
+                            title="شبینہ طلائی: ڈارک کنٹراسٹ"
+                          >
+                            شبینہ طلائی
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Words with High-Contrast Click-to-lookup */}
+                      <div 
+                        dir="rtl"
+                        className={`${getFontSizeClass()} ${
+                          fontFamily === 'amiri' 
+                            ? 'font-amiri' 
+                            : fontFamily === 'scheherazade' 
+                            ? 'font-scheherazade' 
+                            : 'font-lateef'
+                        } ${getMatnTextClass()} selection:bg-amber-300 selection:text-stone-950 text-right`}
+                      >
+                        {segment.arabicText.split(' ').map((word, wIdx) => {
+                          const cleanTarget = lookupWord ? lookupWord.replace(/[.,:;!?()،؛؟"«»۝0-9٠-٩]/g, '').trim() : '';
+                          const cleanW = word.replace(/[.,:;!?()،؛؟"«»۝0-9٠-٩]/g, '').trim();
+                          const isSelected = cleanTarget && (cleanW === cleanTarget);
+
+                          return (
+                            <span
+                              key={wIdx}
+                              onClick={() => handleWordClick(word, segment)}
+                              className={`cursor-pointer rounded-lg px-1.5 py-0.5 transition-all inline-block ${
+                                isSelected
+                                  ? 'bg-amber-300 text-stone-950 font-bold ring-2 ring-amber-600 shadow-sm scale-105'
+                                  : matnTheme === 'night'
+                                  ? 'hover:bg-amber-400/30 hover:text-amber-200'
+                                  : 'hover:bg-amber-200 hover:text-stone-950'
+                              }`}
+                              title="لغت و درسی تحقیق کے لیے کلک فرمائیں"
+                            >
+                              {word}{' '}
+                            </span>
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
 
@@ -1511,17 +1640,19 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                   
                   {/* 3-Pillar Navigation Buttons */}
                   <div className="flex items-center gap-1.5 bg-stone-100 dark:bg-stone-800/80 p-1 rounded-2xl border border-stone-200 dark:border-stone-700">
-                    <button
-                      onClick={() => setSegmentTab(segment.id, 'translation')}
-                      className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-xs font-bold transition-all ${
-                        currentTab === 'translation'
-                          ? 'bg-emerald-800 text-white shadow-sm'
-                          : 'text-stone-600 dark:text-stone-300 hover:text-stone-900'
-                      }`}
-                    >
-                      <BookOpen className="w-3.5 h-3.5" />
-                      <span>1. ترجمہ ({activeLangConfig.nameUrdu})</span>
-                    </button>
+                    {(!isFiqh || currentLang !== 'ur') && (
+                      <button
+                        onClick={() => setSegmentTab(segment.id, 'translation')}
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-xs font-bold transition-all ${
+                          currentTab === 'translation'
+                            ? 'bg-emerald-800 text-white shadow-sm'
+                            : 'text-stone-600 dark:text-stone-300 hover:text-stone-900'
+                        }`}
+                      >
+                        <BookOpen className="w-3.5 h-3.5" />
+                        <span>1. ترجمہ ({activeLangConfig.nameUrdu})</span>
+                      </button>
+                    )}
 
                     <button
                       onClick={() => setSegmentTab(segment.id, 'tashreeh')}
@@ -1532,7 +1663,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                       }`}
                     >
                       <FileText className="w-3.5 h-3.5" />
-                      <span>2. جامع تشریح و دلائل</span>
+                      <span>{isFiqh && currentLang === 'ur' ? '۱. جامع تشریح و دلائل' : '2. جامع تشریح و دلائل'}</span>
                     </button>
 
                     <button
@@ -1544,7 +1675,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                       }`}
                     >
                       <Scale className="w-3.5 h-3.5" />
-                      <span>3. محلِ اعراب</span>
+                      <span>{isFiqh && currentLang === 'ur' ? '۲. محلِ اعراب و لغت' : '3. محلِ اعراب'}</span>
                     </button>
                   </div>
 
