@@ -5,6 +5,7 @@ export interface NaatItem {
   category: 'حمد' | 'نعت' | 'نظم';
   type: 'local' | 'youtube' | 'archive';
   src?: string;
+  fallbackUrl?: string;
   videoId?: string;
   duration?: string;
 }
@@ -13,11 +14,11 @@ export const naatsData: NaatItem[] = [
   // ==========================================
   // 1 to 25: LOCAL HAMD (Public Domain - Archive.org)
   // ==========================================
-  { id: 1, title: 'وہی خدا ہے', artist: 'No Copyright - Archive.org', category: 'حمد', type: 'local', src: '/naats/hamd/Hamd-01-Wohi-Khuda-Hai.mp3' },
-  { id: 2, title: 'اے کریمی نہ بخشی', artist: 'No Copyright - Archive.org', category: 'حمد', type: 'local', src: '/naats/hamd/Hamd-02-Kareemi-Na-Bakhshi.mp3' },
-  { id: 3, title: 'خدا کی عظمتیں کیا ہیں', artist: 'No Copyright - Archive.org', category: 'حمد', type: 'local', src: '/naats/hamd/Hamd-03-Khuda-Ki-Azmat.mp3' },
-  { id: 4, title: 'تو رحیم ہے تو کریم ہے', artist: 'No Copyright - Archive.org', category: 'حمد', type: 'local', src: '/naats/hamd/Hamd-04-Tu-Kareem-Hai.mp3' },
-  { id: 5, title: 'نورِ خدا', artist: 'No Copyright - Archive.org', category: 'حمد', type: 'local', src: '/naats/hamd/Hamd-05-Noor-e-Khuda.mp3' },
+  { id: 1, title: 'وہی خدا ہے', artist: 'No Copyright - Archive.org', category: 'حمد', type: 'local', src: '/naats/test-naat-01.mp3', fallbackUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
+  { id: 2, title: 'اے کریمی نہ بخشی', artist: 'No Copyright - Archive.org', category: 'حمد', type: 'local', src: '/naats/Hamd-02-Kareemi-Na-Bakhshi.mp3', fallbackUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
+  { id: 3, title: 'خدا کی عظمتیں کیا ہیں', artist: 'No Copyright - Archive.org', category: 'حمد', type: 'local', src: '/naats/Hamd-03-Khuda-Ki-Azmat.mp3', fallbackUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
+  { id: 4, title: 'تو رحیم ہے تو کریم ہے', artist: 'No Copyright - Archive.org', category: 'حمد', type: 'local', src: '/naats/Hamd-04-Tu-Kareem-Hai.mp3', fallbackUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
+  { id: 5, title: 'نورِ خدا', artist: 'No Copyright - Archive.org', category: 'حمد', type: 'local', src: '/naats/Hamd-05-Noor-e-Khuda.mp3', fallbackUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
   { id: 6, title: 'ہر شے پہ حکمرانی تیری', artist: 'No Copyright - Archive.org', category: 'حمد', type: 'local', src: '/naats/hamd/Hamd-06-Har-Shay-Pe-Hukmarani.mp3' },
   { id: 7, title: 'الٰہی تیری چوکھٹ پر', artist: 'No Copyright - Archive.org', category: 'حمد', type: 'local', src: '/naats/hamd/Hamd-07-Ilahi-Teri-Chaukhat-Par.mp3' },
   { id: 8, title: 'تیرے جلوے ہر سو', artist: 'No Copyright - Archive.org', category: 'حمد', type: 'local', src: '/naats/hamd/Hamd-08-Tere-Jalwe-Har-Su.mp3' },

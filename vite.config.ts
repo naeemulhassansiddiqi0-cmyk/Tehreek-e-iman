@@ -9,6 +9,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   base: '/',
+  publicDir: 'public',
+  assetsInclude: ['**/*.mp3', '**/*.wav'],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

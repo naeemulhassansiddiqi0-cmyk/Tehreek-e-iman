@@ -19,11 +19,11 @@ export const NaatPlayerButton: React.FC<NaatPlayerButtonProps> = ({ onClick, cla
           🎙️
         </div>
         <div className="text-right">
-          <span className="block text-[11px] font-nastaliq font-bold text-emerald-300 leading-tight">
-            حمد و نعت
+          <span className="block text-xs sm:text-sm font-nastaliq font-bold text-white leading-tight">
+            حمد و نعتِ رسول ﷺ
           </span>
-          <span className="block text-xs font-nastaliq font-black text-white leading-tight">
-            نعتِ رسول ﷺ
+          <span className="block text-[10px] font-nastaliq text-emerald-300">
+            100 کلامِ پاک
           </span>
         </div>
       </button>
