@@ -374,46 +374,56 @@ export const SacredAudioPlayer: React.FC = () => {
         </div>
       )}
 
-      {/* Full Quran Player Modal: Big Height min-h-[650px] max-h-[90vh] */}
+      {/* Full Quran Player Modal: Centered Modal with Backdrop Overlay */}
       {isOpen && (
         <div 
           dir="rtl"
-          className="fixed bottom-24 left-3 right-3 sm:left-6 sm:right-auto sm:w-[480px] min-h-[650px] max-h-[90vh] z-50 flex flex-col modal-contrast-card rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.95)] text-amber-50 border-2 border-amber-400/80 backdrop-blur-xl overflow-hidden animate-fadeIn"
-          style={{ fontFamily: "'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif" }}
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 backdrop-blur-sm p-2 sm:p-4 overflow-y-auto animate-fadeIn"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsOpen(false);
+          }}
         >
-          {/* Toast Notification */}
-          {toastMsg && (
-            <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-[#FACC15] text-black font-nastaliq font-bold text-xs px-4 py-1.5 rounded-xl shadow-2xl animate-fadeIn border border-amber-300 flex items-center gap-1.5 pointer-events-none">
-              <CheckCircle2 className="w-4 h-4 text-emerald-950" />
-              <span>{toastMsg}</span>
-            </div>
-          )}
-
-          {/* Top Header */}
-          <div className="bg-gradient-to-l from-emerald-950 via-emerald-900 to-teal-950 text-white px-4 py-3 flex items-center justify-between border-b border-emerald-800/80 shadow-md">
-            <div className="flex items-center gap-2.5">
-              <TehreekImanLogo size={36} className="shadow-md shrink-0 ring-1 ring-amber-400/80" />
-              <div>
-                <h3 className="font-nastaliq font-black text-base text-[#FACC15] leading-tight">
-                  القرآن الکریم - 114 سورتیں
-                </h3>
-                <span className="text-[11px] text-emerald-300 font-nastaliq block">
-                  تحریکِ ایمان • مکمل ۱۱۴ سورتیں با آواز ۱۲ قراءِ کرام
-                </span>
+          <div 
+            className="relative w-full max-w-2xl bg-gradient-to-b from-[#064e3b] to-[#022c22] rounded-[24px] border border-yellow-400/30 shadow-2xl max-h-[92vh] flex flex-col my-auto overflow-hidden text-amber-50"
+            style={{ fontFamily: "'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif" }}
+          >
+            {/* Toast Notification */}
+            {toastMsg && (
+              <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-[#FACC15] text-black font-nastaliq font-bold text-xs px-4 py-1.5 rounded-xl shadow-2xl animate-fadeIn border border-amber-300 flex items-center gap-1.5 pointer-events-none">
+                <CheckCircle2 className="w-4 h-4 text-emerald-950" />
+                <span>{toastMsg}</span>
               </div>
+            )}
+
+            {/* STICKY TOP HEADER: ALWAYS VISIBLE WITH 40px CLOSE BUTTON */}
+            <div className="sticky top-0 z-20 flex justify-between items-center p-3.5 sm:p-4 bg-[#064e3b] rounded-t-[24px] border-b border-yellow-400/20 shrink-0 shadow-md">
+              <div className="flex items-center gap-2.5">
+                <TehreekImanLogo size={36} className="shadow-md shrink-0 ring-1 ring-amber-400/80" />
+                <div>
+                  <h2 className="text-base sm:text-lg font-bold text-white font-nastaliq leading-tight">
+                    القرآن الكريم
+                  </h2>
+                  <p className="text-[11px] text-emerald-300 font-nastaliq">
+                    تحریکِ ایمان • مکمل ۱۱۴ سورتیں با آواز ۱۲ قراءِ کرام
+                  </p>
+                </div>
+              </div>
+              <button 
+                type="button"
+                onClick={() => setIsOpen(false)} 
+                className="w-10 h-10 rounded-full bg-white/10 hover:bg-red-500/80 active:scale-95 flex items-center justify-center text-white text-xl font-bold border border-white/20 transition cursor-pointer shrink-0"
+                title="بند کریں (Close)"
+                aria-label="بند کریں"
+              >
+                ✕
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setIsOpen(false)}
-              className="p-1.5 rounded-lg bg-emerald-950 hover:bg-emerald-800 text-emerald-200 border border-emerald-700/60 cursor-pointer transition"
-              title="بند کریں"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+
+            {/* SCROLLABLE INNER BODY */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-3.5 sm:p-4 space-y-3 min-h-0">
 
           {/* Top Player Controls Card */}
-          <div className="p-3.5 bg-black/50 border-b border-emerald-800/70 space-y-2.5 shrink-0">
+          <div className="p-3.5 bg-black/50 rounded-2xl border border-emerald-800/70 space-y-2.5 shrink-0">
             {/* Arabic Surah Title + Qari Attribution */}
             <div className="text-center space-y-0.5">
               <span className="text-2xl sm:text-3xl font-black font-amiri text-[#FACC15] tracking-wide block">
@@ -538,7 +548,7 @@ export const SacredAudioPlayer: React.FC = () => {
           </div>
 
           {/* 2 Tabs Below Controls */}
-          <div className="flex items-center gap-2 p-2.5 bg-emerald-950/90 border-b border-emerald-800/70 shrink-0">
+          <div className="flex items-center gap-2 p-2 bg-emerald-950/90 rounded-2xl border border-emerald-800/70 shrink-0">
             <button
               type="button"
               onClick={() => setActiveTab('surahs')}
@@ -732,12 +742,14 @@ export const SacredAudioPlayer: React.FC = () => {
                 })}
               </div>
             )}
-          </div>
+            </div>
+            </div>
 
-          {/* Footer Attribution */}
-          <div className="px-4 py-2 bg-black/60 border-t border-emerald-800/60 flex items-center justify-between text-[11px] text-emerald-300/80 font-nastaliq shrink-0">
-            <span>سرپرستی: حضرت مولانا محمد نعیم الحسن صدیقی</span>
-            <span>کل ۱۱۴ سورتیں • ۱۲ قراءِ کرام</span>
+            {/* Footer Attribution */}
+            <div className="px-4 py-2.5 bg-black/60 border-t border-emerald-800/60 flex items-center justify-between text-[11px] text-emerald-300/80 font-nastaliq shrink-0 rounded-b-[24px]">
+              <span>سرپرستی: حضرت مولانا محمد نعیم الحسن صدیقی</span>
+              <span>کل ۱۱۴ سورتیں • ۱۲ قراءِ کرام</span>
+            </div>
           </div>
         </div>
       )}

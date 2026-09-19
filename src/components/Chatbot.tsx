@@ -41,40 +41,40 @@ export const Chatbot: React.FC<ChatbotProps> = ({ onSelectBook, apiKey, onSaveTo
   const [copiedMsgId, setCopiedMsgId] = useState<string | null>(null);
   const [savedMsgId, setSavedMsgId] = useState<string | null>(null);
   
-  // Font Size state & Pinch Zoom for Mobile & Desktop (12px to 28px)
+  // Font Size state & Pinch Zoom for Mobile & Desktop (12px to 32px)
   const [fontSize, setFontSize] = useState(15);
-  const [initialDistance, setInitialDistance] = useState<number | null>(null);
+  const initialDistanceRef = useRef<number>(0);
+  const currentFontSizeRef = useRef<number>(15);
 
-  function getDistance(touches: React.TouchList) {
-    const dx = touches[0].clientX - touches[1].clientX;
-    const dy = touches[0].clientY - touches[1].clientY;
-    return Math.sqrt(dx * dx + dy * dy);
-  }
+  const getDistance = (touches: React.TouchList) => {
+    return Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
+  };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     if (e.touches.length === 2) {
-      setInitialDistance(getDistance(e.touches));
-    } else {
-      setInitialDistance(null);
+      initialDistanceRef.current = getDistance(e.touches);
+      currentFontSizeRef.current = fontSize;
     }
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    // Only intercept 2-finger pinch gesture; completely let 1-finger vertical scroll pass through
-    if (e.touches.length === 2 && initialDistance !== null) {
-      if (e.cancelable) e.preventDefault();
-      const currentDistance = getDistance(e.touches);
-      const diff = currentDistance - initialDistance;
-      if (Math.abs(diff) > 15) { // threshold to avoid jitter
-        if (diff > 0) setFontSize(prev => Math.min(prev + 1, 28));
-        else setFontSize(prev => Math.max(prev - 1, 12));
-        setInitialDistance(currentDistance);
-      }
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.touches.length === 2 && initialDistanceRef.current > 0) {
+      if (e.cancelable) e.preventDefault(); // Only prevent when actually zooming
+      const newDistance = getDistance(e.touches);
+      const scale = newDistance / initialDistanceRef.current;
+      let newSize = Math.round(currentFontSizeRef.current * scale);
+      newSize = Math.max(12, Math.min(newSize, 32)); // 12px to 32px
+      setFontSize(newSize);
+      e.currentTarget.style.fontSize = `${newSize}px`;
     }
   };
 
-  const handleTouchEnd = () => {
-    setInitialDistance(null);
+  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.touches.length < 2) {
+      initialDistanceRef.current = 0;
+      const computed = parseFloat(e.currentTarget.style.fontSize) || fontSize;
+      currentFontSizeRef.current = computed;
+    }
   };
   
   const recognitionRef = useRef<any>(null);
@@ -510,7 +510,7 @@ export const Chatbot: React.FC<ChatbotProps> = ({ onSelectBook, apiKey, onSaveTo
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() => setFontSize(prev => Math.min(prev + 2, 28))}
+                                  onClick={() => setFontSize(prev => Math.min(prev + 2, 32))}
                                   className="px-2 py-0.5 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs cursor-pointer transition active:scale-95"
                                   title="فونٹ بڑا کریں (A+)"
                                 >
@@ -525,14 +525,13 @@ export const Chatbot: React.FC<ChatbotProps> = ({ onSelectBook, apiKey, onSaveTo
                               onTouchStart={handleTouchStart}
                               onTouchMove={handleTouchMove}
                               onTouchEnd={handleTouchEnd}
-                              className="select-text break-words whitespace-pre-line overflow-visible space-y-2 urdu-text leading-relaxed selection:bg-emerald-100"
+                              className="select-text break-words whitespace-pre-line overflow-visible space-y-2 urdu-text leading-relaxed selection:bg-emerald-100 transition-[font-size] duration-100"
                               style={{ 
                                 color: '#111111',
                                 fontSize: `${fontSize}px`,
                                 lineHeight: '1.9',
-                                touchAction: 'pan-y',
-                                userSelect: 'text',
-                                transition: 'font-size 0.15s ease'
+                                touchAction: 'pan-y pinch-zoom',
+                                userSelect: 'text'
                               }}
                             >
                               {msg.payload.data}
