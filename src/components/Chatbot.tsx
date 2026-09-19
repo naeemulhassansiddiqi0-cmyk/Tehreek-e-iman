@@ -346,143 +346,175 @@ export const Chatbot: React.FC<ChatbotProps> = ({ onSelectBook, apiKey, onSaveTo
                   className={`flex ${msg.sender === 'user' ? 'justify-start' : 'justify-end'}`}
                 >
                   <div
-                    className={`max-w-[90%] rounded-2xl p-3.5 text-sm transition-all shadow-sm ${
+                    style={
                       msg.sender === 'user'
-                        ? 'bg-emerald-800 text-white rounded-tr-none shadow-emerald-800/10'
-                        : 'bg-white border border-stone-200/80 text-stone-800 rounded-tl-none'
-                    }`}
+                        ? {
+                            backgroundColor: '#E8F5E9',
+                            color: '#000000',
+                            fontWeight: 600,
+                            fontSize: '15px',
+                            padding: '12px 16px',
+                            borderRadius: '18px 18px 0 18px',
+                            border: '1px solid #ccc',
+                            boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                          }
+                        : {
+                            backgroundColor: '#FFFFFF',
+                            color: '#111111',
+                            border: '1px solid #E5E7EB',
+                            borderRadius: '18px 18px 18px 0',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                          }
+                    }
+                    className={`max-w-[90%] transition-all ${msg.sender === 'user' ? '' : 'p-3.5'}`}
                   >
-                    {/* If BOOK_QUERY payload */}
-                    {msg.payload.type === 'book_info' ? (
-                      <div className="space-y-3">
-                        {/* Book Cover + Title Header */}
-                        <div className="flex items-start gap-3 border-b border-stone-100 pb-3">
-                          {typeof msg.payload.data === 'object' && msg.payload.data.cover_url && (
-                            <div className="premium-book-cover w-14 h-20 shrink-0">
-                              <img
-                                src={msg.payload.data.cover_url}
-                                alt={msg.payload.data.fullName}
-                                loading="lazy"
-                                decoding="async"
-                                onError={(e) => {
-                                  const target = e.currentTarget;
-                                  const originalUrl = (msg.payload.data as any)?.cover_url;
-                                  if (target.src.endsWith('.svg') && originalUrl) {
-                                    target.src = originalUrl.replace(/\.svg$/, '.jpg');
-                                  }
-                                }}
-                              />
-                            </div>
-                          )}
-                          <div className="space-y-1">
-                            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
-                              کتاب کارڈ
-                            </span>
-                            <h4 className="font-bold text-base text-emerald-900 leading-snug">
-                              {msg.payload.data.fullName}
-                            </h4>
-                            <p className="text-xs text-stone-500">{msg.payload.data.author}</p>
-                          </div>
-                        </div>
-
-                        {/* 2-Line Intro */}
-                        <p className="text-xs text-stone-700 leading-relaxed font-normal">
-                          {msg.payload.data.intro}
-                        </p>
-
-                        {/* Meta Badges */}
-                        <div className="text-[11px] font-medium text-emerald-800 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-100">
-                          {msg.payload.data.meta}
-                        </div>
-
-                        {/* Action Green Button */}
-                        <button
-                          type="button"
-                          onClick={() => handleBookAction((msg.payload as any).data.book)}
-                          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow transition active:scale-95 cursor-pointer"
+                    {msg.sender === 'user' ? (
+                      <div>
+                        <div
+                          className="urdu-text whitespace-pre-line leading-relaxed"
+                          style={{ color: '#000000', fontWeight: 600, fontSize: '15px' }}
                         >
-                          {msg.payload.data.book.source_type === 'public' ? (
-                            <>
-                              <BookOpen className="w-4 h-4 text-amber-300" />
-                              <span>{msg.payload.data.action.label}</span>
-                            </>
-                          ) : (
-                            <>
-                              <ExternalLink className="w-4 h-4 text-amber-300" />
-                              <span>{msg.payload.data.action.label}</span>
-                            </>
-                          )}
-                        </button>
+                          {typeof msg.payload.data === 'string' ? msg.payload.data : ''}
+                        </div>
+                        <div
+                          className="text-[10px] mt-1 text-left font-sans"
+                          style={{ color: '#4b5563' }}
+                        >
+                          {msg.timestamp}
+                        </div>
                       </div>
                     ) : (
-                      /* Scholarly Urdu Text */
-                      <div className="space-y-2 urdu-text text-stone-800 leading-relaxed text-sm whitespace-pre-line selection:bg-emerald-100">
-                        {msg.payload.data}
-                      </div>
-                    )}
+                      <>
+                        {/* If BOOK_QUERY payload */}
+                        {msg.payload.type === 'book_info' ? (
+                          <div className="space-y-3">
+                            {/* Book Cover + Title Header */}
+                            <div className="flex items-start gap-3 border-b border-stone-100 pb-3">
+                              {typeof msg.payload.data === 'object' && msg.payload.data.cover_url && (
+                                <div className="premium-book-cover w-14 h-20 shrink-0">
+                                  <img
+                                    src={msg.payload.data.cover_url}
+                                    alt={msg.payload.data.fullName}
+                                    loading="lazy"
+                                    decoding="async"
+                                    onError={(e) => {
+                                      const target = e.currentTarget;
+                                      const originalUrl = (msg.payload.data as any)?.cover_url;
+                                      if (target.src.endsWith('.svg') && originalUrl) {
+                                        target.src = originalUrl.replace(/\.svg$/, '.jpg');
+                                      }
+                                    }}
+                                  />
+                                </div>
+                              )}
+                              <div className="space-y-1">
+                                <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                                  کتاب کارڈ
+                                </span>
+                                <h4 className="font-bold text-base text-emerald-900 leading-snug">
+                                  {msg.payload.data.fullName}
+                                </h4>
+                                <p className="text-xs text-stone-500">{msg.payload.data.author}</p>
+                              </div>
+                            </div>
 
-                    {/* Bot Action Bar: Audio Playback, Copy with Tehreek Logo, Save to Notes */}
-                    {msg.sender === 'bot' && textContent && (
-                      <div className="mt-3 pt-2 border-t border-stone-100 flex items-center justify-between gap-2 text-xs">
-                        <div className="flex items-center gap-1">
-                          {/* Audio Playback Button */}
-                          <button
-                            type="button"
-                            onClick={() => handleSpeak(msg.id, textContent)}
-                            className={`px-2 py-1 rounded-lg flex items-center gap-1 transition cursor-pointer text-[11px] ${
-                              isSpeaking
-                                ? 'bg-amber-100 text-amber-900 font-bold border border-amber-300 animate-pulse'
-                                : 'bg-stone-100 hover:bg-stone-200 text-stone-700'
-                            }`}
-                            title={isSpeaking ? 'صوتی تلاوت روکیں' : 'صوتی تلاوت سنیں (Urdu Speech)'}
-                          >
-                            {isSpeaking ? <VolumeX className="w-3.5 h-3.5 text-amber-700" /> : <Volume2 className="w-3.5 h-3.5 text-emerald-700" />}
-                            <span>{isSpeaking ? 'روکیں' : 'سنیں'}</span>
-                          </button>
+                            {/* 2-Line Intro */}
+                            <p className="text-xs text-stone-700 leading-relaxed font-normal">
+                              {msg.payload.data.intro}
+                            </p>
 
-                          {/* Copy with Logo Button */}
-                          <button
-                            type="button"
-                            onClick={() => handleCopy(msg.id, textContent)}
-                            className={`px-2 py-1 rounded-lg flex items-center gap-1 transition cursor-pointer text-[11px] ${
-                              isCopied
-                                ? 'bg-emerald-100 text-emerald-800 font-bold border border-emerald-300'
-                                : 'bg-stone-100 hover:bg-stone-200 text-stone-700'
-                            }`}
-                            title="تحریکِ ایمان تصدیق کے ساتھ کاپی کریں"
-                          >
-                            {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-700" /> : <Copy className="w-3.5 h-3.5 text-stone-600" />}
-                            <span>{isCopied ? 'کاپی شدہ!' : 'کاپی'}</span>
-                          </button>
+                            {/* Meta Badges */}
+                            <div className="text-[11px] font-medium text-emerald-800 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-100">
+                              {msg.payload.data.meta}
+                            </div>
 
-                          {/* Save to Notes Button */}
-                          {onSaveToNotes && (
+                            {/* Action Green Button */}
                             <button
                               type="button"
-                              onClick={() => handleSaveNote(msg.id, textContent)}
-                              className={`px-2 py-1 rounded-lg flex items-center gap-1 transition cursor-pointer text-[11px] ${
-                                isSaved
-                                  ? 'bg-emerald-100 text-emerald-800 font-bold border border-emerald-300'
-                                  : 'bg-stone-100 hover:bg-stone-200 text-stone-700'
-                              }`}
-                              title="اپنے ذاتی نوٹس میں محفوظ کریں"
+                              onClick={() => handleBookAction((msg.payload as any).data.book)}
+                              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow transition active:scale-95 cursor-pointer"
                             >
-                              <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'text-emerald-700 fill-emerald-700' : 'text-stone-600'}`} />
-                              <span>{isSaved ? 'محفوظ!' : 'نوٹ'}</span>
+                              {msg.payload.data.book.source_type === 'public' ? (
+                                <>
+                                  <BookOpen className="w-4 h-4 text-amber-300" />
+                                  <span>{msg.payload.data.action.label}</span>
+                                </>
+                              ) : (
+                                <>
+                                  <ExternalLink className="w-4 h-4 text-amber-300" />
+                                  <span>{msg.payload.data.action.label}</span>
+                                </>
+                              )}
                             </button>
-                          )}
-                        </div>
+                          </div>
+                        ) : (
+                          /* Scholarly Urdu Text */
+                          <div 
+                            className="space-y-2 urdu-text leading-relaxed text-sm whitespace-pre-line selection:bg-emerald-100"
+                            style={{ color: '#111111' }}
+                          >
+                            {msg.payload.data}
+                          </div>
+                        )}
 
-                        <span className="text-[10px] text-stone-400 font-sans">
-                          {msg.timestamp}
-                        </span>
-                      </div>
-                    )}
+                        {/* Bot Action Bar: Audio Playback, Copy with Tehreek Logo, Save to Notes */}
+                        {textContent && (
+                          <div className="mt-3 pt-2 border-t border-stone-100 flex items-center justify-between gap-2 text-xs">
+                            <div className="flex items-center gap-1">
+                              {/* Audio Playback Button */}
+                              <button
+                                type="button"
+                                onClick={() => handleSpeak(msg.id, textContent)}
+                                className={`px-2 py-1 rounded-lg flex items-center gap-1 transition cursor-pointer text-[11px] ${
+                                  isSpeaking
+                                    ? 'bg-amber-100 text-amber-900 font-bold border border-amber-300 animate-pulse'
+                                    : 'bg-stone-100 hover:bg-stone-200 text-stone-700'
+                                }`}
+                                title={isSpeaking ? 'صوتی تلاوت روکیں' : 'صوتی تلاوت سنیں (Urdu Speech)'}
+                              >
+                                {isSpeaking ? <VolumeX className="w-3.5 h-3.5 text-amber-700" /> : <Volume2 className="w-3.5 h-3.5 text-emerald-700" />}
+                                <span>{isSpeaking ? 'روکیں' : 'سنیں'}</span>
+                              </button>
 
-                    {msg.sender === 'user' && (
-                      <div className="text-[10px] mt-1 text-left text-emerald-200 font-sans">
-                        {msg.timestamp}
-                      </div>
+                              {/* Copy with Logo Button */}
+                              <button
+                                type="button"
+                                onClick={() => handleCopy(msg.id, textContent)}
+                                className={`px-2 py-1 rounded-lg flex items-center gap-1 transition cursor-pointer text-[11px] ${
+                                  isCopied
+                                    ? 'bg-emerald-100 text-emerald-800 font-bold border border-emerald-300'
+                                    : 'bg-stone-100 hover:bg-stone-200 text-stone-700'
+                                }`}
+                                title="تحریکِ ایمان تصدیق کے ساتھ کاپی کریں"
+                              >
+                                {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-700" /> : <Copy className="w-3.5 h-3.5 text-stone-600" />}
+                                <span>{isCopied ? 'کاپی شدہ!' : 'کاپی'}</span>
+                              </button>
+
+                              {/* Save to Notes Button */}
+                              {onSaveToNotes && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleSaveNote(msg.id, textContent)}
+                                  className={`px-2 py-1 rounded-lg flex items-center gap-1 transition cursor-pointer text-[11px] ${
+                                    isSaved
+                                      ? 'bg-emerald-100 text-emerald-800 font-bold border border-emerald-300'
+                                      : 'bg-stone-100 hover:bg-stone-200 text-stone-700'
+                                  }`}
+                                  title="اپنے ذاتی نوٹس میں محفوظ کریں"
+                                >
+                                  <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'text-emerald-700 fill-emerald-700' : 'text-stone-600'}`} />
+                                  <span>{isSaved ? 'محفوظ!' : 'نوٹ'}</span>
+                                </button>
+                              )}
+                            </div>
+
+                            <span className="text-[10px] text-stone-400 font-sans">
+                              {msg.timestamp}
+                            </span>
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
@@ -551,8 +583,9 @@ export const Chatbot: React.FC<ChatbotProps> = ({ onSelectBook, apiKey, onSaveTo
               value={inputMessage}
               onChange={e => setInputMessage(e.target.value)}
               placeholder={isListening ? "آپ کی آواز سنی جا رہی ہے، فرمائیے..." : "کتاب کا نام، فقہی مسئلہ، حدیث یا موضوع تحریر فرمائیں..."}
-              className={`flex-1 px-4 py-2.5 text-xs sm:text-sm border rounded-xl text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:bg-white transition ${
-                isListening ? 'bg-red-50/50 border-red-300 ring-1 ring-red-300' : 'bg-stone-50 border-stone-200'
+              style={{ color: '#000000', backgroundColor: '#FFFFFF' }}
+              className={`flex-1 px-4 py-2.5 text-xs sm:text-sm border rounded-xl placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-emerald-700 transition ${
+                isListening ? 'bg-red-50/50 border-red-300 ring-1 ring-red-300' : 'border-stone-200'
               }`}
               disabled={isLoading}
             />
