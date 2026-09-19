@@ -139,7 +139,7 @@ export const UrduStyler: React.FC<UrduStylerProps> = ({
 
   return (
     <>
-      {/* Floating Launcher Button */}
+      {/* Floating Launcher Button (Desktop Only, Hidden on Mobile < 768px) */}
       <button
         type="button"
         onClick={toggleOpen}
@@ -148,17 +148,17 @@ export const UrduStyler: React.FC<UrduStylerProps> = ({
           height: '48px',
           boxSizing: 'border-box'
         }}
-        className="fixed bottom-24 right-6 z-40 flex items-center justify-center rounded-full bg-emerald-800 hover:bg-emerald-900 text-white shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95 border-2 border-emerald-600 cursor-pointer group"
+        className="hidden md:flex fixed bottom-24 right-6 z-40 items-center justify-center rounded-full bg-emerald-800 hover:bg-emerald-900 text-white shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95 border-2 border-emerald-600 cursor-pointer group"
         title="URDU NASTALIQ STYLER (اردو فونٹ سائز و کشادگی)"
         aria-label="اردو فونٹ سائز و کشادگی"
       >
         <Sliders style={{ width: '20px', height: '20px' }} className="text-amber-300 group-hover:rotate-45 transition-transform" />
       </button>
 
-      {/* Fixed Size Styler Box */}
+      {/* Fixed Size Styler Box (Desktop Only, Hidden on Mobile < 768px) */}
       {isOpen && (
         <div
-          className="fixed top-20 right-6 z-50 pointer-events-none"
+          className="hidden md:block fixed top-20 right-6 z-50 pointer-events-none"
           style={{ width: '320px', maxWidth: '100%' }}
         >
           <div

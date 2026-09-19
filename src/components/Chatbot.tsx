@@ -152,11 +152,11 @@ export const Chatbot: React.FC<ChatbotProps> = ({ onSelectBook, apiKey }) => {
 
   return (
     <>
-      {/* Floating Action Button: Clean Emerald Circle Bottom-Left */}
+      {/* Floating Action Button: Clean Emerald Circle Bottom-Right on Mobile, Bottom-Left on Desktop */}
       <button
         type="button"
         onClick={() => setIsOpen(prev => !prev)}
-        className="fixed bottom-6 left-6 z-50 flex items-center justify-center w-14 h-14 rounded-full bg-emerald-800 hover:bg-emerald-900 text-white shadow-xl hover:shadow-2xl transition-all duration-200 active:scale-95 focus:outline-none focus:ring-4 focus:ring-emerald-300"
+        className="fixed bottom-6 right-6 md:left-6 md:right-auto z-50 flex items-center justify-center w-14 h-14 rounded-full bg-emerald-800 hover:bg-emerald-900 text-white shadow-xl hover:shadow-2xl transition-all duration-200 active:scale-95 focus:outline-none focus:ring-4 focus:ring-emerald-300"
         title="ذہین کتب خانہ (AI Librarian)"
         aria-label="ذہین کتب خانہ چیٹ بوٹ"
       >
@@ -177,7 +177,7 @@ export const Chatbot: React.FC<ChatbotProps> = ({ onSelectBook, apiKey }) => {
       {isOpen && (
         <div
           dir="rtl"
-          className="fixed bottom-24 left-6 z-50 w-[92vw] sm:w-[420px] max-h-[640px] h-[80vh] flex flex-col bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-fadeIn"
+          className="fixed bottom-24 right-4 md:right-auto md:left-6 z-50 w-[92vw] sm:w-[420px] max-h-[640px] h-[80vh] flex flex-col bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-fadeIn"
           style={{ fontFamily: "'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif" }}
         >
           {/* Header */}

@@ -142,6 +142,24 @@ export default function BookDetailPage() {
     }
   }, [bookFontSize]);
 
+  // Mobile pinch-to-zoom & toast state
+  const bookContentRef = useRef<HTMLDivElement>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const toastTimeoutRef = useRef<any>(null);
+  const bookFontSizeRef = useRef(bookFontSize);
+
+  useEffect(() => {
+    bookFontSizeRef.current = bookFontSize;
+  }, [bookFontSize]);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    toastTimeoutRef.current = setTimeout(() => {
+      setToastMessage(null);
+    }, 1200);
+  };
+
   const changeBookFontSize = (delta: number) => {
     setBookFontSize(prev => {
       const next = Math.min(28, Math.max(16, prev + delta));
@@ -156,6 +174,7 @@ export default function BookDetailPage() {
       if (typeof document !== 'undefined') {
         document.documentElement.style.setProperty('--book-font-size', `${next}px`);
       }
+      showToast(`Font size: ${next}px`);
       return next;
     });
   };
@@ -174,15 +193,15 @@ export default function BookDetailPage() {
     if (typeof document !== 'undefined') {
       document.documentElement.style.setProperty('--book-font-size', '20px');
     }
+    showToast(`Font size: 20px`);
   };
 
-  // Mobile two-finger pinch-to-zoom support (updates isolated bookFontSize only)
   useEffect(() => {
-    const el = mainContentRef.current;
+    const el = bookContentRef.current || mainContentRef.current;
     if (!el) return;
 
     let initialDist = 0;
-    let initialSize = bookFontSize;
+    let initialSize = bookFontSizeRef.current;
 
     const onTouchStart = (e: TouchEvent) => {
       if (e.touches.length === 2) {
@@ -190,26 +209,32 @@ export default function BookDetailPage() {
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY
         );
-        initialSize = bookFontSize;
+        initialSize = bookFontSizeRef.current;
       }
     };
 
     const onTouchMove = (e: TouchEvent) => {
       if (e.touches.length === 2 && initialDist > 0) {
-        e.preventDefault();
+        if (e.cancelable) e.preventDefault();
         const currentDist = Math.hypot(
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY
         );
         const diff = currentDist - initialDist;
-        const stepChange = Math.round(diff / 25) * 2;
-        const newSize = Math.min(48, Math.max(16, initialSize + stepChange));
-        setBookFontSize(newSize);
-        try {
-          localStorage.setItem('bookFontSize', newSize.toString());
-          localStorage.setItem('urduFontSize', newSize.toString());
-        } catch {
-          // ignore
+        const stepChange = Math.round(diff / 22) * 2;
+        const newSize = Math.min(28, Math.max(16, initialSize + stepChange));
+        if (newSize !== bookFontSizeRef.current) {
+          bookFontSizeRef.current = newSize;
+          setBookFontSize(newSize);
+          if (typeof document !== 'undefined') {
+            document.documentElement.style.setProperty('--book-font-size', `${newSize}px`);
+          }
+          try {
+            localStorage.setItem('bookFontSize_v2', newSize.toString());
+          } catch {
+            // ignore
+          }
+          showToast(`Font size: ${newSize}px`);
         }
       }
     };
@@ -229,7 +254,7 @@ export default function BookDetailPage() {
       el.removeEventListener('touchmove', onTouchMove);
       el.removeEventListener('touchend', onTouchEnd);
     };
-  }, [bookFontSize]);
+  }, []);
 
   // Load 100% full dataset from local JSON files (public/hadith-data/[slug].json)
   useEffect(() => {
@@ -393,8 +418,15 @@ export default function BookDetailPage() {
   }, [totalPages, currentPage, searchPageQuery]);
 
   return (
-    <div dir="rtl" className="min-h-screen bg-white text-stone-900 flex flex-col selection:bg-emerald-100 selection:text-emerald-900">
+    <div dir="rtl" className="min-h-screen bg-white text-stone-900 flex flex-col selection:bg-emerald-100 selection:text-emerald-900 overflow-x-hidden w-full relative">
       
+      {/* Subtle Toast for Mobile Pinch-to-Zoom and Desktop Font Zoom */}
+      {toastMessage && (
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-stone-900/90 text-emerald-400 border border-emerald-500/30 px-4 py-1.5 rounded-full text-xs font-bold font-mono shadow-2xl backdrop-blur-md pointer-events-none transition-all animate-fadeIn">
+          {toastMessage}
+        </div>
+      )}
+
       {/* 1. Header (Clean White, same branding as homepage) */}
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-100 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-xs">
         <div className="flex items-center gap-3">
@@ -419,8 +451,8 @@ export default function BookDetailPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Zoom In / Out Buttons (A- / {bookFontSize}px / A+) */}
-          <div className="flex items-center bg-stone-50 border border-gray-200 rounded-xl p-0.5 shadow-2xs">
+          {/* Zoom In / Out Buttons (Desktop Only, Hidden on Mobile < 768px) */}
+          <div className="hidden md:flex items-center bg-stone-50 border border-gray-200 rounded-xl p-0.5 shadow-2xs">
             <button
               type="button"
               onClick={() => changeBookFontSize(-2)}
@@ -451,11 +483,11 @@ export default function BookDetailPage() {
             </button>
           </div>
 
-          {/* Urdu Styler Button */}
+          {/* Urdu Styler Button (Desktop Only, Hidden on Mobile < 768px) */}
           <button
             type="button"
             onClick={() => setIsStylerOpen(prev => !prev)}
-            className={`p-2 rounded-xl border transition cursor-pointer text-xs flex items-center gap-1.5 ${
+            className={`hidden md:flex p-2 rounded-xl border transition cursor-pointer text-xs items-center gap-1.5 ${
               isStylerOpen
                 ? 'bg-emerald-800 text-white border-emerald-800 shadow-sm'
                 : 'border-gray-200 hover:border-emerald-700 text-stone-600 hover:text-emerald-800 bg-white'
@@ -490,7 +522,7 @@ export default function BookDetailPage() {
       </header>
 
       {/* 2. Main Full Reader Layout: Left 75% Reader, Right 25% Sticky Fehrist */}
-      <div ref={readerTopRef} className="flex-1 w-full max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8 py-6 flex flex-col lg:flex-row gap-6">
+      <div ref={readerTopRef} className="flex-1 w-full max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8 py-6 flex flex-col lg:flex-row gap-6 overflow-x-hidden">
         
         {/* Right 25%: Sticky Fehrist (Index of Pages) */}
         <aside className="w-full lg:w-1/4 lg:sticky lg:top-20 lg:h-[calc(100vh-6rem)] flex flex-col bg-stone-50/60 border border-gray-100 rounded-2xl p-4 shadow-xs">
@@ -533,11 +565,11 @@ export default function BookDetailPage() {
               </button>
             </div>
 
-            {/* Urdu Styler Trigger in Sidebar */}
+            {/* Urdu Styler Trigger in Sidebar (Desktop Only, Hidden on Mobile < 768px) */}
             <button
               type="button"
               onClick={() => setIsStylerOpen(true)}
-              className="w-full flex items-center justify-between px-3 py-2 bg-emerald-50 hover:bg-emerald-100/70 border border-emerald-200 rounded-xl text-xs font-bold text-emerald-900 font-nastaliq transition cursor-pointer shadow-2xs"
+              className="w-full hidden md:flex items-center justify-between px-3 py-2 bg-emerald-50 hover:bg-emerald-100/70 border border-emerald-200 rounded-xl text-xs font-bold text-emerald-900 font-nastaliq transition cursor-pointer shadow-2xs"
               title="فونٹ سائز و سطر کشادگی تبدیل کریں"
             >
               <span className="flex items-center gap-1.5">
@@ -611,7 +643,8 @@ export default function BookDetailPage() {
         {/* Left 75%: Full Reader Display */}
         <main
           ref={mainContentRef}
-          className="w-full lg:w-3/4 flex flex-col bg-white border border-gray-100 rounded-2xl p-4 sm:p-8 shadow-xs space-y-6"
+          className="w-full lg:w-3/4 flex flex-col bg-white border border-gray-100 rounded-2xl p-4 sm:p-8 shadow-xs space-y-6 overflow-x-hidden"
+          style={{ touchAction: 'pan-y' }}
         >
           
           {/* Reader Top Bar Controls */}
@@ -631,8 +664,8 @@ export default function BookDetailPage() {
 
             {/* Pagination Controls Top & Zoom Controls */}
             <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
-              {/* Zoom Buttons */}
-              <div className="flex items-center bg-stone-50 border border-gray-200 rounded-xl p-0.5 shadow-2xs">
+              {/* Zoom Buttons (Desktop Only, Hidden on Mobile < 768px) */}
+              <div className="hidden md:flex items-center bg-stone-50 border border-gray-200 rounded-xl p-0.5 shadow-2xs">
                 <button
                   type="button"
                   onClick={() => changeBookFontSize(-2)}
@@ -690,13 +723,15 @@ export default function BookDetailPage() {
 
           {/* Reader Body Content: Direct Page Render without limits */}
           <div
-            className="book-content min-h-[550px] space-y-4 py-2"
+            ref={bookContentRef}
+            className="book-content min-h-[550px] space-y-4 py-2 overflow-x-hidden max-w-[100vw]"
             style={{
               fontSize: bookFontSize + 'px',
               lineHeight: '2',
               '--book-font-size': bookFontSize + 'px',
               '--arabic-font-size': (bookFontSize + 4) + 'px',
-              '--book-line-height': '2'
+              '--book-line-height': '2',
+              touchAction: 'pan-y'
             } as React.CSSProperties}
           >
             {loading ? (
