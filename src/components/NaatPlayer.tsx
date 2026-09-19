@@ -24,13 +24,13 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
   const [activeCategory, setActiveCategory] = useState<'سب' | 'حمد' | 'نعت' | 'نظم'>('سب');
   const [currentId, setCurrentId] = useState<number>(1);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [currentTrackUrl, setCurrentTrackUrl] = useState<string>('');
+  const [currentTrackUrl, setCurrentTrackUrl] = useState<string>(() => {
+    return encodeURI(naatsData[0]?.src || '/naats/track-01.mp3');
+  });
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   // Audio player state for local & archive
-  const [duration, setDuration] = useState<number>(0);
-  const [currentTime, setCurrentTime] = useState<number>(0);
   const [volume, setVolume] = useState<number>(1);
   const [isMuted, setIsMuted] = useState<boolean>(false);
 
@@ -42,22 +42,13 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
     return naatsData.find(n => n.id === currentId) || naatsData[0];
   }, [currentId]);
 
-  const currentTrack = useMemo(() => ({
-    url: currentNaat.src || `/naats/track-${String(currentNaat.id).padStart(2, '0')}.mp3`,
-    title: currentNaat.title
-  }), [currentNaat]);
-
-  // BULLETPROOF AUDIO INITIALIZATION (As requested)
-  useEffect(() => {
-    audioRef.current = new Audio();
-    audioRef.current.preload = 'auto';
-    audioRef.current.crossOrigin = 'anonymous';
-    audioRef.current.volume = 1;
-
-    return () => {
-      audioRef.current?.pause();
+  const currentTrack = useMemo(() => {
+    const rawUrl = currentNaat.src || `/naats/track-${String(currentNaat.id).padStart(2, '0')}.mp3`;
+    return {
+      url: encodeURI(rawUrl),
+      title: currentNaat.title
     };
-  }, []);
+  }, [currentNaat]);
 
   // Draggable / Movable Modal State (EXACT SAME AS QURAN PLAYER)
   const modalRef = useRef<HTMLDivElement | null>(null);
@@ -115,59 +106,43 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
     }
   }, [currentId, isOpen]);
 
-  // BULLETPROOF PLAY TRACK FUNCTION
-  const playTrack = async (url: string, index: number) => {
-    console.log('CLICKED TRACK', index, url);
-    setCurrentTrackUrl(url);
-    if (!audioRef.current) audioRef.current = new Audio();
-    try {
-      audioRef.current.pause();
-      audioRef.current.src = url;
-      audioRef.current.load();
-      await new Promise(r => setTimeout(r, 200));
-      await audioRef.current.play();
-      setIsPlaying(true);
-      console.log('SUCCESS PLAYING', url);
+  const handleAudioError = (e?: any) => {
+    console.error('فائل نہیں ملی یا چل نہیں سکی:', currentTrackUrl, e);
+    alert('فائل نہیں ملی: ' + currentTrackUrl);
+  };
 
-      // Sync with fallback native audio element as well
-      const el = document.getElementById('fallback-audio') as HTMLAudioElement;
-      if (el) {
-        el.src = url;
-        el.style.display = 'block';
-        el.load();
-      }
-    } catch (err: any) {
-      console.error('PLAY FAILED', err);
-      // Show user exact reason
-      alert('آواز کا مسئلہ: ' + (err?.message || 'خرابی') + '\nURL: ' + url + '\n\nاگر 404 ہے تو فائل public/naats میں نہیں ہے۔');
-      // Try fallback: show native audio element with controls
-      const el = document.getElementById('fallback-audio') as HTMLAudioElement;
-      if (el) {
-        el.src = url;
-        el.style.display = 'block';
-        el.load();
-        el.play().catch(() => {});
+  // DIRECT HTML5 PLAY TRACK FUNCTION
+  const playTrack = async (url: string, index: number) => {
+    const encoded = encodeURI(url);
+    console.log('Current track URL:', encoded, 'Track index:', index);
+    setCurrentTrackUrl(encoded);
+
+    if (audioRef.current) {
+      try {
+        audioRef.current.pause();
+        audioRef.current.src = encoded;
+        audioRef.current.load();
+        await audioRef.current.play();
+        setIsPlaying(true);
+        console.log('SUCCESS PLAYING TRACK:', encoded);
+      } catch (err: any) {
+        console.error('Play error for url:', encoded, err);
+        handleAudioError(err);
       }
     }
   };
 
-  // Handle track events (timeupdate, loadedmetadata, ended)
+  // Handle track events (ended)
   useEffect(() => {
     if (!audioRef.current) return;
     const audio = audioRef.current;
-    const updateTime = () => setCurrentTime(audio.currentTime);
-    const updateMeta = () => setDuration(audio.duration);
     const onEnded = () => {
       console.log(`Track finished, playing next track`);
       handleNext();
     };
 
-    audio.addEventListener('timeupdate', updateTime);
-    audio.addEventListener('loadedmetadata', updateMeta);
     audio.addEventListener('ended', onEnded);
     return () => {
-      audio.removeEventListener('timeupdate', updateTime);
-      audio.removeEventListener('loadedmetadata', updateMeta);
       audio.removeEventListener('ended', onEnded);
     };
   }, [currentId]);
@@ -175,7 +150,7 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
   // Handle switching naat
   const handleSelectNaat = (id: number) => {
     setCurrentId(id);
-    setCurrentTime(0);
+    if (audioRef.current) audioRef.current.currentTime = 0;
 
     const target = naatsData.find(n => n.id === id);
     if (!target) return;
@@ -183,9 +158,12 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
     setToastMsg(`${target.category}: ${target.title}`);
     setTimeout(() => setToastMsg(null), 2500);
 
+    const url = encodeURI(target.src || `/naats/track-${String(id).padStart(2, '0')}.mp3`);
+    console.log('User selected track:', id, 'URL:', url);
+    setCurrentTrackUrl(url);
+
     // Audio handling for local / archive
     if (target.type === 'local' || target.type === 'archive') {
-      const url = target.src || target.fallbackUrl || '';
       playTrack(url, id);
     } else if (target.type === 'youtube') {
       if (audioRef.current) {
@@ -225,23 +203,19 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      if (currentTrackUrl) {
-        audioRef.current
-          .play()
-          .then(() => setIsPlaying(true))
-          .catch(() => playTrack(currentTrackUrl, currentId));
-      } else {
-        const url = currentNaat.src || currentNaat.fallbackUrl || '';
-        playTrack(url, currentId);
+      const cleanUrl = encodeURI(currentTrackUrl || currentTrack.url);
+      console.log('User clicked Play, target track URL:', cleanUrl);
+      if (audioRef.current.src !== cleanUrl && !audioRef.current.src.endsWith(cleanUrl)) {
+        audioRef.current.src = cleanUrl;
+        audioRef.current.load();
       }
-    }
-  };
-
-  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = parseFloat(e.target.value);
-    setCurrentTime(val);
-    if (audioRef.current) {
-      audioRef.current.currentTime = val;
+      audioRef.current
+        .play()
+        .then(() => setIsPlaying(true))
+        .catch((err) => {
+          console.error('Audio play failed:', err);
+          handleAudioError(err);
+        });
     }
   };
 
@@ -264,14 +238,6 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
       audioRef.current.muted = true;
       setIsMuted(true);
     }
-  };
-
-  // Format seconds to mm:ss
-  const formatTime = (secs: number) => {
-    if (isNaN(secs) || secs === 0) return '00:00';
-    const m = Math.floor(secs / 60);
-    const s = Math.floor(secs % 60);
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
   // Filtered tracks
@@ -439,20 +405,27 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
                 />
               </div>
             ) : (
-              /* Seek Bar & Audio Controls for Local & Archive */
-              <div className="space-y-2 pt-1 max-w-md mx-auto">
-                <div className="flex items-center gap-3 text-xs font-mono text-emerald-300">
-                  <span>{formatTime(currentTime)}</span>
-                  <input
-                    type="range"
-                    min="0"
-                    max={duration || 100}
-                    step="0.1"
-                    value={currentTime}
-                    onChange={handleSeek}
-                    className="flex-1 accent-amber-400 h-1.5 bg-emerald-950/80 rounded-lg cursor-pointer"
+              /* Direct HTML5 Audio Player & Action Controls */
+              <div className="space-y-3 pt-1 max-w-md mx-auto">
+                {/* DIRECT HTML5 AUDIO CONTROLS */}
+                <div className="bg-black/40 p-2.5 rounded-xl border border-yellow-400/30">
+                  <audio
+                    ref={audioRef}
+                    controls
+                    src={encodeURI(currentTrackUrl)}
+                    preload="metadata"
+                    onError={handleAudioError}
+                    onPlay={() => setIsPlaying(true)}
+                    onPause={() => setIsPlaying(false)}
+                    onEnded={handleNext}
+                    className="w-full h-10 rounded-lg"
                   />
-                  <span>{formatTime(duration)}</span>
+                  <div className="flex items-center justify-between text-[11px] text-amber-200/80 font-nastaliq px-1 pt-1.5">
+                    <span>{currentNaat.title}</span>
+                    <span className="font-mono text-[10px] text-emerald-300 truncate max-w-[220px]">
+                      {currentTrackUrl}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Playback Action Buttons */}
@@ -641,48 +614,6 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
             </div>
           </div>
 
-        </div>
-
-        {/* ALWAYS VISIBLE NATIVE AUDIO FOR DEBUG / DIRECT PLAY (Task 3) */}
-        <div className="p-3 bg-black/95 border-t border-yellow-400/20 text-right">
-          <p className="text-[10px] text-stone-300 font-nastaliq">
-            فی الوقت کلام: <strong className="text-amber-300">{currentTrackUrl || "کوئی نعت منتخب نہیں"}</strong>
-          </p>
-          <audio 
-            id="fallback-audio" 
-            controls 
-            preload="auto" 
-            crossOrigin="anonymous" 
-            className="w-full mt-2 h-9" 
-            style={{ display: currentTrackUrl ? 'block' : 'none' }} 
-            onError={(e) => console.log("Fallback audio error", e)} 
-          />
-          <div className="flex gap-2 mt-2 justify-end">
-            <button 
-              type="button" 
-              onClick={() => {
-                if (audioRef.current) {
-                  audioRef.current.play();
-                  setIsPlaying(true);
-                }
-              }} 
-              className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 rounded-lg font-bold cursor-pointer"
-            >
-              Play
-            </button>
-            <button 
-              type="button" 
-              onClick={() => {
-                if (audioRef.current) {
-                  audioRef.current.pause();
-                  setIsPlaying(false);
-                }
-              }} 
-              className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 rounded-lg font-bold cursor-pointer"
-            >
-              Pause
-            </button>
-          </div>
         </div>
 
         {/* FOOTER */}

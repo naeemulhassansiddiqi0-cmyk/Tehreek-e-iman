@@ -22,12 +22,27 @@ export default defineConfig({
     react(),
     tailwindcss(),
     {
-      name: 'copy-404',
+      name: 'copy-naats-and-404',
       closeBundle() {
         const indexPath = path.resolve(__dirname, 'dist/index.html');
         const notFoundPath = path.resolve(__dirname, 'dist/404.html');
         if (fs.existsSync(indexPath)) {
           fs.copyFileSync(indexPath, notFoundPath);
+        }
+        const srcNaats = path.resolve(__dirname, 'public/naats');
+        const destNaats = path.resolve(__dirname, 'dist/naats');
+        if (fs.existsSync(srcNaats)) {
+          if (!fs.existsSync(destNaats)) {
+            fs.mkdirSync(destNaats, { recursive: true });
+          }
+          const files = fs.readdirSync(srcNaats);
+          for (const file of files) {
+            const srcFile = path.join(srcNaats, file);
+            const destFile = path.join(destNaats, file);
+            if (fs.statSync(srcFile).isFile()) {
+              fs.copyFileSync(srcFile, destFile);
+            }
+          }
         }
       }
     }

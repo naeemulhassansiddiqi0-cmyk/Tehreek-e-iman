@@ -5,41 +5,21 @@ import {
   Trash2, 
   ThumbsUp, 
   ShieldCheck, 
-  User 
+  User,
+  Globe2
 } from 'lucide-react';
-
-/* =========================================================================
-   OPTIONAL FIREBASE / FIRESTORE INTEGRATION (Ready for future shift)
-   =========================================================================
-   To migrate from LocalStorage to Cloud Firestore:
-   1. Run: npm install firebase
-   2. Uncomment and populate the config below:
-   
-   import { initializeApp } from 'firebase/app';
-   import { 
-     getFirestore, 
-     collection, 
-     addDoc, 
-     onSnapshot, 
-     query, 
-     where, 
-     orderBy, 
-     deleteDoc, 
-     doc 
-   } from 'firebase/firestore';
-
-   const firebaseConfig = {
-     apiKey: "YOUR_FIREBASE_API_KEY",
-     authDomain: "tehreek-e-iman.firebaseapp.com",
-     projectId: "tehreek-e-iman",
-     storageBucket: "tehreek-e-iman.appspot.com",
-     messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-     appId: "YOUR_APP_ID"
-   };
-
-   // const app = initializeApp(firebaseConfig);
-   // const db = getFirestore(app);
-   ========================================================================= */
+import { 
+  collection, 
+  addDoc, 
+  query, 
+  where, 
+  orderBy, 
+  onSnapshot, 
+  deleteDoc, 
+  doc, 
+  serverTimestamp 
+} from 'firebase/firestore';
+import { db } from '../firebase';
 
 export interface CommentItem {
   id: string;
@@ -48,6 +28,7 @@ export interface CommentItem {
   date: string;
   timestamp: number;
   likes?: number;
+  isCloud?: boolean;
 }
 
 export interface CommentSectionProps {
@@ -77,6 +58,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   const [isFocused, setIsFocused] = useState<boolean>(false);
   const [comments, setComments] = useState<CommentItem[]>([]);
   const [likedMap, setLikedMap] = useState<Record<string, boolean>>({});
+  const [isCloudSync, setIsCloudSync] = useState<boolean>(false);
 
   // Admin status: check localStorage.getItem('isAdmin') === 'true'
   const [isAdmin, setIsAdmin] = useState<boolean>(() => {
@@ -87,17 +69,15 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
     }
   });
 
-  // Load comments when storageKey changes
-  useEffect(() => {
+  // Helper to load localStorage comments
+  const loadLocalStorageComments = () => {
     try {
       const raw = localStorage.getItem(storageKey);
       if (raw) {
         const parsed: CommentItem[] = JSON.parse(raw);
-        // Ensure sorted by newest first
         parsed.sort((a, b) => b.timestamp - a.timestamp);
         setComments(parsed);
       } else {
-        // Sample default welcome comment for an engaging YouTube feel
         const defaultSample: CommentItem[] = [
           {
             id: `sample_${Date.now()}`,
@@ -105,17 +85,71 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
             text: `ماشاء اللہ! نہایت بابرکت اور ایمان افروز کلام۔ اللہ تعالیٰ شرفِ قبولیت عطا فرمائے اور حضرت مولانا محمد نعیم الحسن صدیقی کو جزائے خیر دے۔ آمین!`,
             date: new Date().toLocaleDateString('ur-PK', { year: 'numeric', month: 'short', day: 'numeric' }),
             timestamp: Date.now() - 3600000,
-            likes: 5
+            likes: 5,
+            isCloud: false
           }
         ];
         setComments(defaultSample);
         localStorage.setItem(storageKey, JSON.stringify(defaultSample));
       }
     } catch (err) {
-      console.error('Error loading comments from localStorage:', err);
+      console.error('LocalStorage load error:', err);
       setComments([]);
     }
-  }, [storageKey]);
+  };
+
+  // Realtime Firestore listener with automatic fallback to localStorage
+  useEffect(() => {
+    let unsubscribe: (() => void) | null = null;
+
+    try {
+      const q = query(
+        collection(db, 'comments'),
+        where('contentId', '==', contentId),
+        orderBy('timestamp', 'desc')
+      );
+
+      unsubscribe = onSnapshot(
+        q,
+        (snapshot) => {
+          if (!snapshot.empty) {
+            const firestoreComments: CommentItem[] = snapshot.docs.map((docSnap) => {
+              const data = docSnap.data();
+              const ts = data.timestamp?.toMillis ? data.timestamp.toMillis() : (data.timestamp || Date.now());
+              return {
+                id: docSnap.id,
+                name: data.name || 'نامعلوم',
+                text: data.text || '',
+                date: data.date || 'ابھی',
+                timestamp: ts,
+                likes: data.likes || 0,
+                isCloud: true
+              };
+            });
+            setComments(firestoreComments);
+            setIsCloudSync(true);
+          } else {
+            // If cloud collection for this contentId is empty, fallback to local cache
+            loadLocalStorageComments();
+          }
+        },
+        (err) => {
+          // Firebase dummy key or network offline - fallback gracefully to localStorage
+          console.warn('Firestore fallback to localStorage:', err.message);
+          setIsCloudSync(false);
+          loadLocalStorageComments();
+        }
+      );
+    } catch (err) {
+      console.warn('Firestore initialization fallback:', err);
+      setIsCloudSync(false);
+      loadLocalStorageComments();
+    }
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [contentId, storageKey]);
 
   // Persist author name
   const handleNameChange = (val: string) => {
@@ -127,8 +161,8 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
     }
   };
 
-  // Submit comment
-  const handleSubmitComment = (e?: React.FormEvent) => {
+  // Submit comment: Try Firestore first, fallback to localStorage
+  const handleSubmitComment = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const trimmedName = authorName.trim();
     const trimmedText = commentText.trim();
@@ -145,13 +179,34 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
       day: 'numeric'
     }) + ' • ' + now.toLocaleTimeString('ur-PK', { hour: '2-digit', minute: '2-digit' });
 
+    let savedToCloud = false;
+
+    // 1. Try Firebase Firestore
+    try {
+      await addDoc(collection(db, 'comments'), {
+        contentId,
+        contentTitle,
+        name: trimmedName,
+        text: trimmedText,
+        date: formattedDate,
+        timestamp: serverTimestamp(),
+        likes: 0
+      });
+      savedToCloud = true;
+      setIsCloudSync(true);
+    } catch (err) {
+      console.warn('Could not save comment to Firestore, using localStorage fallback:', err);
+    }
+
+    // 2. Always maintain localStorage copy & local state
     const newComment: CommentItem = {
       id: `cmt_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       name: trimmedName,
       text: trimmedText,
       date: formattedDate,
       timestamp: Date.now(),
-      likes: 0
+      likes: 0,
+      isCloud: savedToCloud
     };
 
     const updated = [newComment, ...comments];
@@ -166,11 +221,19 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
     }
   };
 
-  // Delete comment (admin or test admin with confirmation)
-  const handleDeleteComment = (commentId: string) => {
+  // Delete comment: Try Firestore first, then localStorage
+  const handleDeleteComment = async (commentId: string) => {
     const isConfirmed = window.confirm('کیا آپ واقعی یہ تبصرہ حذف کرنا چاہتے ہیں؟');
     if (!isConfirmed) return;
 
+    // 1. Try Firestore deleteDoc
+    try {
+      await deleteDoc(doc(db, 'comments', commentId));
+    } catch (err) {
+      console.warn('Firestore delete fallback:', err);
+    }
+
+    // 2. Update local state & localStorage
     const filtered = comments.filter(c => c.id !== commentId);
     setComments(filtered);
 
@@ -245,9 +308,17 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
             <MessageSquare className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="font-nastaliq font-bold text-lg sm:text-xl text-emerald-950 dark:text-emerald-200 leading-tight">
-              {comments.length} تبصرے
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3 className="font-nastaliq font-bold text-lg sm:text-xl text-emerald-950 dark:text-emerald-200 leading-tight">
+                {comments.length} تبصرے
+              </h3>
+              {isCloudSync && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-nastaliq text-emerald-700 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-900/60 px-2 py-0.5 rounded-full">
+                  <Globe2 className="w-3 h-3" />
+                  <span>کلاؤڈ آن لائن</span>
+                </span>
+              )}
+            </div>
             <p className="text-[11px] text-stone-500 dark:text-stone-400 font-nastaliq truncate max-w-xs sm:max-w-md">
               کلام / عنوان: <strong className="text-emerald-800 dark:text-amber-300">{contentTitle}</strong>
             </p>
