@@ -54,15 +54,18 @@ export const Chatbot: React.FC<ChatbotProps> = ({ onSelectBook, apiKey, onSaveTo
   const handleTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length === 2) {
       setInitialDistance(getDistance(e.touches));
+    } else {
+      setInitialDistance(null);
     }
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (e.touches.length === 2 && initialDistance) {
+    // Only intercept 2-finger pinch gesture; completely let 1-finger vertical scroll pass through
+    if (e.touches.length === 2 && initialDistance !== null) {
       if (e.cancelable) e.preventDefault();
       const currentDistance = getDistance(e.touches);
       const diff = currentDistance - initialDistance;
-      if (Math.abs(diff) > 20) { // threshold to avoid jitter
+      if (Math.abs(diff) > 15) { // threshold to avoid jitter
         if (diff > 0) setFontSize(prev => Math.min(prev + 1, 28));
         else setFontSize(prev => Math.max(prev - 1, 12));
         setInitialDistance(currentDistance);
@@ -366,7 +369,10 @@ export const Chatbot: React.FC<ChatbotProps> = ({ onSelectBook, apiKey, onSaveTo
           </div>
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-stone-50/60">
+          <div 
+            className="flex-1 overflow-y-auto overscroll-contain custom-scrollbar px-4 py-4 space-y-4 bg-stone-50/60 min-h-0"
+            style={{ WebkitOverflowScrolling: 'touch' }}
+          >
             {messages.map(msg => {
               const textContent = getTextContent(msg.payload);
               const isSpeaking = speakingMsgId === msg.id;
@@ -519,12 +525,12 @@ export const Chatbot: React.FC<ChatbotProps> = ({ onSelectBook, apiKey, onSaveTo
                               onTouchStart={handleTouchStart}
                               onTouchMove={handleTouchMove}
                               onTouchEnd={handleTouchEnd}
-                              className="select-text break-words space-y-2 urdu-text leading-relaxed whitespace-pre-line selection:bg-emerald-100"
+                              className="select-text break-words whitespace-pre-line overflow-visible space-y-2 urdu-text leading-relaxed selection:bg-emerald-100"
                               style={{ 
                                 color: '#111111',
                                 fontSize: `${fontSize}px`,
                                 lineHeight: '1.9',
-                                touchAction: 'none',
+                                touchAction: 'pan-y',
                                 userSelect: 'text',
                                 transition: 'font-size 0.15s ease'
                               }}
