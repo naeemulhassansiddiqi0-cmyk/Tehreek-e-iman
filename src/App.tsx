@@ -9,7 +9,6 @@ import { FlashcardHubView } from './components/Flashcards/FlashcardHubView';
 import { SearchModal } from './components/SearchModal';
 import { KharjiLibraryModal } from './components/KharjiLibraryModal';
 import { AdminPanelModal } from './components/Admin/AdminPanelModal';
-import { GlobalAIAssistantDrawer } from './components/AITutor/GlobalAIAssistantDrawer';
 import { PrayerTimesView } from './components/PrayerTimes/PrayerTimesView';
 import { SacredAudioPlayer } from './components/AudioPlayer/SacredAudioPlayer';
 import { Chatbot } from './components/Chatbot';
@@ -296,7 +295,11 @@ export function App() {
     return (
       <div dir="rtl" className="min-h-screen bg-white">
         <BookDetailPage />
-        <Chatbot onSelectBook={handleChatbotSelectBook} apiKey={apiKey} />
+        <Chatbot 
+          onSelectBook={handleChatbotSelectBook} 
+          apiKey={apiKey} 
+          onSaveToNotes={(content) => handleAddNote(content, 'علمی اتالیق استفسار')}
+        />
       </div>
     );
   }
@@ -446,16 +449,12 @@ export function App() {
         }}
       />
 
-      {/* Persistent Global Floating AI Assistant Drawer (Accessible on every page) */}
-      <GlobalAIAssistantDrawer
+      {/* Smart AI Chatbot - Single Premium Floating Chatbot */}
+      <Chatbot 
+        onSelectBook={handleChatbotSelectBook} 
         apiKey={apiKey}
         onSaveToNotes={(content) => handleAddNote(content, 'علمی اتالیق استفسار')}
-        onNavigateTab={(tab) => setActiveTab(tab)}
-        onSelectBook={(book) => setSelectedBook(book)}
       />
-
-      {/* Smart AI Chatbot - Clean Emerald Circle Bottom-Left */}
-      <Chatbot onSelectBook={handleChatbotSelectBook} apiKey={apiKey} />
 
       {/* Global Sacred Quran & Hadith Audio Recitation Player */}
       <SacredAudioPlayer />

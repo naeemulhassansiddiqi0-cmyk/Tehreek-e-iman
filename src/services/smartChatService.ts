@@ -124,10 +124,26 @@ function findTopRelevantBooks(query: string): (PublicDomainBook | ModernBook)[] 
   return matched.length > 0 ? matched : allCatalogBooks.slice(0, 3);
 }
 
-const SYSTEM_PROMPT = `You are Tehreek-e-Iman's intelligent librarian (ذہین کتب خانہ). آپ کے پاس 100 کتابیں موجود ہیں جن میں صحاح ستہ اور امہات الکتب شامل ہیں، اور صحیح البخاری میں 7563 احادیث (مکمل ذخیرہ 7589 احادیث) موجود ہیں۔ You are NOT a robot. Answer concisely, respectfully, in beautiful Urdu (Nastaliq style). Never repeat same answer. Never say 'Is kitab ke bare me'. Use context from books if available. If asked about a book or ahadith, give its intro from your knowledge. Be helpful, not canned.`;
+import { askIslamicAI } from './aiService';
+
+const SYSTEM_PROMPT = `آپ "تحریکِ ایمان ڈیجیٹل دار الافتاء و ذہین کتب خانہ" (Tehreek-e-Iman Digital Dar-ul-Ifta & AI Librarian) کے جید، باوقار اور معتمد مفتی و محقق ہیں۔
+
+تحریکِ ایمان کے کتب خانے میں ۱۰۰+ امہات الکتب موجود ہیں جن میں صحاحِ ستہ (صحیح البخاری ۷۵۶۳ احادیث، صحیح مسلم، سنن ابی داود، جامع ترمذی، سنن نسائی، سنن ابن ماجہ)، تفاسیر (طبری، ابن کثیر، قرطبی، جلالین)، اور فقہِ حنفی کی بنیادی امہات الکتب (الہدایہ، رد المحتار فتاویٰ شامی، فتاویٰ عالمگیری، بدائع الصنائع، المبسوط) شامل ہیں۔
+
+### بنیادی شرائط و اسلوبِ جواب:
+1. جواب صرف خوبصورت، سلیس اور باوقار علمی اردو (نستعلیق انداز) میں تحریر فرمائیں۔
+2. سائل خواہ اردو، رومن اردو (Roman Urdu مثلاً "namaz k faraiz kya hain"), عربی یا انگریزی میں پوچھے، اسے پوری گہرائی سے سمجھ کر شستہ اردو میں مدلل جواب دیں۔
+3. تمام کتب سے جواب اور مدلل حوالہ جات (Citations with Book Name & Page / Hadith No):
+   - قرآنِ کریم کی متعلقہ آیات مع سورۃ کا نام اور آیت نمبر
+   - احادیثِ نبویہ مبارکہ مع کتاب، باب اور حدیث نمبر (مثلاً: صحیح البخاری، کتاب الایمان، رقم الحدیث: ۵۰)
+   - فقہِ حنفی کی امہات الکتب کے صریح حوالے مع کتاب کا نام، جلد اور صفحہ نمبر (مثلاً: رد المحتار علی الدر المختار، جلد ۱، صفحہ ۸۵)
+4. اگر صارف کسی کتاب کے بارے میں پوچھے تو اس کے مصنف، سنِ وفات، جلدیں، صفحات اور موضوع کی تفصیل بیان کریں۔
+5. اختتام پر باوقار مہرِ توثیق درج فرمائیں:
+   «وَاللَّهُ سُبْحَانَهُ وَتَعَالَىٰ أَعْلَمُ بِالصَّوَابِ»
+   اور یہ نوٹ شامل فرمائیں: "نوٹ: یہ علمی معاونت کے لیے ہے، فتویٰ کی حتمی توثیق کے لیے اپنے مقامی معتمد دار الافتاء سے رجوع فرمائیں۔"`;
 
 /**
- * Call Generative AI (Gemini with multi-engine fallback)
+ * Call Generative AI (Gemini with multi-engine fallback and offline scholarly engine)
  */
 async function callGenerativeAI(prompt: string, context: string, customApiKey?: string): Promise<string> {
   const effectiveKey =
@@ -138,17 +154,16 @@ async function callGenerativeAI(prompt: string, context: string, customApiKey?: 
 
   const fullPrompt = `${SYSTEM_PROMPT}
 
-سیاق و سباق (Library Context):
-تحریکِ ایمان کے پاس 100 بنیادی اسلامی کتابیں ہیں، جن میں صحیح البخاری (7563 احادیث مکمل)، صحیح مسلم (7190 احادیث)، سنن ابی داود، جامع ترمذی، سنن نسائی، سنن ابن ماجہ، تفاسیر اور فقہ کی امہات الکتب شامل ہیں۔
+سیاق و سباق (Library Context & Top Matched Books):
 ${context}
 
 صارف کا سوال:
 ${prompt}
 
-جواب صرف خوبصورت، مدلل اور سلیس اردو (نستعلیق انداز) میں تحریر فرمائیں۔ کوئی روایتی مشین جیسا جملہ نہ دہرائیں۔`;
+جواب صرف سلیس اور باوقار علمی اردو (نستعلیق اسلوب) میں کتاب کے نام اور صفحہ/حدیث نمبر کے حوالہ جات کے ساتھ تحریر فرمائیں۔`;
 
   if (effectiveKey) {
-    const models = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-3.6-flash'];
+    const models = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-3.6-flash', 'gemini-flash-latest'];
     for (const model of models) {
       try {
         const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + effectiveKey;
@@ -170,7 +185,21 @@ ${prompt}
     }
   }
 
-  // Intelligent Contextual Scholar Fallback (Never canned, derived from books)
+  // Comprehensive Scholarly Offline Engine Fallback via askIslamicAI
+  try {
+    const offlineRes = await askIslamicAI(prompt, 'darulifta_fatwa', 'intermediate', undefined, context);
+    if (offlineRes && offlineRes.answer) {
+      let combined = offlineRes.answer;
+      if (offlineRes.references && offlineRes.references.length > 0) {
+        combined += '\n\n**کتب و مراجع کے صریح حوالے:**\n' + offlineRes.references.map(r => `* 📖 ${r}`).join('\n');
+      }
+      return combined;
+    }
+  } catch {
+    // continue to book fallback
+  }
+
+  // Intelligent Contextual Scholar Fallback (Never canned, derived from catalog books)
   const topBooks = findTopRelevantBooks(prompt);
   if (topBooks.length > 0) {
     const b = topBooks[0];
@@ -178,11 +207,15 @@ ${prompt}
 
 * **مصنف:** ${b.author} ${b.death_year ? '(وفات: ' + b.death_year + 'ھ)' : ''}
 * **موضوع:** ${b.category}
+* **ضخامت:** ${b.volumes} جلدیں، ${(Array.isArray(b.pages) ? b.pages.length : b.pages).toLocaleString('ur-PK')} صفحات
 
-**خلاصہ و تعارف:**
+**خلاصہ و علمی تعارف:**
 ${b.intro_ur}
 
-آپ کتب خانے میں اس کتاب کا تفصیلی مطالعہ فرما سکتے ہیں۔ کسی خاص باب یا عبارت کی تحقیق درکار ہو تو مطلع فرمائیں۔`;
+**حوالہ برائے مطالعہ:**
+کتاب: ${b.title_ur}، مکتبہ تحریکِ ایمان، صفحہ ۱ تا ${Array.isArray(b.pages) ? b.pages.length : b.pages}۔
+
+«وَاللَّهُ سُبْحَانَهُ وَتَعَالَىٰ أَعْلَمُ بِالصَّوَابِ»`;
   }
 
   return 'وعلیکم السلام و رحمۃ اللہ و برکاتہ! تحریکِ ایمان کے ذہین کتب خانے میں خوش آمدید۔ آپ کا مطلوبہ سوال کتب خانہ کے علوم (قرآن و تفسیر، حدیث، فقہ، سیرت، تاریخ و عقائد) سے متعلق ہے۔ آپ مخصوص کتاب، حدیث کا متن، فقہی حکم یا موضوع لکھ کر رہنمائی حاصل کر سکتے ہیں۔';
