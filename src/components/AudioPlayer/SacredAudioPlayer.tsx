@@ -208,6 +208,55 @@ export const SacredAudioPlayer: React.FC = () => {
     }
   };
 
+  // Draggable / Movable Modal State
+  const modalRef = useRef<HTMLDivElement | null>(null);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.button !== 0) return;
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      setIsDragging(true);
+      setDragStart({ x: e.touches[0].clientX - position.x, y: e.touches[0].clientY - position.y });
+    }
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
+      setPosition({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isDragging) return;
+      if (e.cancelable) e.preventDefault();
+      setPosition({ x: e.touches[0].clientX - dragStart.x, y: e.touches[0].clientY - dragStart.y });
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('touchmove', handleTouchMove, { passive: false });
+      window.addEventListener('touchend', handleMouseUp);
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+        window.removeEventListener('touchmove', handleTouchMove);
+        window.removeEventListener('touchend', handleMouseUp);
+      };
+    }
+  }, [isDragging, dragStart]);
+
   // Next / Previous Surah
   const handleNext = () => {
     if (currentSurah < 114) {
@@ -225,18 +274,36 @@ export const SacredAudioPlayer: React.FC = () => {
     }
   };
 
-  // Auto next logic upon completion of full Surah
+  // 100% Continuous Auto-Play Next Surah upon completion
   const handleEnded = () => {
+    console.log("Surah", currentSurah, "finished, auto-playing next");
     if (isLooping && audioRef.current) {
       audioRef.current.currentTime = 0;
       audioRef.current.play().catch(() => {});
       return;
     }
-    if (currentSurah < 114) {
-      handleSelectSurah(currentSurah + 1); // Use same function to keep sync
-    } else {
-      setIsPlaying(false);
-    }
+    // Hamesha agla Surah auto shuru karo jab tak 114 khatam na ho, 114 ke baad wapas 1 se (continuous khatam)
+    const nextSurah = currentSurah < 114 ? currentSurah + 1 : 1;
+    setCurrentSurah(nextSurah);
+    setIsPlaying(true);
+    setIsLoadingAudio(true);
+    setTimeout(() => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = getSurahAudioUrl(selectedQari.id, nextSurah);
+        audioRef.current.load();
+        audioRef.current
+          .play()
+          .then(() => {
+            setIsPlaying(true);
+            setIsLoadingAudio(false);
+          })
+          .catch((e) => {
+            console.log("Auto-play error:", e);
+            setIsLoadingAudio(false);
+          });
+      }
+    }, 100);
   };
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -335,7 +402,11 @@ export const SacredAudioPlayer: React.FC = () => {
           setIsLoadingAudio(false);
           setIsPlaying(true);
         }}
-        onPause={() => setIsPlaying(false)}
+        onPause={() => {
+          if (audioRef.current && !audioRef.current.ended) {
+            setIsPlaying(false);
+          }
+        }}
         onTimeUpdate={() => {
           if (audioRef.current) setCurrentTime(audioRef.current.currentTime);
         }}
@@ -380,12 +451,17 @@ export const SacredAudioPlayer: React.FC = () => {
           dir="rtl"
           className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 backdrop-blur-sm p-2 sm:p-4 overflow-y-auto animate-fadeIn"
           onClick={(e) => {
-            if (e.target === e.currentTarget) setIsOpen(false);
+            if (e.target === e.currentTarget && !isDragging) setIsOpen(false);
           }}
         >
           <div 
-            className="relative w-full max-w-2xl bg-gradient-to-b from-[#064e3b] to-[#022c22] rounded-[24px] border border-yellow-400/30 shadow-2xl max-h-[92vh] flex flex-col my-auto overflow-hidden text-amber-50"
-            style={{ fontFamily: "'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif" }}
+            ref={modalRef}
+            style={{ 
+              transform: `translate(${position.x}px, ${position.y}px)`,
+              cursor: isDragging ? 'grabbing' : 'auto',
+              fontFamily: "'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif" 
+            }}
+            className="relative w-full max-w-2xl bg-gradient-to-b from-[#064e3b] to-[#022c22] rounded-[24px] border border-yellow-400/30 shadow-2xl max-h-[92vh] flex flex-col my-auto overflow-hidden text-amber-50 select-none transition-transform duration-75"
           >
             {/* Toast Notification */}
             {toastMsg && (
@@ -395,28 +471,61 @@ export const SacredAudioPlayer: React.FC = () => {
               </div>
             )}
 
-            {/* STICKY TOP HEADER: ALWAYS VISIBLE WITH 40px CLOSE BUTTON */}
-            <div className="sticky top-0 z-20 flex justify-between items-center p-3.5 sm:p-4 bg-[#064e3b] rounded-t-[24px] border-b border-yellow-400/20 shrink-0 shadow-md">
-              <div className="flex items-center gap-2.5">
+            {/* STICKY TOP HEADER: DRAG HANDLE + ALWAYS VISIBLE WITH 40px CLOSE BUTTON */}
+            <div 
+              onMouseDown={handleMouseDown}
+              onTouchStart={handleTouchStart}
+              className="sticky top-0 z-20 flex justify-between items-center p-3.5 sm:p-4 bg-[#064e3b] rounded-t-[24px] border-b border-yellow-400/20 shrink-0 shadow-md cursor-grab active:cursor-grabbing select-none"
+            >
+              <div className="flex items-center gap-2.5 pointer-events-none">
                 <TehreekImanLogo size={36} className="shadow-md shrink-0 ring-1 ring-amber-400/80" />
                 <div>
-                  <h2 className="text-base sm:text-lg font-bold text-white font-nastaliq leading-tight">
-                    القرآن الكريم
-                  </h2>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-base sm:text-lg font-bold text-white font-nastaliq leading-tight flex items-center gap-1.5">
+                      <span className="text-amber-400 font-mono text-sm">⠿⠿</span>
+                      القرآن الكريم
+                    </h2>
+                    <span className="text-[10px] bg-yellow-400/20 text-[#FACC15] border border-yellow-400/30 px-2 py-0.5 rounded-full font-nastaliq font-bold">
+                      پکڑ کر گھسیٹیں ✥
+                    </span>
+                  </div>
                   <p className="text-[11px] text-emerald-300 font-nastaliq">
                     تحریکِ ایمان • مکمل ۱۱۴ سورتیں با آواز ۱۲ قراءِ کرام
                   </p>
                 </div>
               </div>
-              <button 
-                type="button"
-                onClick={() => setIsOpen(false)} 
-                className="w-10 h-10 rounded-full bg-white/10 hover:bg-red-500/80 active:scale-95 flex items-center justify-center text-white text-xl font-bold border border-white/20 transition cursor-pointer shrink-0"
-                title="بند کریں (Close)"
-                aria-label="بند کریں"
-              >
-                ✕
-              </button>
+
+              <div className="flex items-center gap-2">
+                {/* Reset to Center Button */}
+                {(position.x !== 0 || position.y !== 0) && (
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    onClick={() => setPosition({ x: 0, y: 0 })}
+                    className="px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 text-[#FACC15] text-xs font-nastaliq font-bold border border-yellow-400/30 transition cursor-pointer flex items-center gap-1 active:scale-95"
+                    title="درمیان میں لائیں (Reset to Center)"
+                  >
+                    <span>↺</span>
+                    <span className="hidden sm:inline">درمیان میں لائیں</span>
+                  </button>
+                )}
+
+                <button 
+                  type="button"
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
+                  onClick={() => {
+                    setIsOpen(false);
+                    setPosition({ x: 0, y: 0 });
+                  }} 
+                  className="w-10 h-10 rounded-full bg-white/10 hover:bg-red-500/80 active:scale-95 flex items-center justify-center text-white text-xl font-bold border border-white/20 transition cursor-pointer shrink-0"
+                  title="بند کریں (Close)"
+                  aria-label="بند کریں"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
             {/* SCROLLABLE INNER BODY */}
@@ -425,7 +534,13 @@ export const SacredAudioPlayer: React.FC = () => {
           {/* Top Player Controls Card */}
           <div className="p-3.5 bg-black/50 rounded-2xl border border-emerald-800/70 space-y-2.5 shrink-0">
             {/* Arabic Surah Title + Qari Attribution */}
-            <div className="text-center space-y-0.5">
+            <div className="text-center space-y-1">
+              <div className="flex items-center justify-center gap-2 mb-0.5">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-nastaliq font-bold bg-emerald-950/90 text-amber-300 border border-amber-400/40 shadow-inner">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>🔄 مسلسل تلاوت: آن (اگلی سورت خودکار جاری رہے گی)</span>
+                </span>
+              </div>
               <span className="text-2xl sm:text-3xl font-black font-amiri text-[#FACC15] tracking-wide block">
                 سُورَةُ {currentSurahMeta.arabic}
               </span>
