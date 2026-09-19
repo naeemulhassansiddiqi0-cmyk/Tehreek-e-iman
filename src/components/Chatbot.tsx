@@ -242,12 +242,22 @@ export const Chatbot: React.FC<ChatbotProps> = ({ onSelectBook, apiKey }) => {
                     <div className="space-y-3">
                       {/* Book Cover + Title Header */}
                       <div className="flex items-start gap-3 border-b border-gray-100 pb-3">
-                        {msg.payload.data.cover_url && (
-                          <img
-                            src={msg.payload.data.cover_url}
-                            alt={msg.payload.data.fullName}
-                            className="w-16 h-22 object-cover rounded-lg shadow-sm border border-gray-100 shrink-0"
-                          />
+                        {typeof msg.payload.data === 'object' && msg.payload.data.cover_url && (
+                          <div className="premium-book-cover w-14 h-20 shrink-0">
+                            <img
+                              src={msg.payload.data.cover_url}
+                              alt={msg.payload.data.fullName}
+                              loading="lazy"
+                              decoding="async"
+                              onError={(e) => {
+                                const target = e.currentTarget;
+                                const originalUrl = (msg.payload.data as any)?.cover_url;
+                                if (target.src.endsWith('.svg') && originalUrl) {
+                                  target.src = originalUrl.replace(/\.svg$/, '.jpg');
+                                }
+                              }}
+                            />
+                          </div>
                         )}
                         <div className="space-y-1">
                           <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">

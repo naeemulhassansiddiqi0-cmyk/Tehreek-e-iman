@@ -526,6 +526,24 @@ export default function BookDetailPage() {
         
         {/* Right 25%: Sticky Fehrist (Index of Pages) */}
         <aside className="w-full lg:w-1/4 lg:sticky lg:top-20 lg:h-[calc(100vh-6rem)] flex flex-col bg-stone-50/60 border border-gray-100 rounded-2xl p-4 shadow-xs">
+          {/* 3D Premium Book Cover Display with Spotlight */}
+          <div className="book-spotlight-container mb-3 py-2 hidden lg:flex">
+            <div className="premium-book-cover w-36 h-52 mx-auto">
+              <img
+                src={book.cover_url || `/images/books/${book.slug}.svg`}
+                alt={book.title_ur || book.title}
+                loading="eager"
+                decoding="async"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  if (target.src.endsWith('.svg')) {
+                    target.src = target.src.replace(/\.svg$/, '.jpg');
+                  }
+                }}
+              />
+            </div>
+          </div>
+
           <div className="space-y-3 pb-3 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -649,17 +667,33 @@ export default function BookDetailPage() {
           
           {/* Reader Top Bar Controls */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-6 rounded-full bg-emerald-800"></span>
-                <h2 className="text-xl sm:text-2xl font-black font-nastaliq text-emerald-950">
-                  {book.title_ur || book.title}
-                </h2>
+            <div className="flex items-center gap-3.5">
+              <div className="premium-book-cover w-11 h-16 shrink-0 hidden sm:block">
+                <img
+                  src={book.cover_url || `/images/books/${book.slug}.svg`}
+                  alt={book.title_ur || book.title}
+                  loading="lazy"
+                  decoding="async"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (target.src.endsWith('.svg')) {
+                      target.src = (book.cover_url || `/images/books/${book.slug}.svg`).replace(/\.svg$/, '.jpg');
+                    }
+                  }}
+                />
               </div>
-              <p className="text-xs text-stone-500 font-nastaliq mt-1">
-                مصنف: {book.author} {book.death_year ? `(${book.death_year}ھ)` : ''} • {book.category}
-                {isHadith && ` • کل احادیث: ${totalHadithsCount.toLocaleString('ur-PK')}`}
-              </p>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-6 rounded-full bg-emerald-800"></span>
+                  <h2 className="text-xl sm:text-2xl font-black font-nastaliq text-emerald-950">
+                    {book.title_ur || book.title}
+                  </h2>
+                </div>
+                <p className="text-xs text-stone-500 font-nastaliq mt-1">
+                  مصنف: {book.author} {book.death_year ? `(${book.death_year}ھ)` : ''} • {book.category}
+                  {isHadith && ` • کل احادیث: ${totalHadithsCount.toLocaleString('ur-PK')}`}
+                </p>
+              </div>
             </div>
 
             {/* Pagination Controls Top & Zoom Controls */}

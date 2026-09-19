@@ -290,7 +290,9 @@ export function App() {
     setNotes(prev => prev.filter(n => n.id !== id));
   };
 
-  if (currentPath.startsWith('/books/') || currentPath.startsWith('/book/')) {
+  const isBookDetail = (currentPath.startsWith('/books/') && currentPath.length > 7) || 
+                       (currentPath.startsWith('/book/') && currentPath.length > 6);
+  if (isBookDetail) {
     return (
       <div dir="rtl" className="min-h-screen bg-white">
         <BookDetailPage />

@@ -113,6 +113,79 @@ html, body {
   }
 }
 
+/* ==========================================================================
+   PREMIUM 3D BOOK MOCKUP STYLING & SPOTLIGHT
+   ========================================================================== */
+
+/* 3. Lighting & Background: soft radial gradient behind each book */
+.book-spotlight-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 8px;
+  background: radial-gradient(circle at center, rgba(255, 215, 0, 0.18) 0%, rgba(255, 215, 0, 0.05) 50%, transparent 70%);
+  border-radius: 16px;
+  perspective: 1000px;
+  overflow: visible;
+}
+
+/* 1. 3D Book Mockup Container */
+.premium-book-cover {
+  position: relative;
+  border-radius: 4px 12px 12px 4px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3), 0 5px 15px rgba(0, 0, 0, 0.2), inset 2px 0 5px rgba(255, 255, 255, 0.3);
+  transform: perspective(1000px) rotateY(-8deg);
+  transition: all 0.4s ease;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.2) 0%, transparent 8%, transparent 92%, rgba(0, 0, 0, 0.1) 100%);
+  overflow: hidden;
+  display: block;
+}
+
+.premium-book-cover:hover {
+  transform: perspective(1000px) rotateY(-2deg) translateY(-5px);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+}
+
+.premium-book-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: contrast(1.1) brightness(1.05) saturate(1.1);
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* Spine effect with ::before pseudo-element to make it look like real thick book */
+.premium-book-cover::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 16px;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.45) 0%, rgba(255, 255, 255, 0.25) 25%, rgba(0, 0, 0, 0.25) 50%, transparent 100%);
+  z-index: 2;
+  pointer-events: none;
+  border-left: 2px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.25);
+}
+
+/* Subtle glossy overlay with ::after for studio lighting */
+.premium-book-cover::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.08) 28%, transparent 55%, rgba(0, 0, 0, 0.25) 100%);
+  z-index: 3;
+  pointer-events: none;
+  border-radius: 4px 12px 12px 4px;
+}
+
 .book-content .urdu-text,
 .book-content [lang="ur"],
 .book-content .font-nastaliq {

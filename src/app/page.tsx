@@ -142,19 +142,26 @@ export default function HomePage() {
                   className="group bg-white rounded-2xl border border-gray-100 hover:border-emerald-700/40 p-3 sm:p-4 flex flex-col justify-between transition-all duration-200 hover:shadow-xl hover:-translate-y-1 cursor-pointer"
                 >
                   <div className="space-y-3">
-                    {/* Cover Image: object-cover h-64 */}
-                    <div className="relative overflow-hidden rounded-xl bg-gray-100 shadow-inner">
-                      <img
-                        src={book.cover_url}
-                        alt={book.title_ur}
-                        loading="lazy"
-                        decoding="async"
-                        className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      <span className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-lg bg-emerald-900/85 backdrop-blur-md text-amber-300 text-[10px] font-bold font-nastaliq shadow-sm">
+                    {/* Cover Image: 3D Mockup with Spotlight Background */}
+                    <div className="book-spotlight-container">
+                      <div className="premium-book-cover w-40 sm:w-44 h-60 sm:h-64 mx-auto">
+                        <img
+                          src={book.cover_url}
+                          alt={book.title_ur}
+                          loading="lazy"
+                          decoding="async"
+                          onError={(e) => {
+                            const target = e.currentTarget;
+                            if (target.src.endsWith('.svg')) {
+                              target.src = book.cover_url.replace(/\.svg$/, '.jpg');
+                            }
+                          }}
+                        />
+                      </div>
+                      <span className="absolute top-2 right-2 px-2.5 py-1 rounded-lg bg-emerald-950/90 backdrop-blur-md text-amber-300 text-[10px] font-bold font-nastaliq shadow-sm border border-amber-400/30 z-10">
                         {book.category}
                       </span>
-                      <span className="absolute bottom-2.5 left-2.5 px-2 py-0.5 rounded-md bg-white/90 backdrop-blur-sm text-stone-800 text-[10px] font-semibold">
+                      <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-stone-900/85 backdrop-blur-md text-amber-100 text-[10px] font-semibold border border-stone-700 z-10">
                         {book.volumes} جلدیں
                       </span>
                     </div>
@@ -242,13 +249,22 @@ export default function HomePage() {
                       </p>
                     </div>
 
-                    <img
-                      src={book.cover_url}
-                      alt={book.title_ur}
-                      loading="lazy"
-                      decoding="async"
-                      className="w-16 h-22 object-cover rounded-xl shadow-xs border border-gray-200 shrink-0"
-                    />
+                    <div className="book-spotlight-container shrink-0 p-1">
+                      <div className="premium-book-cover w-16 h-24">
+                        <img
+                          src={book.cover_url}
+                          alt={book.title_ur}
+                          loading="lazy"
+                          decoding="async"
+                          onError={(e) => {
+                            const target = e.currentTarget;
+                            if (target.src.endsWith('.svg')) {
+                              target.src = book.cover_url.replace(/\.svg$/, '.jpg');
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   <p className="text-xs text-stone-700 font-nastaliq leading-relaxed line-clamp-3 text-right">
