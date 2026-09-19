@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { BookOpen, ExternalLink, Sparkles, BookMarked, Search } from 'lucide-react';
 import { publicDomainBooks, modernBooks, BookCategoryTitle } from '../data/publicDomainBooks';
+import { NaatPlayer } from '../components/NaatPlayer';
 
 const CATEGORY_CHIPS: { id: BookCategoryTitle | 'all'; title_ur: string }[] = [
   { id: 'all', title_ur: 'تمام کتب' },
@@ -17,6 +18,7 @@ const CATEGORY_CHIPS: { id: BookCategoryTitle | 'all'; title_ur: string }[] = [
 export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState<BookCategoryTitle | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showNaatPlayer, setShowNaatPlayer] = useState(false);
 
   // FIX CRITICAL BUG: Guaranteed deduplication: 1 book = 1 card only
   const uniquePublicBooks = useMemo(() => {
@@ -106,6 +108,16 @@ export default function HomePage() {
                 </button>
               );
             })}
+          </div>
+
+          {/* Naat & Hamd Player Button */}
+          <div className="flex items-center justify-center gap-3 pt-2">
+            <button 
+              onClick={() => setShowNaatPlayer(true)} 
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl shadow font-nastaliq font-bold flex items-center gap-2 cursor-pointer transition active:scale-95 text-sm sm:text-base border border-emerald-500/40"
+            >
+              🎙️ نعت و حمد پلئیر - 100 نعتیں
+            </button>
           </div>
         </div>
 
@@ -299,6 +311,12 @@ export default function HomePage() {
             ))}
           </div>
         </section>
+
+        {/* 100 Naats & Hamds Hybrid Draggable Player */}
+        <NaatPlayer 
+          isOpen={showNaatPlayer} 
+          onClose={() => setShowNaatPlayer(false)} 
+        />
 
       </div>
     </div>

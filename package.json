@@ -6,13 +6,15 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "download-naats": "node scripts/downloadNaats.js"
   },
   "dependencies": {
     "clsx": "^2.1.1",
     "lucide-react": "^1.45.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
+    "react-youtube": "^10.1.0",
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {

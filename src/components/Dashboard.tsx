@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { BookOpen, ExternalLink, Sparkles, BookMarked } from 'lucide-react';
 import { publicDomainBooks, modernBooks, PublicDomainBook, BookCategoryTitle } from '../data/publicDomainBooks';
 import { AppTab } from '../types';
+import { NaatPlayer } from './NaatPlayer';
 
 interface DashboardProps {
   onSelectPublicBook?: (book: PublicDomainBook) => void;
@@ -13,6 +14,7 @@ interface DashboardProps {
   onOpenAdmin?: () => void;
   userName?: string;
   customLogoSrc?: string;
+  onOpenNaatPlayer?: () => void;
 }
 
 const CATEGORY_CHIPS: { id: BookCategoryTitle | 'all'; title_ur: string }[] = [
@@ -29,10 +31,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onSelectPublicBook: _onSelectPublicBook,
   onSelectBook: _onSelectBook,
   setActiveTab: _setActiveTab,
-  searchQuery = ''
+  searchQuery = '',
+  onOpenNaatPlayer
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<BookCategoryTitle | 'all'>('all');
   const [localSearch, setLocalSearch] = useState('');
+  const [showNaatPlayer, setShowNaatPlayer] = useState(false);
 
   const effectiveSearch = (searchQuery || localSearch).trim().toLowerCase();
 
@@ -113,6 +117,23 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 </button>
               );
             })}
+          </div>
+
+          {/* Naat & Hamd Player Button */}
+          <div className="flex items-center justify-center gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                if (onOpenNaatPlayer) {
+                  onOpenNaatPlayer();
+                } else {
+                  setShowNaatPlayer(true);
+                }
+              }}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl shadow-md hover:shadow-lg font-nastaliq font-bold flex items-center gap-2 cursor-pointer transition active:scale-95 text-sm sm:text-base border border-emerald-500/40"
+            >
+              🎙️ نعت و حمد پلئیر - 100 نعتیں
+            </button>
           </div>
         </div>
 
@@ -320,6 +341,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
             ))}
           </div>
         </section>
+
+        {/* 100 Naats & Hamds Hybrid Draggable Player (Fallback if not handled globally) */}
+        {!onOpenNaatPlayer && (
+          <NaatPlayer 
+            isOpen={showNaatPlayer} 
+            onClose={() => setShowNaatPlayer(false)} 
+          />
+        )}
 
       </div>
     </div>
