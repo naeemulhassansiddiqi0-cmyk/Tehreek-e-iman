@@ -110,13 +110,15 @@ export default function HomePage() {
             })}
           </div>
 
-          {/* Naat & Hamd Player Button */}
+          {/* Hamd & Naat Player Button */}
           <div className="flex items-center justify-center gap-3 pt-2">
             <button 
               onClick={() => setShowNaatPlayer(true)} 
+              title="حمد و نعتِ رسول ﷺ سنیں"
+              aria-label="حمد و نعتِ رسول ﷺ پلیئر"
               className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl shadow font-nastaliq font-bold flex items-center gap-2 cursor-pointer transition active:scale-95 text-sm sm:text-base border border-emerald-500/40"
             >
-              🎙️ نعت و حمد پلئیر - 100 نعتیں
+              🎙️ حمد و نعتِ رسول ﷺ - 100 نعتیں
             </button>
           </div>
         </div>

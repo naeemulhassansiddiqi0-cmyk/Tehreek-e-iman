@@ -12,6 +12,7 @@ import { AdminPanelModal } from './components/Admin/AdminPanelModal';
 import { PrayerTimesView } from './components/PrayerTimes/PrayerTimesView';
 import { SacredAudioPlayer } from './components/AudioPlayer/SacredAudioPlayer';
 import { NaatPlayer } from './components/NaatPlayer';
+import { NaatPlayerButton } from './components/NaatPlayerButton';
 import { Chatbot } from './components/Chatbot';
 import { booksDatabase } from './data/booksData';
 import { Book, AppTab } from './types';
@@ -459,28 +460,9 @@ export function App() {
         onSaveToNotes={(content) => handleAddNote(content, 'علمی اتالیق استفسار')}
       />
 
-      {/* Global Floating Pill for Naat & Hamd Player (100 Naats) */}
+      {/* Global Naat & Hamd Player Button (Fixed Top-24 Left-6: بائیں اوپر) */}
       {!isNaatPlayerOpen && (
-        <div className="fixed bottom-36 left-4 md:bottom-20 md:left-5 z-40 animate-fadeIn">
-          <button
-            type="button"
-            onClick={() => setIsNaatPlayerOpen(true)}
-            className="flex items-center gap-2.5 px-3.5 py-2 rounded-2xl bg-gradient-to-r from-emerald-950 via-[#0a2318] to-emerald-950 border-2 border-emerald-400/70 shadow-[0_10px_30px_rgba(0,0,0,0.8)] text-emerald-200 hover:scale-105 active:scale-95 transition-all cursor-pointer group"
-            title="🎙️ نعت و حمد پلئیر - 100 کلام (کھولیں)"
-          >
-            <div className="w-8 h-8 rounded-xl bg-emerald-500 text-stone-950 flex items-center justify-center shadow-lg font-bold text-sm">
-              🎙️
-            </div>
-            <div className="text-right">
-              <span className="block text-xs font-nastaliq font-black text-emerald-300 leading-tight">
-                نعت و حمد رسول ﷺ
-              </span>
-              <span className="block text-[10px] text-emerald-400/90 font-nastaliq">
-                🎙️ 100 کلام • پبلک ڈومین
-              </span>
-            </div>
-          </button>
-        </div>
+        <NaatPlayerButton onClick={() => setIsNaatPlayerOpen(true)} />
       )}
 
       {/* Global Sacred Quran & Hadith Audio Recitation Player */}

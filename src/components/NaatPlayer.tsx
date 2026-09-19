@@ -299,16 +299,21 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
             <TehreekImanLogo size={36} className="shadow-md shrink-0 ring-1 ring-amber-400/80" />
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg font-bold text-white font-nastaliq leading-tight flex items-center gap-1.5">
-                  <span className="text-amber-400 font-mono text-sm">⠿⠿</span>
-                  نعت و حمد رسولِ پاک ﷺ
-                </h2>
-                <span className="text-[10px] bg-yellow-400/20 text-[#FACC15] border border-yellow-400/30 px-2 py-0.5 rounded-full font-nastaliq font-bold">
+                <div>
+                  <span className="block text-[11px] text-emerald-300 font-nastaliq font-bold leading-tight">
+                    حمد و نعت
+                  </span>
+                  <h2 className="text-base sm:text-xl font-bold text-white font-nastaliq leading-tight flex items-center gap-1.5">
+                    <span className="text-amber-400 font-mono text-sm">⠿⠿</span>
+                    نعتِ رسول ﷺ
+                  </h2>
+                </div>
+                <span className="text-[10px] bg-yellow-400/20 text-[#FACC15] border border-yellow-400/30 px-2 py-0.5 rounded-full font-nastaliq font-bold self-start mt-0.5">
                   پکڑ کر گھسیٹیں ✥
                 </span>
               </div>
-              <p className="text-[11px] text-emerald-300 font-nastaliq">
-                تحریکِ ایمان • 100 کلامِ پاک (پبلک ڈومین • کاپی رائٹ سے آزاد)
+              <p className="text-[11px] text-amber-200/90 font-nastaliq mt-0.5">
+                100 منتخب نعتیں - الحمد للہ
               </p>
             </div>
           </div>
@@ -521,7 +526,7 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
                 type="text"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                placeholder="نعت، حمد یا کلام تلاش کریں..."
+                placeholder="حمد و نعتِ رسول ﷺ یا کلام تلاش کریں..."
                 className="w-full pr-9 pl-3 py-2 bg-emerald-900/40 border border-yellow-400/20 rounded-xl text-xs sm:text-sm font-nastaliq text-amber-100 placeholder-emerald-400/60 focus:outline-none focus:border-amber-400/60 focus:ring-1 focus:ring-amber-400/40"
               />
             </div>
@@ -531,7 +536,7 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
           <div className="space-y-2">
             <h4 className="text-xs font-bold font-nastaliq text-amber-300 flex items-center gap-1.5 px-1">
               <ListMusic className="w-4 h-4 text-amber-400" />
-              <span>فہرستِ کلام (100 حمد و نعت)</span>
+              <span>فہرستِ کلام (100 حمد و نعتِ رسول ﷺ)</span>
             </h4>
 
             <div className="space-y-1.5 max-h-[380px] overflow-y-auto custom-scrollbar pr-1">
@@ -609,7 +614,7 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
         {/* FOOTER */}
         <div className="p-3 bg-[#064e3b] border-t border-yellow-400/20 flex items-center justify-between text-[11px] text-emerald-200/80 font-nastaliq px-4">
           <span>تحریکِ ایمان ڈیجیٹل کتب خانہ • صوتیاتِ نبوی</span>
-          <span>۱۰۰ کلامِ حمد و نعت و نظم</span>
+          <span>۱۰۰ کلامِ حمد و نعتِ رسول ﷺ</span>
         </div>
       </div>
     </div>

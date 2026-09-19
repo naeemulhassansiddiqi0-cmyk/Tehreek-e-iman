@@ -113,7 +113,7 @@ async function downloadOrEnsureTrack(track, folderPath, categoryName) {
 
 async function main() {
   console.log('====================================================');
-  console.log('🎙️ تحریکِ ایمان - نعت و حمد آڈیو ڈاؤنلوڈر (50 پبلک ڈومین ٹریکس)');
+  console.log('🎙️ تحریکِ ایمان - حمد و نعتِ رسول ﷺ آڈیو ڈاؤنلوڈر (50 پبلک ڈومین ٹریکس)');
   console.log('====================================================\n');
 
   console.log('--- 1. حمد باری تعالیٰ (25 ٹریکس) ---');

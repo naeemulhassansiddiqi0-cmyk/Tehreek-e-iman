@@ -418,9 +418,9 @@ export const SacredAudioPlayer: React.FC = () => {
         onEnded={handleEnded}
       />
 
-      {/* Persistent Floating Audio Pill (Yellow / Dark Green Button at Left Bottom) */}
+      {/* Persistent Floating Audio Pill (Quran Player: Right Top) */}
       {!isOpen && (
-        <div className="fixed bottom-20 left-4 md:bottom-5 md:left-5 z-40 animate-fadeIn">
+        <div className="fixed top-24 right-4 sm:right-6 z-40 animate-fadeIn select-none">
           <button
             type="button"
             onClick={() => setIsOpen(true)}
