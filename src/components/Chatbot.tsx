@@ -41,6 +41,39 @@ export const Chatbot: React.FC<ChatbotProps> = ({ onSelectBook, apiKey, onSaveTo
   const [copiedMsgId, setCopiedMsgId] = useState<string | null>(null);
   const [savedMsgId, setSavedMsgId] = useState<string | null>(null);
   
+  // Font Size state & Pinch Zoom for Mobile & Desktop (12px to 28px)
+  const [fontSize, setFontSize] = useState(15);
+  const [initialDistance, setInitialDistance] = useState<number | null>(null);
+
+  function getDistance(touches: React.TouchList) {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      setInitialDistance(getDistance(e.touches));
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && initialDistance) {
+      if (e.cancelable) e.preventDefault();
+      const currentDistance = getDistance(e.touches);
+      const diff = currentDistance - initialDistance;
+      if (Math.abs(diff) > 20) { // threshold to avoid jitter
+        if (diff > 0) setFontSize(prev => Math.min(prev + 1, 28));
+        else setFontSize(prev => Math.max(prev - 1, 12));
+        setInitialDistance(currentDistance);
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setInitialDistance(null);
+  };
+  
   const recognitionRef = useRef<any>(null);
   const stopSpeechRef = useRef<(() => void) | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -448,12 +481,61 @@ export const Chatbot: React.FC<ChatbotProps> = ({ onSelectBook, apiKey, onSaveTo
                             </button>
                           </div>
                         ) : (
-                          /* Scholarly Urdu Text */
-                          <div 
-                            className="space-y-2 urdu-text leading-relaxed text-sm whitespace-pre-line selection:bg-emerald-100"
-                            style={{ color: '#111111' }}
-                          >
-                            {msg.payload.data}
+                          <div>
+                            {/* A+ A- Font Controls for Desktop */}
+                            <div className="hidden md:flex items-center justify-between border-b border-stone-100 pb-1.5 mb-2 text-xs">
+                              <div className="flex items-center gap-1">
+                                <span className="text-[10px] text-stone-400 font-sans ml-1">فونٹ سائز:</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setFontSize(prev => Math.max(prev - 2, 12))}
+                                  className="px-2 py-0.5 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs cursor-pointer transition active:scale-95"
+                                  title="فونٹ چھوٹا کریں (A-)"
+                                >
+                                  A-
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setFontSize(15)}
+                                  className="px-2 py-0.5 rounded bg-stone-100 hover:bg-stone-200 text-stone-600 text-xs font-mono cursor-pointer transition"
+                                  title="اصل سائز پر ری سیٹ کریں (15px)"
+                                >
+                                  {fontSize}px
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setFontSize(prev => Math.min(prev + 2, 28))}
+                                  className="px-2 py-0.5 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs cursor-pointer transition active:scale-95"
+                                  title="فونٹ بڑا کریں (A+)"
+                                >
+                                  A+
+                                </button>
+                              </div>
+                              <div className="text-[10px] text-gray-400">A+ A- سے سائز تبدیل کریں</div>
+                            </div>
+
+                            {/* Scholarly Urdu Text with Mobile Pinch Zoom */}
+                            <div 
+                              onTouchStart={handleTouchStart}
+                              onTouchMove={handleTouchMove}
+                              onTouchEnd={handleTouchEnd}
+                              className="select-text break-words space-y-2 urdu-text leading-relaxed whitespace-pre-line selection:bg-emerald-100"
+                              style={{ 
+                                color: '#111111',
+                                fontSize: `${fontSize}px`,
+                                lineHeight: '1.9',
+                                touchAction: 'none',
+                                userSelect: 'text',
+                                transition: 'font-size 0.15s ease'
+                              }}
+                            >
+                              {msg.payload.data}
+                            </div>
+
+                            {/* UX Hint on Mobile */}
+                            <div className="md:hidden text-[10px] text-gray-400 mt-1 text-center">
+                              دو انگلیوں سے زوم کریں 🤏
+                            </div>
                           </div>
                         )}
 
