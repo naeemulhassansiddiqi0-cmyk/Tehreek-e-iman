@@ -9,7 +9,10 @@ import {
   RotateCcw, 
   X, 
   Headphones,
-  Search
+  Search,
+  CheckCircle2,
+  Mic2,
+  BookOpen
 } from 'lucide-react';
 import { TehreekImanLogo } from '../TehreekImanLogo';
 import { QURAN_SURAHS_CANONICAL } from '../../data/quranData';
@@ -18,10 +21,28 @@ export interface QuranSurah {
   id: number;
   name: string;
   arabic: string;
-  audio: string;
   numberOfAyahs?: number;
   type?: string;
 }
+
+export interface QariItem {
+  id: string;
+  name: string;
+  nameEn: string;
+  style: string;
+}
+
+// 8 Famous International Qaris
+export const qaris: QariItem[] = [
+  { id: "ar.alafasy", name: "مشاری راشد العفاسی", nameEn: "Mishary Alafasy", style: "مشہور" },
+  { id: "ar.abdurrahmaansudais", name: "عبدالرحمن السدیس", nameEn: "Abdul Rahman Al-Sudais", style: "امام حرم" },
+  { id: "ar.abdulbasitmurattal", name: "عبدالباسط عبدالصمد", nameEn: "Abdul Basit", style: "مرتل" },
+  { id: "ar.shaatree", name: "ابوبکر الشاطری", nameEn: "Abu Bakr Al-Shatri", style: "خوبصورت" },
+  { id: "ar.mahermuaiqly", name: "ماہر المعيقلی", nameEn: "Maher Al-Muaiqly", style: "امام حرم" },
+  { id: "ar.ahmedajamy", name: "احمد العجمی", nameEn: "Ahmed Al-Ajamy", style: "دلکش" },
+  { id: "ar.saoodshuraym", name: "سعود الشریم", nameEn: "Saood Al-Shuraim", style: "امام حرم" },
+  { id: "ar.minshawi", name: "محمد صدیق المنشاوی", nameEn: "Minshawi", style: "کلاسک" }
+];
 
 const canonicalLookup = new Map(QURAN_SURAHS_CANONICAL.map(s => [s.number, s]));
 
@@ -31,7 +52,6 @@ export const quranSurahs: QuranSurah[] = [
     id: 1, 
     name: "الفاتحہ", 
     arabic: "الفاتحة", 
-    audio: "https://cdn.islamic.network/quran/audio/128/ar.alafasy/1.mp3", 
     numberOfAyahs: 7, 
     type: "مکی" 
   },
@@ -39,7 +59,6 @@ export const quranSurahs: QuranSurah[] = [
     id: 2, 
     name: "البقرہ", 
     arabic: "البقرة", 
-    audio: "https://cdn.islamic.network/quran/audio/128/ar.alafasy/2.mp3", 
     numberOfAyahs: 286, 
     type: "مدنی" 
   },
@@ -50,7 +69,6 @@ export const quranSurahs: QuranSurah[] = [
       id,
       name: canonical ? canonical.nameUrdu.replace(/^سورۃ\s*/, '') : `سورت ${id}`,
       arabic: canonical ? canonical.nameArabic : `سورة ${id}`,
-      audio: `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${id}.mp3`,
       numberOfAyahs: canonical?.ayahCount || 0,
       type: canonical?.revelationType === 'مکية' ? 'مکی' : 'مدنی',
     };
@@ -59,7 +77,6 @@ export const quranSurahs: QuranSurah[] = [
     id: 114, 
     name: "الناس", 
     arabic: "الناس", 
-    audio: "https://cdn.islamic.network/quran/audio/128/ar.alafasy/114.mp3", 
     numberOfAyahs: 6, 
     type: "مکی" 
   }
@@ -68,11 +85,29 @@ export const quranSurahs: QuranSurah[] = [
 // Alias for backwards compatibility
 export const SURAH_LIST = quranSurahs;
 
+// Dynamic Audio URL generator for all Qaris
+export function getQariAudioUrl(qariId: string, surahNumber: number): string {
+  if (qariId === 'ar.abdulbasitmurattal') {
+    return `https://cdn.islamic.network/quran/audio-surah/128/ar.abdulbasitmurattal/${surahNumber}.mp3`;
+  }
+  if (qariId === 'ar.abdurrahmaansudais') {
+    return `https://server11.mp3quran.net/sds/${surahNumber.toString().padStart(3, '0')}.mp3`;
+  }
+  if (qariId === 'ar.saoodshuraym') {
+    return `https://server7.mp3quran.net/shur/${surahNumber.toString().padStart(3, '0')}.mp3`;
+  }
+  return `https://cdn.islamic.network/quran/audio/128/${qariId}/${surahNumber}.mp3`;
+}
+
 export const SacredAudioPlayer: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'surahs' | 'qaris'>('surahs');
+  const [selectedQari, setSelectedQari] = useState<QariItem>(qaris[0]);
   const [currentSurahIndex, setCurrentSurahIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1);
@@ -84,7 +119,7 @@ export const SacredAudioPlayer: React.FC = () => {
   const activeItemRef = useRef<HTMLDivElement | null>(null);
 
   const currentSurah = quranSurahs[currentSurahIndex] || quranSurahs[0];
-  const audioSrc = currentSurah.audio;
+  const audioSrc = getQariAudioUrl(selectedQari.id, currentSurah.id);
 
   // Filtered surahs for the 114 surahs list
   const filteredSurahs = useMemo(() => {
@@ -122,6 +157,13 @@ export const SacredAudioPlayer: React.FC = () => {
         setIsPlaying(true);
       }
     }
+  };
+
+  // Change Qari instantly, keeping current Surah playing
+  const handleSelectQari = (qari: QariItem) => {
+    setSelectedQari(qari);
+    setToastMsg(`قاری تبدیل: ${qari.name}`);
+    setTimeout(() => setToastMsg(null), 3000);
   };
 
   const handleNext = () => {
@@ -175,7 +217,7 @@ export const SacredAudioPlayer: React.FC = () => {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  // Autoplay when surah changes if was already playing
+  // Autoplay when surah or qari changes if was already playing
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.load();
@@ -186,14 +228,14 @@ export const SacredAudioPlayer: React.FC = () => {
           .catch(() => setIsPlaying(false));
       }
     }
-  }, [currentSurahIndex]);
+  }, [currentSurahIndex, selectedQari.id]);
 
-  // Scroll active playing surah into view when list is opened
+  // Scroll active playing surah into view when surahs tab is active
   useEffect(() => {
-    if (isOpen && activeItemRef.current) {
+    if (isOpen && activeTab === 'surahs' && activeItemRef.current) {
       activeItemRef.current.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
-  }, [isOpen, currentSurahIndex]);
+  }, [isOpen, activeTab, currentSurahIndex]);
 
   return (
     <>
@@ -223,17 +265,17 @@ export const SacredAudioPlayer: React.FC = () => {
             type="button"
             onClick={() => setIsOpen(true)}
             className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-950 via-[#0a2318] to-emerald-950 border-2 border-amber-400 shadow-[0_10px_30px_rgba(0,0,0,0.8)] text-amber-200 hover:scale-105 active:scale-95 transition-all cursor-pointer group"
-            title="القرآن الکریم - 114 سورتیں (کھولیں)"
+            title="القرآن الکریم - 114 سورتیں و قراء کرام (کھولیں)"
           >
             <div className={`w-9 h-9 rounded-xl bg-amber-400 text-stone-950 flex items-center justify-center shadow-lg font-bold ${isPlaying ? 'animate-bounce' : ''}`}>
               <Headphones className="w-5 h-5 text-stone-950" />
             </div>
             <div className="text-right">
               <span className="block text-xs font-nastaliq font-black text-amber-300 leading-tight">
-                سورۃ {currentSurah.name} ({currentSurah.arabic})
+                سورۃ {currentSurah.name} • {selectedQari.name}
               </span>
               <span className="block text-[10px] text-emerald-300 font-nastaliq">
-                {isPlaying ? '▶ تلاوت جاری ہے' : '🎧 القرآن الکریم - 114 سورتیں'}
+                {isPlaying ? '▶ تلاوت جاری ہے' : '🎧 114 سورتیں • 8 قراء کرام'}
               </span>
             </div>
             {isPlaying && (
@@ -243,13 +285,21 @@ export const SacredAudioPlayer: React.FC = () => {
         </div>
       )}
 
-      {/* Full Quran 114 Surahs Modal / Drawer */}
+      {/* Full Quran 114 Surahs & Multiple Qaris Modal / Drawer */}
       {isOpen && (
         <div 
           dir="rtl"
           className="fixed bottom-36 left-3 right-3 sm:left-6 sm:right-auto sm:w-[460px] max-h-[82vh] h-[640px] z-50 flex flex-col modal-contrast-card rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.95)] text-amber-50 border-2 border-amber-400/80 backdrop-blur-xl overflow-hidden animate-fadeIn"
           style={{ fontFamily: "'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif" }}
         >
+          {/* Toast Notification for Qari Switch */}
+          {toastMsg && (
+            <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-amber-400 text-stone-950 font-nastaliq font-bold text-xs px-4 py-1.5 rounded-xl shadow-2xl animate-fadeIn border border-amber-300 flex items-center gap-1.5 pointer-events-none">
+              <CheckCircle2 className="w-4 h-4 text-emerald-950" />
+              <span>{toastMsg}</span>
+            </div>
+          )}
+
           {/* Drawer Header */}
           <div className="bg-gradient-to-l from-emerald-950 via-emerald-900 to-teal-950 text-white px-4 py-3 flex items-center justify-between border-b border-emerald-800/80 shadow-md">
             <div className="flex items-center gap-2.5">
@@ -259,7 +309,7 @@ export const SacredAudioPlayer: React.FC = () => {
                   القرآن الکریم - 114 سورتیں
                 </h3>
                 <span className="text-[11px] text-emerald-300 font-nastaliq block">
-                  تحریکِ ایمان • مکمل تلاوت با آواز قاری مشاری راشد العفاسی
+                  تحریکِ ایمان • دار التلاوۃ و صوتیات (۸ قراءِ کرام)
                 </span>
               </div>
             </div>
@@ -273,17 +323,45 @@ export const SacredAudioPlayer: React.FC = () => {
             </button>
           </div>
 
-          {/* Current Playing Track Card (Sticky at Top) */}
+          {/* Dual Tabs Navigation Bar (YouTube Style) */}
+          <div className="flex items-center gap-2 p-2 bg-emerald-950/95 border-b border-emerald-800/70">
+            <button
+              type="button"
+              onClick={() => setActiveTab('surahs')}
+              className={`flex-1 py-2 px-3 rounded-xl font-nastaliq font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition cursor-pointer ${
+                activeTab === 'surahs'
+                  ? 'bg-gradient-to-r from-amber-400 to-amber-300 text-stone-950 shadow-md ring-1 ring-amber-200'
+                  : 'bg-emerald-900/50 text-emerald-200 hover:bg-emerald-800/60 border border-emerald-700/50'
+              }`}
+            >
+              <BookOpen className="w-4 h-4" />
+              <span>سورتیں (114)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('qaris')}
+              className={`flex-1 py-2 px-3 rounded-xl font-nastaliq font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition cursor-pointer ${
+                activeTab === 'qaris'
+                  ? 'bg-gradient-to-r from-amber-400 to-amber-300 text-stone-950 shadow-md ring-1 ring-amber-200'
+                  : 'bg-emerald-900/50 text-emerald-200 hover:bg-emerald-800/60 border border-emerald-700/50'
+              }`}
+            >
+              <Mic2 className="w-4 h-4" />
+              <span>قراء کرام (8)</span>
+            </button>
+          </div>
+
+          {/* Current Playing Track Info Display (Sticky) */}
           <div className="p-3.5 bg-black/60 border-b border-emerald-800/70 space-y-2.5">
-            {/* Arabic Big Title */}
+            {/* Arabic Title + Qari Attribution */}
             <div className="text-center space-y-0.5">
               <span className="text-2xl sm:text-3xl font-black font-amiri text-amber-300 tracking-wide block">
                 سُورَةُ {currentSurah.arabic}
               </span>
-              <div className="flex items-center justify-center gap-2 text-xs font-nastaliq text-emerald-200 font-bold">
+              <div className="flex items-center justify-center gap-1.5 text-xs font-nastaliq text-emerald-200 font-bold">
                 <span>سورۃ {currentSurah.name}</span>
                 <span>•</span>
-                <span>سورت نمبر {currentSurah.id}</span>
+                <span className="text-amber-300">قاری {selectedQari.name}</span>
                 {currentSurah.numberOfAyahs ? (
                   <>
                     <span>•</span>
@@ -398,114 +476,186 @@ export const SacredAudioPlayer: React.FC = () => {
             </div>
           </div>
 
-          {/* Search Box: "سورت تلاش کریں" */}
-          <div className="p-2.5 bg-emerald-950/90 border-b border-emerald-800/60">
-            <div className="relative">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder="سورت تلاش کریں (نام یا نمبر)..."
-                className="w-full bg-black/40 text-amber-200 placeholder-emerald-400/60 text-xs sm:text-sm font-nastaliq rounded-xl pr-9 pl-8 py-2 border border-emerald-700/70 focus:outline-none focus:border-amber-400 transition"
-              />
-              <Search className="w-4 h-4 text-emerald-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  className="absolute left-2.5 top-1/2 -translate-y-1/2 text-emerald-400 hover:text-white p-0.5"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Scrollable List of All 114 Surahs */}
-          <div className="flex-1 overflow-y-auto p-2.5 space-y-1.5 custom-scrollbar bg-emerald-950/40">
-            {filteredSurahs.length === 0 ? (
-              <div className="p-6 text-center text-xs text-emerald-300/80 font-nastaliq">
-                کوئی سورت نہیں ملی۔ برائے کرم درست نام یا نمبر درج فرمائیں۔
+          {/* TAB 1: SURAHS LIST (114) */}
+          {activeTab === 'surahs' && (
+            <>
+              {/* Search Box: "سورت تلاش کریں" */}
+              <div className="p-2.5 bg-emerald-950/90 border-b border-emerald-800/60">
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    placeholder="سورت تلاش کریں (نام یا نمبر)..."
+                    className="w-full bg-black/40 text-amber-200 placeholder-emerald-400/60 text-xs sm:text-sm font-nastaliq rounded-xl pr-9 pl-8 py-2 border border-emerald-700/70 focus:outline-none focus:border-amber-400 transition"
+                  />
+                  <Search className="w-4 h-4 text-emerald-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      className="absolute left-2.5 top-1/2 -translate-y-1/2 text-emerald-400 hover:text-white p-0.5"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
-            ) : (
-              filteredSurahs.map(s => {
-                const isSelected = s.id === currentSurah.id;
-                const isItemPlaying = isSelected && isPlaying;
 
-                return (
-                  <div
-                    key={s.id}
-                    ref={isSelected ? activeItemRef : null}
-                    onClick={() => playSurah(s.id)}
-                    className={`flex items-center justify-between px-3 py-2 rounded-xl transition cursor-pointer ${
-                      isSelected
-                        ? 'bg-emerald-900 border-2 border-emerald-400 text-amber-300 shadow-md shadow-emerald-950/60'
-                        : 'bg-emerald-950/60 hover:bg-emerald-900/60 border border-emerald-800/40 text-emerald-100'
-                    }`}
-                  >
-                    {/* Right: Number badge + Urdu & Arabic names */}
-                    <div className="flex items-center gap-2.5">
-                      <span className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs font-mono shrink-0 ${
-                        isSelected 
-                          ? 'bg-amber-400 text-stone-950 shadow' 
-                          : 'bg-emerald-900/80 text-amber-300 border border-emerald-700/60'
-                      }`}>
-                        {s.id}
-                      </span>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className={`font-nastaliq font-bold text-sm ${isSelected ? 'text-amber-300' : 'text-white'}`}>
-                            سورۃ {s.name}
+              {/* Scrollable List of All 114 Surahs */}
+              <div className="flex-1 overflow-y-auto p-2.5 space-y-1.5 custom-scrollbar bg-emerald-950/40">
+                {filteredSurahs.length === 0 ? (
+                  <div className="p-6 text-center text-xs text-emerald-300/80 font-nastaliq">
+                    کوئی سورت نہیں ملی۔ برائے کرم درست نام یا نمبر درج فرمائیں۔
+                  </div>
+                ) : (
+                  filteredSurahs.map(s => {
+                    const isSelected = s.id === currentSurah.id;
+                    const isItemPlaying = isSelected && isPlaying;
+
+                    return (
+                      <div
+                        key={s.id}
+                        ref={isSelected ? activeItemRef : null}
+                        onClick={() => playSurah(s.id)}
+                        className={`flex items-center justify-between px-3 py-2 rounded-xl transition cursor-pointer ${
+                          isSelected
+                            ? 'bg-emerald-900 border-2 border-emerald-400 text-amber-300 shadow-md shadow-emerald-950/60'
+                            : 'bg-emerald-950/60 hover:bg-emerald-900/60 border border-emerald-800/40 text-emerald-100'
+                        }`}
+                      >
+                        {/* Right: Number badge + Urdu & Arabic names */}
+                        <div className="flex items-center gap-2.5">
+                          <span className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs font-mono shrink-0 ${
+                            isSelected 
+                              ? 'bg-amber-400 text-stone-950 shadow' 
+                              : 'bg-emerald-900/80 text-amber-300 border border-emerald-700/60'
+                          }`}>
+                            {s.id}
                           </span>
-                          <span className="font-amiri text-xs text-emerald-300">
-                            ({s.arabic})
-                          </span>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className={`font-nastaliq font-bold text-sm ${isSelected ? 'text-amber-300' : 'text-white'}`}>
+                                سورۃ {s.name}
+                              </span>
+                              <span className="font-amiri text-xs text-emerald-300">
+                                ({s.arabic})
+                              </span>
+                            </div>
+                            <div className="text-[10px] text-emerald-400 font-nastaliq">
+                              {s.numberOfAyahs ? `${s.numberOfAyahs} آیات` : ''} {s.type ? `• ${s.type}` : ''}
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-[10px] text-emerald-400 font-nastaliq">
-                          {s.numberOfAyahs ? `${s.numberOfAyahs} آیات` : ''} {s.type ? `• ${s.type}` : ''}
+
+                        {/* Left: Play button / Equalizer indicator */}
+                        <div className="flex items-center gap-2 shrink-0">
+                          {isItemPlaying && (
+                            <span className="flex gap-0.5 items-end h-3">
+                              <span className="w-1 bg-amber-400 h-full animate-bounce"></span>
+                              <span className="w-1 bg-amber-400 h-2/3 animate-bounce [animation-delay:0.15s]"></span>
+                              <span className="w-1 bg-amber-400 h-4/5 animate-bounce [animation-delay:0.3s]"></span>
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              playSurah(s.id);
+                            }}
+                            className={`w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer ${
+                              isSelected
+                                ? 'bg-amber-400 text-stone-950 shadow'
+                                : 'bg-emerald-900/70 hover:bg-emerald-800 text-amber-300'
+                            }`}
+                            title={isItemPlaying ? 'روکیں' : 'سنیں'}
+                          >
+                            {isItemPlaying ? (
+                              <Pause className="w-3.5 h-3.5 text-stone-950" />
+                            ) : (
+                              <Play className="w-3.5 h-3.5 translate-x-0.5" />
+                            )}
+                          </button>
                         </div>
                       </div>
-                    </div>
+                    );
+                  })
+                )}
+              </div>
+            </>
+          )}
 
-                    {/* Left: Play button / Equalizer indicator */}
-                    <div className="flex items-center gap-2 shrink-0">
-                      {isItemPlaying && (
-                        <span className="flex gap-0.5 items-end h-3">
-                          <span className="w-1 bg-amber-400 h-full animate-bounce"></span>
-                          <span className="w-1 bg-amber-400 h-2/3 animate-bounce [animation-delay:0.15s]"></span>
-                          <span className="w-1 bg-amber-400 h-4/5 animate-bounce [animation-delay:0.3s]"></span>
+          {/* TAB 2: QARIS SELECTION (8 FAMOUS QARIS) */}
+          {activeTab === 'qaris' && (
+            <div className="flex-1 overflow-y-auto p-3 space-y-2.5 custom-scrollbar bg-emerald-950/40">
+              <div className="flex items-center justify-between pb-1 px-1">
+                <span className="text-xs font-nastaliq font-bold text-amber-300">
+                  قاری منتخب کریں (آواز فوری تبدیل ہو گی)
+                </span>
+                <span className="text-[10px] text-emerald-300 font-sans">
+                  {qaris.length} معروف قراء
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {qaris.map(qari => {
+                  const isQariSelected = qari.id === selectedQari.id;
+
+                  return (
+                    <div
+                      key={qari.id}
+                      onClick={() => handleSelectQari(qari)}
+                      className={`p-3 rounded-2xl border transition cursor-pointer flex flex-col justify-between gap-2 ${
+                        isQariSelected
+                          ? 'bg-emerald-900/90 border-2 border-emerald-400 shadow-lg shadow-emerald-950/70 ring-1 ring-amber-400/50'
+                          : 'bg-emerald-950/70 hover:bg-emerald-900/60 border-emerald-800/60 hover:border-emerald-700/80 text-emerald-100'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <h4 className={`font-nastaliq font-bold text-sm leading-snug ${isQariSelected ? 'text-amber-300' : 'text-white'}`}>
+                            {qari.name}
+                          </h4>
+                          <p className="text-[11px] text-emerald-300/80 font-sans leading-tight mt-0.5">
+                            {qari.nameEn}
+                          </p>
+                        </div>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-nastaliq font-bold shrink-0 ${
+                          isQariSelected
+                            ? 'bg-amber-400 text-stone-950 shadow-sm'
+                            : 'bg-emerald-900 text-emerald-200 border border-emerald-700/60'
+                        }`}>
+                          {qari.style}
                         </span>
-                      )}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          playSurah(s.id);
-                        }}
-                        className={`w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer ${
-                          isSelected
-                            ? 'bg-amber-400 text-stone-950 shadow'
-                            : 'bg-emerald-900/70 hover:bg-emerald-800 text-amber-300'
-                        }`}
-                        title={isItemPlaying ? 'روکیں' : 'سنیں'}
-                      >
-                        {isItemPlaying ? (
-                          <Pause className="w-3.5 h-3.5 text-stone-950" />
+                      </div>
+
+                      <div className="flex items-center justify-between pt-1 border-t border-emerald-800/40 text-[11px]">
+                        {isQariSelected ? (
+                          <span className="text-emerald-300 font-nastaliq font-bold flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-amber-300" />
+                            <span>✓ منتخب شدہ (جاری ہے)</span>
+                          </span>
                         ) : (
-                          <Play className="w-3.5 h-3.5 translate-x-0.5" />
+                          <span className="text-emerald-400/80 font-nastaliq">
+                            منتخب کرنے کیلئے کلک کریں
+                          </span>
                         )}
-                      </button>
+
+                        <span className={`p-1 rounded-lg ${isQariSelected ? 'bg-amber-400 text-stone-950' : 'bg-emerald-900 text-amber-300'}`}>
+                          <Play className="w-3 h-3" />
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Footer Attribution */}
           <div className="px-4 py-2 bg-black/60 border-t border-emerald-800/60 flex items-center justify-between text-[11px] text-emerald-300/80 font-nastaliq">
             <span>سرپرستی: حضرت مولانا محمد نعیم الحسن صدیقی</span>
-            <span>کل ۱۱۴ سورتیں مکمل ذخیرہ</span>
+            <span>کل ۱۱۴ سورتیں • ۸ قراءِ کرام</span>
           </div>
 
         </div>
