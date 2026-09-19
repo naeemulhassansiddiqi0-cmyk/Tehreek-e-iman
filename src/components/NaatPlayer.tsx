@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { naatsData, NaatItem } from '../data/naatsData';
 import { TehreekImanLogo } from './TehreekImanLogo';
+import { CommentSection } from './CommentSection';
 
 interface NaatPlayerProps {
   isOpen: boolean;
@@ -40,6 +41,11 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
   const currentNaat: NaatItem = useMemo(() => {
     return naatsData.find(n => n.id === currentId) || naatsData[0];
   }, [currentId]);
+
+  const currentTrack = useMemo(() => ({
+    url: currentNaat.src || `/naats/track-${String(currentNaat.id).padStart(2, '0')}.mp3`,
+    title: currentNaat.title
+  }), [currentNaat]);
 
   // BULLETPROOF AUDIO INITIALIZATION (As requested)
   useEffect(() => {
@@ -509,6 +515,12 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
               </div>
             )}
           </div>
+
+          {/* YOUTUBE STYLE COMMENT SECTION PER NAAT */}
+          <CommentSection 
+            contentId={currentTrack.url} 
+            contentTitle={currentTrack.title} 
+          />
 
           {/* FILTER TABS & SEARCH BAR */}
           <div className="space-y-3 bg-emerald-950/60 p-3 sm:p-4 rounded-2xl border border-yellow-400/20">

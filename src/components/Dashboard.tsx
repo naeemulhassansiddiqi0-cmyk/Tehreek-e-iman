@@ -3,6 +3,7 @@ import { BookOpen, ExternalLink, Sparkles, BookMarked } from 'lucide-react';
 import { publicDomainBooks, modernBooks, PublicDomainBook, BookCategoryTitle } from '../data/publicDomainBooks';
 import { AppTab } from '../types';
 import { NaatPlayer } from './NaatPlayer';
+import { BayanSection } from './BayanSection';
 
 interface DashboardProps {
   onSelectPublicBook?: (book: PublicDomainBook) => void;
@@ -119,8 +120,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
             })}
           </div>
 
-          {/* Naat & Hamd Player Button */}
-          <div className="flex items-center justify-center gap-3 pt-2">
+          {/* Action Buttons: Naat Player + Bayan Section */}
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             <button
               type="button"
               onClick={() => {
@@ -135,6 +136,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
               className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl shadow-md hover:shadow-lg font-nastaliq font-bold flex items-center gap-2 cursor-pointer transition active:scale-95 text-sm sm:text-base border border-emerald-500/40"
             >
               🎙️ حمد و نعتِ رسول ﷺ - 100 نعتیں
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                const el = document.getElementById('bayan-section');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              title="بیانات و خطاباتِ عالیہ ملاحظہ فرمائیں"
+              className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-xl shadow-md hover:shadow-lg font-nastaliq font-bold flex items-center gap-2 cursor-pointer transition active:scale-95 text-sm sm:text-base border border-amber-500/40"
+            >
+              🎥 بیانات و خطاباتِ عالیہ
             </button>
           </div>
         </div>
@@ -343,6 +356,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
             ))}
           </div>
         </section>
+
+        {/* ========================================================================= */}
+        {/* Bayanat & Video Lectures Section with YouTube Style Comment System */}
+        {/* ========================================================================= */}
+        <div id="bayan-section" className="pt-10 border-t border-gray-100">
+          <BayanSection />
+        </div>
 
         {/* 100 Naats & Hamds Hybrid Draggable Player (Fallback if not handled globally) */}
         {!onOpenNaatPlayer && (
