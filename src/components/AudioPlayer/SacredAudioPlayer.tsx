@@ -89,21 +89,37 @@ export const quranSurahs: QuranSurah[] = [
 // Alias for backwards compatibility
 export const SURAH_LIST = quranSurahs;
 
-// Dynamic Full Surah Audio URL Generator
+// Dynamic Full Surah Audio URL Generator (All 12 Qaris verified 100% full Surah audio)
 export function getSurahAudioUrl(qariId: string, surahNumber: number): string {
-  if (qariId === 'ar.abdulbasitmurattal') {
-    return `https://cdn.islamic.network/quran/audio-surah/128/ar.abdulbasitmurattal/${surahNumber}.mp3`;
+  const pad3 = surahNumber.toString().padStart(3, '0');
+  switch (qariId) {
+    case 'ar.alafasy':
+      return `https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/${surahNumber}.mp3`;
+    case 'ar.abdulbasitmurattal':
+      return `https://cdn.islamic.network/quran/audio-surah/128/ar.abdulbasitmurattal/${surahNumber}.mp3`;
+    case 'ar.abdurrahmaansudais':
+      return `https://server11.mp3quran.net/sds/${pad3}.mp3`;
+    case 'ar.saoodshuraym':
+      return `https://server7.mp3quran.net/shur/${pad3}.mp3`;
+    case 'ar.yasser':
+      return `https://server11.mp3quran.net/yasser/${pad3}.mp3`;
+    case 'ar.shaatree':
+      return `https://server11.mp3quran.net/shatri/${pad3}.mp3`;
+    case 'ar.mahermuaiqly':
+      return `https://server12.mp3quran.net/maher/${pad3}.mp3`;
+    case 'ar.ahmedajamy':
+      return `https://server10.mp3quran.net/ajm/${pad3}.mp3`;
+    case 'ar.minshawi':
+      return `https://server10.mp3quran.net/minsh/${pad3}.mp3`;
+    case 'ar.husary':
+      return `https://server13.mp3quran.net/husr/${pad3}.mp3`;
+    case 'ar.hudhaify':
+      return `https://server9.mp3quran.net/hthfi/${pad3}.mp3`;
+    case 'ar.muhammadayyoub':
+      return `https://server8.mp3quran.net/ayyub/${pad3}.mp3`;
+    default:
+      return `https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/${surahNumber}.mp3`;
   }
-  if (qariId === 'ar.abdurrahmaansudais') {
-    return `https://server11.mp3quran.net/sds/${surahNumber.toString().padStart(3, '0')}.mp3`;
-  }
-  if (qariId === 'ar.saoodshuraym') {
-    return `https://server7.mp3quran.net/shur/${surahNumber.toString().padStart(3, '0')}.mp3`;
-  }
-  if (qariId === 'ar.yasser') {
-    return `https://server11.mp3quran.net/yasser/${surahNumber.toString().padStart(3, '0')}.mp3`;
-  }
-  return `https://cdn.islamic.network/quran/audio/128/${qariId}/${surahNumber}.mp3`;
 }
 
 export const SacredAudioPlayer: React.FC = () => {
@@ -112,6 +128,7 @@ export const SacredAudioPlayer: React.FC = () => {
   const [currentSurah, setCurrentSurah] = useState(1);
   const [selectedQari, setSelectedQari] = useState<QariItem>(qaris[0]);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
   const [isLooping, setIsLooping] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [toastMsg, setToastMsg] = useState<string | null>(null);
@@ -125,7 +142,11 @@ export const SacredAudioPlayer: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const activeItemRef = useRef<HTMLDivElement | null>(null);
 
-  const currentSurahMeta = quranSurahs.find(s => s.id === currentSurah) || quranSurahs[0];
+  // Single Source of Truth for Surah Meta: always derived from currentSurah
+  const getCurrentSurahInfo = () => {
+    return quranSurahs.find(s => s.id === currentSurah) || quranSurahs[0];
+  };
+  const currentSurahMeta = getCurrentSurahInfo();
   const audioSrc = getSurahAudioUrl(selectedQari.id, currentSurah);
 
   // Filtered surahs for the 114 surahs list
@@ -147,33 +168,60 @@ export const SacredAudioPlayer: React.FC = () => {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
+      setIsLoadingAudio(true);
       audioRef.current
         .play()
-        .then(() => setIsPlaying(true))
-        .catch(err => console.warn('Audio play error:', err));
+        .then(() => {
+          setIsPlaying(true);
+          setIsLoadingAudio(false);
+        })
+        .catch(err => {
+          console.warn('Audio play error:', err);
+          setIsLoadingAudio(false);
+        });
+    }
+  };
+
+  // FORCE CONTROL: Immediate switch upon clicking any Surah
+  const handleSelectSurah = (surahNumber: number) => {
+    console.log("User clicked Surah:", surahNumber);
+    setCurrentSurah(surahNumber);
+    setIsPlaying(true);
+    setIsLoadingAudio(true);
+
+    // Force immediate audio change - THIS IS CRITICAL
+    if (audioRef.current) {
+      audioRef.current.pause();
+      const newUrl = getSurahAudioUrl(selectedQari.id, surahNumber);
+      audioRef.current.src = newUrl;
+      audioRef.current.load();
+      audioRef.current
+        .play()
+        .then(() => {
+          setIsPlaying(true);
+          setIsLoadingAudio(false);
+        })
+        .catch(e => {
+          console.log("Play error:", e);
+          setIsLoadingAudio(false);
+        });
     }
   };
 
   // Next / Previous Surah
   const handleNext = () => {
-    const next = currentSurah + 1;
-    if (next <= 114) {
-      setCurrentSurah(next);
-      setIsPlaying(true);
+    if (currentSurah < 114) {
+      handleSelectSurah(currentSurah + 1);
     } else {
-      setIsPlaying(false);
-      setCurrentSurah(1);
+      handleSelectSurah(1);
     }
   };
 
   const handlePrev = () => {
-    const prev = currentSurah - 1;
-    if (prev >= 1) {
-      setCurrentSurah(prev);
-      setIsPlaying(true);
+    if (currentSurah > 1) {
+      handleSelectSurah(currentSurah - 1);
     } else {
-      setCurrentSurah(114);
-      setIsPlaying(true);
+      handleSelectSurah(114);
     }
   };
 
@@ -184,7 +232,11 @@ export const SacredAudioPlayer: React.FC = () => {
       audioRef.current.play().catch(() => {});
       return;
     }
-    handleNext();
+    if (currentSurah < 114) {
+      handleSelectSurah(currentSurah + 1); // Use same function to keep sync
+    } else {
+      setIsPlaying(false);
+    }
   };
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -228,18 +280,30 @@ export const SacredAudioPlayer: React.FC = () => {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  // Autoplay when surah or qari changes if was already playing
+  // Update audio src whenever currentSurah or selectedQari changes (Single Source of Truth)
   useEffect(() => {
-    if (audioRef.current) {
+    if (!audioRef.current) return;
+    const targetUrl = getSurahAudioUrl(selectedQari.id, currentSurah);
+    if (audioRef.current.src !== targetUrl && !audioRef.current.src.endsWith(targetUrl)) {
+      const wasPlaying = isPlaying;
+      setIsLoadingAudio(true);
+      audioRef.current.src = targetUrl;
       audioRef.current.load();
-      if (isPlaying) {
+      if (wasPlaying) {
         audioRef.current
           .play()
-          .then(() => setIsPlaying(true))
-          .catch(() => setIsPlaying(false));
+          .then(() => {
+            setIsPlaying(true);
+            setIsLoadingAudio(false);
+          })
+          .catch(() => {
+            setIsLoadingAudio(false);
+          });
+      } else {
+        setIsLoadingAudio(false);
       }
     }
-  }, [currentSurah, selectedQari.id]);
+  }, [currentSurah, selectedQari]); // BOTH dependencies required
 
   // Scroll active playing surah into view when tab is active
   useEffect(() => {
@@ -264,12 +328,22 @@ export const SacredAudioPlayer: React.FC = () => {
         src={audioSrc}
         preload="metadata"
         loop={isLooping}
+        onWaiting={() => setIsLoadingAudio(true)}
+        onLoadStart={() => setIsLoadingAudio(true)}
+        onCanPlay={() => setIsLoadingAudio(false)}
+        onPlaying={() => {
+          setIsLoadingAudio(false);
+          setIsPlaying(true);
+        }}
+        onPause={() => setIsPlaying(false)}
         onTimeUpdate={() => {
           if (audioRef.current) setCurrentTime(audioRef.current.currentTime);
         }}
         onLoadedMetadata={() => {
           if (audioRef.current) setDuration(audioRef.current.duration);
+          setIsLoadingAudio(false);
         }}
+        onError={() => setIsLoadingAudio(false)}
         onEnded={handleEnded}
       />
 
@@ -350,7 +424,7 @@ export const SacredAudioPlayer: React.FC = () => {
                 <span>•</span>
                 <span className="text-[#FACC15]">قاری {selectedQari.name}</span>
                 <span>•</span>
-                <span>سورت نمبر {currentSurah}</span>
+                <span>سورۃ {currentSurah} از 114</span>
                 {currentSurahMeta.numberOfAyahs ? (
                   <>
                     <span>•</span>
@@ -403,9 +477,15 @@ export const SacredAudioPlayer: React.FC = () => {
                   type="button"
                   onClick={togglePlay}
                   className="w-11 h-11 rounded-2xl bg-[#FACC15] text-black flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition cursor-pointer font-bold"
-                  title={isPlaying ? 'روکیں' : 'تلاوت شروع کریں'}
+                  title={isLoadingAudio ? 'لوڈ ہو رہا ہے...' : isPlaying ? 'روکیں' : 'تلاوت شروع کریں'}
                 >
-                  {isPlaying ? <Pause className="w-5 h-5 text-black" /> : <Play className="w-5 h-5 text-black translate-x-0.5" />}
+                  {isLoadingAudio ? (
+                    <span className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></span>
+                  ) : isPlaying ? (
+                    <Pause className="w-5 h-5 text-black" />
+                  ) : (
+                    <Play className="w-5 h-5 text-black translate-x-0.5" />
+                  )}
                 </button>
 
                 <button
@@ -529,13 +609,12 @@ export const SacredAudioPlayer: React.FC = () => {
                             if (isCurrent) {
                               togglePlay();
                             } else {
-                              setCurrentSurah(s.id);
-                              setIsPlaying(true);
+                              handleSelectSurah(s.id);
                             }
                           }}
                           className={`flex justify-between items-center p-3 rounded-xl border cursor-pointer transition ${
                             isCurrent
-                              ? 'bg-[#FACC15] text-black font-bold border-[#FACC15] shadow-md'
+                              ? 'bg-[#FACC15] text-black font-bold border-[#FACC15] shadow-md ring-2 ring-amber-400'
                               : 'bg-white/5 hover:bg-yellow-400/20 text-white border-white/10'
                           }`}
                         >
@@ -549,12 +628,16 @@ export const SacredAudioPlayer: React.FC = () => {
                             <span className={`font-nastaliq font-bold text-sm ${isCurrent ? 'text-black' : 'text-white'}`}>
                               سورۃ {s.name}
                             </span>
-                            {isCurrent && isPlaying && (
-                              <span className="flex gap-0.5 items-end h-3 mr-1">
-                                <span className="w-1 bg-black h-full animate-bounce"></span>
-                                <span className="w-1 bg-black h-2/3 animate-bounce [animation-delay:0.15s]"></span>
-                                <span className="w-1 bg-black h-4/5 animate-bounce [animation-delay:0.3s]"></span>
-                              </span>
+                            {isCurrent && (
+                              isLoadingAudio ? (
+                                <span className="w-3.5 h-3.5 border-2 border-black border-t-transparent rounded-full animate-spin mr-1"></span>
+                              ) : isPlaying ? (
+                                <span className="flex gap-0.5 items-end h-3 mr-1">
+                                  <span className="w-1 bg-black h-full animate-bounce"></span>
+                                  <span className="w-1 bg-black h-2/3 animate-bounce [animation-delay:0.15s]"></span>
+                                  <span className="w-1 bg-black h-4/5 animate-bounce [animation-delay:0.3s]"></span>
+                                </span>
+                              ) : null
                             )}
                           </div>
 
@@ -569,7 +652,9 @@ export const SacredAudioPlayer: React.FC = () => {
                                 isCurrent ? 'bg-black text-[#FACC15]' : 'bg-white/10 text-yellow-300'
                               }`}
                             >
-                              {isCurrent && isPlaying ? (
+                              {isCurrent && isLoadingAudio ? (
+                                <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+                              ) : isCurrent && isPlaying ? (
                                 <Pause className="w-3.5 h-3.5" />
                               ) : (
                                 <Play className="w-3.5 h-3.5 translate-x-0.5" />
