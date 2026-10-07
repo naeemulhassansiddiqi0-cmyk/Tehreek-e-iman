@@ -64,6 +64,25 @@ const HADITH_TOTALS: Record<string, { total: number; urduName: string }> = {
 // Global in-memory cache to ensure instant subsequent page loads
 const hadithGlobalCache: Record<string, HadithItem[]> = {};
 
+export interface MusnadVolume {
+  id: number;
+  volNum: string;
+  title: string;
+  subtitle: string;
+  startPage: number;
+  endPage: number;
+  hadithRange: string;
+}
+
+export const MUSNAD_VOLUMES: MusnadVolume[] = [
+  { id: 1, volNum: "جلد اول", title: "مسانید العشرة وأهل البيت", subtitle: "حضرت ابوبکر، عمر، عثمان، علی و اہل بیت", startPage: 1, endPage: 500, hadithRange: "احادیث 1 تا 4500" },
+  { id: 2, volNum: "جلد دوم", title: "مسند عبد اللہ بن مسعود", subtitle: "مسند ابن مسعود و کبار المہاجرین", startPage: 501, endPage: 1000, hadithRange: "احادیث 4501 تا 9000" },
+  { id: 3, volNum: "جلد سوم", title: "مسند عبد اللہ بن عباس", subtitle: "مسند ابن عباس و عبد اللہ بن عمر", startPage: 1001, endPage: 1400, hadithRange: "احادیث 9001 تا 14000" },
+  { id: 4, volNum: "جلد چہارم", title: "مسند جابر و أنس بن مالک", subtitle: "مسند جابر بن عبد اللہ و انس بن مالک", startPage: 1401, endPage: 1724, hadithRange: "احادیث 14001 تا 19000" },
+  { id: 5, volNum: "جلد پنجم", title: "مسند أبی ہریرة والانصار", subtitle: "مسند ابوہریرہ و کبار الانصار", startPage: 1725, endPage: 2200, hadithRange: "احادیث 19001 تا 23500" },
+  { id: 6, volNum: "جلد ششم", title: "مسند الشامیین والقبائل والنساء", subtitle: "مسند الشامیین و الکوفیین و مسند النساء", startPage: 2201, endPage: 27647, hadithRange: "احادیث 23501 تا 27647" }
+];
+
 // Global in-memory cache for dynamically chunked books (e.g. musnad-ahmad)
 const chunkGlobalCache: Record<string, Record<number, string[]>> = {};
 
@@ -126,6 +145,18 @@ export default function BookDetailPage() {
 
   // Pagination state: 0-indexed
   const [currentPage, setCurrentPage] = useState<number>(0);
+
+  const currentVolume = useMemo(() => {
+    if (!isChunkedBook) return null;
+    const p = currentPage + 1;
+    return MUSNAD_VOLUMES.find(v => p >= v.startPage && p <= v.endPage) || MUSNAD_VOLUMES[0];
+  }, [isChunkedBook, currentPage]);
+
+  const handleSelectVolume = (vol: MusnadVolume) => {
+    setCurrentPage(vol.startPage - 1);
+    jumpToTopOfPage();
+  };
+
   const [allHadiths, setAllHadiths] = useState<HadithItem[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [searchPageQuery, setSearchPageQuery] = useState<string>('');
@@ -1045,6 +1076,35 @@ export default function BookDetailPage() {
               </span>
             </div>
 
+            {/* Musnad Ahmad Volume Selector in Aside */}
+            {isChunkedBook && (
+              <div className="bg-emerald-50/80 border border-emerald-200/90 rounded-xl p-2.5 space-y-1.5 shadow-2xs">
+                <div className="flex items-center justify-between text-[11px] font-bold font-nastaliq text-emerald-950">
+                  <span>انتخابِ جلد (6 مجلدات):</span>
+                  <span className="text-[10px] bg-emerald-800 text-white px-2 py-0.5 rounded-md font-mono">
+                    {currentVolume?.volNum}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-1">
+                  {MUSNAD_VOLUMES.map(v => (
+                    <button
+                      key={v.id}
+                      type="button"
+                      onClick={() => handleSelectVolume(v)}
+                      className={`px-1.5 py-1 rounded-lg text-[10px] font-bold font-nastaliq transition cursor-pointer border text-center ${
+                        currentVolume?.id === v.id
+                          ? 'bg-emerald-800 text-white border-emerald-900 shadow-2xs'
+                          : 'bg-white hover:bg-emerald-100 text-stone-700 border-gray-200'
+                      }`}
+                      title={`${v.title} (${v.hadithRange})`}
+                    >
+                      {v.volNum}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Quick Page Jump Input */}
             <div className="flex gap-2">
               <div className="relative flex-1">
@@ -1271,6 +1331,48 @@ export default function BookDetailPage() {
               </button>
             </div>
           </div>
+
+          {/* Musnad Ahmad: 6 Volumes Interactive Switcher Banner */}
+          {isChunkedBook && (
+            <div className="bg-emerald-50/70 border border-emerald-200/90 rounded-2xl p-3.5 shadow-2xs space-y-2.5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pb-2 border-b border-emerald-200/60">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-700 animate-pulse"></span>
+                  <h3 className="text-xs sm:text-sm font-black font-nastaliq text-emerald-950">
+                    مسند الإمام أحمد بن حنبل — انتخابِ مجلدات (6 بڑی جلدیں)
+                  </h3>
+                </div>
+                <div className="flex items-center gap-2 self-start sm:self-auto">
+                  <span className="text-[11px] font-bold font-nastaliq text-emerald-900 bg-white px-2.5 py-0.5 rounded-lg border border-emerald-200 shadow-2xs">
+                    موجودہ مطالعہ: {currentVolume?.volNum} — {currentVolume?.title}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+                {MUSNAD_VOLUMES.map(vol => (
+                  <button
+                    key={vol.id}
+                    type="button"
+                    onClick={() => handleSelectVolume(vol)}
+                    className={`flex flex-col items-center justify-center p-2 rounded-xl text-center transition cursor-pointer border ${
+                      currentVolume?.id === vol.id
+                        ? 'bg-emerald-800 text-white border-emerald-900 shadow-sm ring-2 ring-emerald-600/30'
+                        : 'bg-white hover:bg-emerald-100/60 text-stone-700 border-gray-200 hover:border-emerald-300'
+                    }`}
+                  >
+                    <span className="font-bold text-xs font-nastaliq">{vol.volNum}</span>
+                    <span className={`text-[10px] mt-0.5 font-nastaliq truncate max-w-full ${currentVolume?.id === vol.id ? 'text-amber-200' : 'text-stone-500'}`}>
+                      {vol.title}
+                    </span>
+                    <span className={`text-[9px] mt-0.5 font-mono ${currentVolume?.id === vol.id ? 'text-emerald-100' : 'text-emerald-700'}`}>
+                      {vol.hadithRange}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* ── In-Book Content Search Bar ─────────────────────────────────────── */}
           <div className="relative">
