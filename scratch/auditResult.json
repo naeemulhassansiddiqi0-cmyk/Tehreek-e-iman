@@ -1,0 +1,1102 @@
+[
+  {
+    "file": "adabMufrad",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 9,
+    "urduTexts": 9,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 28
+  },
+  {
+    "file": "alFawzKabir",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 40
+  },
+  {
+    "file": "alFiqhAlAkbar",
+    "chapters": 8,
+    "segments": 8,
+    "arabicTexts": 8,
+    "urduTexts": 8,
+    "status": "COMPLETE",
+    "note": "8 ابواب، 8 حصص",
+    "fileKB": 31
+  },
+  {
+    "file": "allHadithBooks",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 866
+  },
+  {
+    "file": "aqeedahTahawiyyah",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 68
+  },
+  {
+    "file": "aqeedahWasitiyyah",
+    "chapters": 4,
+    "segments": 4,
+    "arabicTexts": 4,
+    "urduTexts": 4,
+    "status": "COMPLETE",
+    "note": "4 ابواب، 4 حصص",
+    "fileKB": 17
+  },
+  {
+    "file": "aqidahTahawiyyah",
+    "chapters": 5,
+    "segments": 5,
+    "arabicTexts": 5,
+    "urduTexts": 5,
+    "status": "COMPLETE",
+    "note": "5 ابواب، 5 حصص",
+    "fileKB": 22
+  },
+  {
+    "file": "ashbahNazair",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 67
+  },
+  {
+    "file": "badaiSanai",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 64
+  },
+  {
+    "file": "bazzar",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 7,
+    "urduTexts": 7,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 27
+  },
+  {
+    "file": "books",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 18
+  },
+  {
+    "file": "bukhari",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 245
+  },
+  {
+    "file": "bulughAlMaram",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 12,
+    "urduTexts": 12,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 38
+  },
+  {
+    "file": "darjaHigher",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 19
+  },
+  {
+    "file": "darjaKhamisa",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 5
+  },
+  {
+    "file": "darjaRabia",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 5
+  },
+  {
+    "file": "darjaSabia",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 4
+  },
+  {
+    "file": "darjaSadisa",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 5
+  },
+  {
+    "file": "darjaSalisa",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 5
+  },
+  {
+    "file": "darjaSamina",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 7
+  },
+  {
+    "file": "darjaSania",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 5
+  },
+  {
+    "file": "darjaTakhasus",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 11
+  },
+  {
+    "file": "darjaUla",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 7
+  },
+  {
+    "file": "darrTaarud",
+    "chapters": 4,
+    "segments": 4,
+    "arabicTexts": 4,
+    "urduTexts": 4,
+    "status": "COMPLETE",
+    "note": "4 ابواب، 4 حصص",
+    "fileKB": 20
+  },
+  {
+    "file": "diwanHamasah",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 45
+  },
+  {
+    "file": "duroosBalaghah",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 62
+  },
+  {
+    "file": "exam",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 48
+  },
+  {
+    "file": "fatawaBooks",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 134
+  },
+  {
+    "file": "fathAlQadir",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 34
+  },
+  {
+    "file": "fiqhAkbarKharji",
+    "chapters": 4,
+    "segments": 4,
+    "arabicTexts": 4,
+    "urduTexts": 4,
+    "status": "COMPLETE",
+    "note": "4 ابواب، 4 حصص",
+    "fileKB": 19
+  },
+  {
+    "file": "fiqhUsulBooks",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 1
+  },
+  {
+    "file": "flashcards",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 35
+  },
+  {
+    "file": "fusoolAkbari",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 78
+  },
+  {
+    "file": "haqiqatIman",
+    "chapters": 4,
+    "segments": 4,
+    "arabicTexts": 4,
+    "urduTexts": 4,
+    "status": "COMPLETE",
+    "note": "4 ابواب، 4 حصص",
+    "fileKB": 20
+  },
+  {
+    "file": "hidayah",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 41
+  },
+  {
+    "file": "hidayatNahw",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 94
+  },
+  {
+    "file": "husami",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 46
+  },
+  {
+    "file": "ibanaAshari",
+    "chapters": 4,
+    "segments": 4,
+    "arabicTexts": 4,
+    "urduTexts": 4,
+    "status": "COMPLETE",
+    "note": "4 ابواب، 4 حصص",
+    "fileKB": 19
+  },
+  {
+    "file": "ilmSeeghah",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 100
+  },
+  {
+    "file": "jalalayn",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 5514
+  },
+  {
+    "file": "jamiAlUlum",
+    "chapters": 7,
+    "segments": 7,
+    "arabicTexts": 7,
+    "urduTexts": 7,
+    "status": "COMPLETE",
+    "note": "7 ابواب، 7 حصص",
+    "fileKB": 28
+  },
+  {
+    "file": "kafiya",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 119
+  },
+  {
+    "file": "kanzDaqaiq",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 91
+  },
+  {
+    "file": "kanzUlAmmal",
+    "chapters": 8,
+    "segments": 8,
+    "arabicTexts": 8,
+    "urduTexts": 8,
+    "status": "COMPLETE",
+    "note": "8 ابواب، 8 حصص",
+    "fileKB": 29
+  },
+  {
+    "file": "kharjiBooks",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 1137
+  },
+  {
+    "file": "lumatAlItiqad",
+    "chapters": 4,
+    "segments": 4,
+    "arabicTexts": 4,
+    "urduTexts": 4,
+    "status": "COMPLETE",
+    "note": "4 ابواب، 4 حصص",
+    "fileKB": 19
+  },
+  {
+    "file": "majmaZawaidHaythami",
+    "chapters": 8,
+    "segments": 8,
+    "arabicTexts": 8,
+    "urduTexts": 8,
+    "status": "COMPLETE",
+    "note": "8 ابواب، 8 حصص",
+    "fileKB": 33
+  },
+  {
+    "file": "malaBudda",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 28
+  },
+  {
+    "file": "maqamatHariri",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 50
+  },
+  {
+    "file": "minhajSunnah",
+    "chapters": 4,
+    "segments": 4,
+    "arabicTexts": 4,
+    "urduTexts": 4,
+    "status": "COMPLETE",
+    "note": "4 ابواب، 4 حصص",
+    "fileKB": 20
+  },
+  {
+    "file": "mirqat",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 87
+  },
+  {
+    "file": "mishkat",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 97
+  },
+  {
+    "file": "mukhtasarMaani",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 22
+  },
+  {
+    "file": "musallamThubut",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 49
+  },
+  {
+    "file": "musannafAbdAlRazzaq",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 9,
+    "urduTexts": 9,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 32
+  },
+  {
+    "file": "musannafIbnAbiShaybah",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 7,
+    "urduTexts": 7,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 26
+  },
+  {
+    "file": "muslim",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 73
+  },
+  {
+    "file": "musnadAbiYaala",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 21,
+    "urduTexts": 21,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 53
+  },
+  {
+    "file": "musnadAhmad",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 24,
+    "urduTexts": 24,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 59
+  },
+  {
+    "file": "mustadrakHakim",
+    "chapters": 7,
+    "segments": 9,
+    "arabicTexts": 9,
+    "urduTexts": 9,
+    "status": "COMPLETE",
+    "note": "7 ابواب، 9 حصص",
+    "fileKB": 35
+  },
+  {
+    "file": "muwatta",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 51
+  },
+  {
+    "file": "muwattaMalik",
+    "chapters": 8,
+    "segments": 8,
+    "arabicTexts": 8,
+    "urduTexts": 8,
+    "status": "COMPLETE",
+    "note": "8 ابواب، 8 حصص",
+    "fileKB": 28
+  },
+  {
+    "file": "muwattaMuhammad",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 57
+  },
+  {
+    "file": "naats",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 1
+  },
+  {
+    "file": "nahwMir",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 59
+  },
+  {
+    "file": "naylAlAwtar",
+    "chapters": 8,
+    "segments": 8,
+    "arabicTexts": 8,
+    "urduTexts": 8,
+    "status": "COMPLETE",
+    "note": "8 ابواب، 8 حصص",
+    "fileKB": 32
+  },
+  {
+    "file": "nukhbatFikar",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 49
+  },
+  {
+    "file": "nuranwar",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 35
+  },
+  {
+    "file": "nurIdah",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 62
+  },
+  {
+    "file": "prayerTimes",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 41
+  },
+  {
+    "file": "qiraahWadihah",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 19
+  },
+  {
+    "file": "qisasNabiyyeen",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 96
+  },
+  {
+    "file": "quduri",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 195
+  },
+  {
+    "file": "quran",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 4609
+  },
+  {
+    "file": "qutbi",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 22
+  },
+  {
+    "file": "rasmAlMufti",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 64
+  },
+  {
+    "file": "riyadhSaliheen",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 40
+  },
+  {
+    "file": "sahihIbnHibban",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 6,
+    "urduTexts": 6,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 24
+  },
+  {
+    "file": "sahihIbnKhuzaymah",
+    "chapters": 8,
+    "segments": 8,
+    "arabicTexts": 8,
+    "urduTexts": 8,
+    "status": "COMPLETE",
+    "note": "8 ابواب، 8 حصص",
+    "fileKB": 31
+  },
+  {
+    "file": "sarfMir",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 99
+  },
+  {
+    "file": "sawaiqMursalah",
+    "chapters": 4,
+    "segments": 4,
+    "arabicTexts": 4,
+    "urduTexts": 4,
+    "status": "COMPLETE",
+    "note": "4 ابواب، 4 حصص",
+    "fileKB": 19
+  },
+  {
+    "file": "seeratKhatam",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 34
+  },
+  {
+    "file": "shamailTirmidhi",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 50
+  },
+  {
+    "file": "sharhAqaid",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 60
+  },
+  {
+    "file": "sharhJami",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 48
+  },
+  {
+    "file": "sharhMaaniAlAthar",
+    "chapters": 8,
+    "segments": 8,
+    "arabicTexts": 8,
+    "urduTexts": 8,
+    "status": "COMPLETE",
+    "note": "8 ابواب، 8 حصص",
+    "fileKB": 37
+  },
+  {
+    "file": "sharhSunnahBaghawi",
+    "chapters": 8,
+    "segments": 8,
+    "arabicTexts": 8,
+    "urduTexts": 8,
+    "status": "COMPLETE",
+    "note": "8 ابواب، 8 حصص",
+    "fileKB": 33
+  },
+  {
+    "file": "sharhTahawiyyah",
+    "chapters": 4,
+    "segments": 4,
+    "arabicTexts": 4,
+    "urduTexts": 4,
+    "status": "COMPLETE",
+    "note": "4 ابواب، 4 حصص",
+    "fileKB": 19
+  },
+  {
+    "file": "sharhTahdhib",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 51
+  },
+  {
+    "file": "sharhWiqayah",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 39
+  },
+  {
+    "file": "shuabAlIman",
+    "chapters": 8,
+    "segments": 8,
+    "arabicTexts": 8,
+    "urduTexts": 8,
+    "status": "COMPLETE",
+    "note": "8 ابواب، 8 حصص",
+    "fileKB": 28
+  },
+  {
+    "file": "siraji",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 50
+  },
+  {
+    "file": "sunanAbiDawud",
+    "chapters": 8,
+    "segments": 8,
+    "arabicTexts": 8,
+    "urduTexts": 8,
+    "status": "COMPLETE",
+    "note": "8 ابواب، 8 حصص",
+    "fileKB": 28
+  },
+  {
+    "file": "sunanDaraqutni",
+    "chapters": 8,
+    "segments": 8,
+    "arabicTexts": 8,
+    "urduTexts": 8,
+    "status": "COMPLETE",
+    "note": "8 ابواب، 8 حصص",
+    "fileKB": 32
+  },
+  {
+    "file": "sunanDarimi",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 22,
+    "urduTexts": 22,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 56
+  },
+  {
+    "file": "sunanIbnMajah",
+    "chapters": 8,
+    "segments": 8,
+    "arabicTexts": 8,
+    "urduTexts": 8,
+    "status": "COMPLETE",
+    "note": "8 ابواب، 8 حصص",
+    "fileKB": 28
+  },
+  {
+    "file": "sunanKubraBeyhaqi",
+    "chapters": 8,
+    "segments": 9,
+    "arabicTexts": 9,
+    "urduTexts": 9,
+    "status": "COMPLETE",
+    "note": "8 ابواب، 9 حصص",
+    "fileKB": 36
+  },
+  {
+    "file": "tabaraniKabir",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 12,
+    "urduTexts": 12,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 42
+  },
+  {
+    "file": "tafsirBaghawi",
+    "chapters": 5,
+    "segments": 5,
+    "arabicTexts": 5,
+    "urduTexts": 5,
+    "status": "COMPLETE",
+    "note": "5 ابواب، 5 حصص",
+    "fileKB": 23
+  },
+  {
+    "file": "tafsirBaydawi",
+    "chapters": 6,
+    "segments": 6,
+    "arabicTexts": 6,
+    "urduTexts": 6,
+    "status": "COMPLETE",
+    "note": "6 ابواب، 6 حصص",
+    "fileKB": 28
+  },
+  {
+    "file": "tafsirIbnKathir",
+    "chapters": 8,
+    "segments": 8,
+    "arabicTexts": 8,
+    "urduTexts": 8,
+    "status": "COMPLETE",
+    "note": "8 ابواب، 8 حصص",
+    "fileKB": 36
+  },
+  {
+    "file": "tafsirMaturidi",
+    "chapters": 5,
+    "segments": 5,
+    "arabicTexts": 5,
+    "urduTexts": 5,
+    "status": "COMPLETE",
+    "note": "5 ابواب، 5 حصص",
+    "fileKB": 24
+  },
+  {
+    "file": "tafsirQurtubi",
+    "chapters": 5,
+    "segments": 5,
+    "arabicTexts": 5,
+    "urduTexts": 5,
+    "status": "COMPLETE",
+    "note": "5 ابواب، 5 حصص",
+    "fileKB": 23
+  },
+  {
+    "file": "tafsirRazi",
+    "chapters": 5,
+    "segments": 5,
+    "arabicTexts": 5,
+    "urduTexts": 5,
+    "status": "COMPLETE",
+    "note": "5 ابواب، 5 حصص",
+    "fileKB": 25
+  },
+  {
+    "file": "tafsirTabari",
+    "chapters": 8,
+    "segments": 8,
+    "arabicTexts": 8,
+    "urduTexts": 8,
+    "status": "COMPLETE",
+    "note": "8 ابواب، 8 حصص",
+    "fileKB": 33
+  },
+  {
+    "file": "tahawi",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 20
+  },
+  {
+    "file": "tawheedIbnKhuzaymah",
+    "chapters": 4,
+    "segments": 4,
+    "arabicTexts": 4,
+    "urduTexts": 4,
+    "status": "COMPLETE",
+    "note": "4 ابواب، 4 حصص",
+    "fileKB": 20
+  },
+  {
+    "file": "tayseerMantiq",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 53
+  },
+  {
+    "file": "tuhfatAlAhwazi",
+    "chapters": 8,
+    "segments": 8,
+    "arabicTexts": 8,
+    "urduTexts": 8,
+    "status": "COMPLETE",
+    "note": "8 ابواب، 8 حصص",
+    "fileKB": 33
+  },
+  {
+    "file": "usulShashi",
+    "chapters": 0,
+    "segments": 0,
+    "arabicTexts": 0,
+    "urduTexts": 0,
+    "status": "NO_CHAPTERS",
+    "note": "کوئی باب (chapter) نہیں ملا",
+    "fileKB": 81
+  }
+]

@@ -8,7 +8,7 @@ if (!fs.existsSync(dstDir)) {
   fs.mkdirSync(dstDir, { recursive: true });
 }
 
-const files = ['meta.json', 'chunk-11.json', 'chunk-12.json', 'chunk-15.json', 'chunk-16.json', 'chunk-17.json', 'chunk-18.json'];
+const files = ['meta.json', 'chunk-11.json', 'chunk-12.json', 'chunk-15.json', 'chunk-16.json'];
 
 files.forEach(file => {
   const src = path.join(srcDir, file);
