@@ -114,11 +114,11 @@ export default function BookDetailPage() {
 
   useEffect(() => {
     if (!isChunkedBook) return;
-    fetch(`/data/musnad-ahmad/chunks/meta.json?v=1624_${Date.now()}`, { cache: 'no-store' })
+    fetch(`/data/musnad-ahmad/chunks/meta.json?v=1674_${Date.now()}`, { cache: 'no-store' })
       .then(res => res.ok ? res.json() : null)
       .then(meta => {
         if (meta?.totalPages && typeof meta.totalPages === 'number') {
-          setChunkMetaTotalPages(Math.max(meta.totalPages, 1624));
+          setChunkMetaTotalPages(Math.max(meta.totalPages, 1674));
         }
       })
       .catch(() => {});
@@ -488,7 +488,7 @@ export default function BookDetailPage() {
   const totalPages = isHadith
     ? Math.max(1, Math.ceil(totalHadithsCount / PER_PAGE))
     : isChunkedBook
-      ? Math.max(chunkMetaTotalPages || 0, book.totalPages || 0, 1624)
+      ? Math.max(chunkMetaTotalPages || 0, book.totalPages || 0, 1674)
       : Math.max(1, (book.pages && book.pages.length > 0) ? book.pages.length : (book.totalPages || 50));
 
   const currentHadiths = useMemo(() => {
