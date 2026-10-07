@@ -12,7 +12,9 @@ const CATEGORY_CHIPS: { id: BookCategoryTitle | 'all'; title_ur: string }[] = [
   { id: 'Seerat', title_ur: 'سیرتِ نبوی' },
   { id: 'Fiqh', title_ur: 'فقہ و فتاویٰ' },
   { id: 'Tareekh', title_ur: 'تاریخ و سوانح' },
-  { id: 'Aqeedah', title_ur: 'عقائد و کلام' }
+  { id: 'Aqeedah', title_ur: 'عقائد و کلام' },
+  { id: 'Dars-e-Nizami', title_ur: 'درسِ نظامی' },
+  { id: 'Exam Papers', title_ur: 'امتحانی پرچہ جات' }
 ];
 
 export default function HomePage() {

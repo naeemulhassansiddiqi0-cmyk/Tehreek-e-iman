@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Search, BookOpen, Clock, GraduationCap, X } from 'lucide-react';
 import { TehreekImanLogo } from './TehreekImanLogo';
 import { AppTab } from '../types';
@@ -40,21 +40,29 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20 gap-4">
+        <div className="flex items-center justify-between py-2 sm:py-2.5 min-h-[5.5rem] sm:min-h-[6rem] gap-3 sm:gap-6">
           
-          {/* Right: Logo & Name "تحریک ایمان" */}
+          {/* Right: Logo & Name "تحریک ایمان" مع بانی و سرپرست */}
           <div
             onClick={() => setActiveTab('dashboard')}
-            className="flex items-center gap-3 cursor-pointer select-none shrink-0"
-            title="تحریکِ ایمان — صفحۂ اول"
+            className="flex items-center gap-3 sm:gap-4 cursor-pointer select-none shrink-0 py-1"
+            title="تحریکِ ایمان — بانی و سرپرست: حضرت مولانا محمد نعیم الحسن صدیقی دامت برکاتہم العالیہ"
           >
-            <TehreekImanLogo size={44} customImgSrc={customLogoSrc} />
-            <div className="flex flex-col">
-              <span className="font-nastaliq text-2xl font-black text-emerald-800 tracking-tight leading-none">
-                تحریک ایمان
+            <div className="shrink-0 flex items-center justify-center">
+              <div className="hidden sm:block">
+                <TehreekImanLogo size={74} customImgSrc={customLogoSrc} />
+              </div>
+              <div className="sm:hidden">
+                <TehreekImanLogo size={58} customImgSrc={customLogoSrc} />
+              </div>
+            </div>
+            <div className="flex flex-col justify-center">
+              <span className="font-nastaliq text-2xl sm:text-3xl font-black text-emerald-900 tracking-tight leading-tight">
+                تحریکِ ایمان
               </span>
-              <span className="text-[11px] font-medium text-stone-500 font-nastaliq mt-0.5">
-                جامع ڈیجیٹل کتب خانہ
+              <span className="font-nastaliq text-xs sm:text-sm font-bold text-amber-900 leading-tight mt-1 flex flex-wrap items-center gap-1">
+                <span className="text-emerald-800 font-bold">بانی و سرپرست:</span>
+                <span className="text-stone-800">حضرت مولانا محمد نعیم الحسن صدیقی دامت برکاتہم العالیہ</span>
               </span>
             </div>
           </div>

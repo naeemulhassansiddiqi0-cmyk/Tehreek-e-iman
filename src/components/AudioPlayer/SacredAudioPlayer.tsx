@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { TehreekImanLogo } from '../TehreekImanLogo';
 import { QURAN_SURAHS_CANONICAL } from '../../data/quranData';
+import { GlobalComments } from '../GlobalComments';
 
 export interface QuranSurah {
   id: number;
@@ -208,11 +209,25 @@ export const SacredAudioPlayer: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    const handleOpen = () => setIsOpen(true);
+    window.addEventListener('open-quran-player', handleOpen);
+    return () => window.removeEventListener('open-quran-player', handleOpen);
+  }, []);
+
   // Draggable / Movable Modal State
   const modalRef = useRef<HTMLDivElement | null>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  // Always reset to dead center whenever player is opened
+  useEffect(() => {
+    if (isOpen) {
+      setPosition({ x: 0, y: 0 });
+    }
+  }, [isOpen]);
+
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return;
@@ -418,28 +433,29 @@ export const SacredAudioPlayer: React.FC = () => {
         onEnded={handleEnded}
       />
 
-      {/* Persistent Floating Audio Pill (Quran Player: Right Top) */}
+      {/* Persistent Floating Audio Pill (Quran Player: Right Top on Desktop, Bottom-16 on Mobile) */}
       {!isOpen && (
-        <div className="fixed top-24 right-4 sm:right-6 z-40 animate-fadeIn select-none">
+        <div className="fixed bottom-16 right-3 md:top-24 md:right-6 md:bottom-auto z-40 animate-fadeIn select-none">
           <button
             type="button"
             onClick={() => setIsOpen(true)}
-            className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-950 via-[#0a2318] to-emerald-950 border-2 border-amber-400 shadow-[0_10px_30px_rgba(0,0,0,0.8)] text-amber-200 hover:scale-105 active:scale-95 transition-all cursor-pointer group"
+            className="flex items-center gap-1.5 sm:gap-2.5 px-2.5 py-1.5 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-emerald-950 via-[#0a2318] to-emerald-950 border border-amber-400 shadow-lg sm:shadow-[0_10px_30px_rgba(0,0,0,0.8)] text-amber-200 hover:scale-105 active:scale-95 transition-all cursor-pointer group"
             title="القرآن الکریم - 114 سورتیں و قراء کرام (کھولیں)"
           >
-            <div className={`w-9 h-9 rounded-xl bg-amber-400 text-stone-950 flex items-center justify-center shadow-lg font-bold ${isPlaying ? 'animate-bounce' : ''}`}>
-              <Headphones className="w-5 h-5 text-stone-950" />
+            <div className={`w-6 h-6 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-amber-400 text-stone-950 flex items-center justify-center shadow-md font-bold ${isPlaying ? 'animate-bounce' : ''}`}>
+              <Headphones className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-stone-950" />
             </div>
             <div className="text-right">
-              <span className="block text-xs font-nastaliq font-black text-amber-300 leading-tight">
-                سورۃ {currentSurahMeta.name} • {selectedQari.name}
+              <span className="block text-[11px] sm:text-xs font-nastaliq font-bold sm:font-black text-amber-300 leading-tight">
+                <span className="md:hidden">تلاوتِ قرآن</span>
+                <span className="hidden md:inline">سورۃ {currentSurahMeta.name} • {selectedQari.name}</span>
               </span>
-              <span className="block text-[10px] text-emerald-300 font-nastaliq">
+              <span className="hidden md:block text-[10px] text-emerald-300 font-nastaliq">
                 {isPlaying ? '▶ تلاوت جاری ہے' : '🎧 114 سورتیں • 12 قراء کرام'}
               </span>
             </div>
             {isPlaying && (
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping mr-1" />
+              <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-400 animate-ping mr-0.5 sm:mr-1" />
             )}
           </button>
         </div>
@@ -857,6 +873,14 @@ export const SacredAudioPlayer: React.FC = () => {
                 })}
               </div>
             )}
+
+            {/* Realtime Global Comments for Current Quran Surah */}
+            <div className="pt-3">
+              <GlobalComments 
+                page={`/quran/surah-${currentSurah}`} 
+                title={`سورۃ ${currentSurahMeta.name} پر تاثرات و تبصرے`} 
+              />
+            </div>
             </div>
             </div>
 

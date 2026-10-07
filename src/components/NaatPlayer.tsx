@@ -1,5 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
-import YouTube from 'react-youtube';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Play, 
   Pause, 
@@ -7,54 +6,84 @@ import {
   SkipBack, 
   Volume2, 
   VolumeX, 
-  Search, 
   CheckCircle2,
-  ListMusic
+  ListMusic,
+  Search
 } from 'lucide-react';
 import { naatsData, NaatItem } from '../data/naatsData';
 import { TehreekImanLogo } from './TehreekImanLogo';
-import { CommentSection } from './CommentSection';
 
 interface NaatPlayerProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
-  const [activeCategory, setActiveCategory] = useState<'سب' | 'حمد' | 'نعت' | 'نظم'>('سب');
-  const [currentId, setCurrentId] = useState<number>(1);
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [currentTrackUrl, setCurrentTrackUrl] = useState<string>(() => {
-    return encodeURI(naatsData[0]?.src || '/naats/track-01.mp3');
-  });
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [toastMsg, setToastMsg] = useState<string | null>(null);
+const categories = [
+  { id: 'سب کلام', label: 'سب کلام', icon: '✨' },
+  { id: 'مدارس و طلباء', label: 'مدارس و طلباء', icon: '🎓' },
+  { id: 'صوفیانہ کلام', label: 'صوفیانہ کلام', icon: '📿' },
+  { id: 'حمد و مناجات', label: 'حمد و مناجات', icon: '🤲' },
+  { id: 'نعتِ رسول ﷺ', label: 'نعتِ رسول ﷺ', icon: '🕌' },
+];
 
-  // Audio player state for local & archive
+export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
+  const [currentNaat, setCurrentNaat] = useState<NaatItem>(() => naatsData[0] || { id: 1, title: 'اگر قرآن کے احکام سے دوری نہ ہوتی (طلباء و مدارس)', fileName: 'agar-quran-ke-ahkaam.mp3' });
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [redToastMsg, setRedToastMsg] = useState<string | null>(null);
+
+  // Category Filtering & Search State
+  const [selectedCategory, setSelectedCategory] = useState<string>('سب کلام');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
+  // Category counts
+  const categoryCounts: Record<string, number> = {
+    'سب کلام': naatsData.length,
+    'مدارس و طلباء': naatsData.filter(n => n.category === 'مدارس و طلباء').length,
+    'صوفیانہ کلام': naatsData.filter(n => n.category === 'صوفیانہ کلام').length,
+    'حمد و مناجات': naatsData.filter(n => n.category === 'حمد و مناجات').length,
+    'نعتِ رسول ﷺ': naatsData.filter(n => n.category === 'نعتِ رسول ﷺ').length,
+  };
+
+  // Filtered tracks
+  const filteredNaats = naatsData.filter(item => {
+    const matchesCat = selectedCategory === 'سب کلام' || item.category === selectedCategory;
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return matchesCat;
+    const matchesSearch = 
+      item.title.toLowerCase().includes(q) ||
+      (item.artist && item.artist.toLowerCase().includes(q)) ||
+      (item.category && item.category.toLowerCase().includes(q));
+    return matchesCat && matchesSearch;
+  });
+
+  // Playhead, Duration, Time & Speed State
+  const [duration, setDuration] = useState<number>(0);
+  const [currentTime, setCurrentTime] = useState<number>(0);
+  const [playbackRate, setPlaybackRate] = useState<number>(1);
+  const [isSeeking, setIsSeeking] = useState<boolean>(false);
+
+  // Audio volume state
   const [volume, setVolume] = useState<number>(1);
   const [isMuted, setIsMuted] = useState<boolean>(false);
 
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const activeItemRef = useRef<HTMLDivElement | null>(null);
-
-  // Current Naat object derived from currentId
-  const currentNaat: NaatItem = useMemo(() => {
-    return naatsData.find(n => n.id === currentId) || naatsData[0];
-  }, [currentId]);
-
-  const currentTrack = useMemo(() => {
-    const rawUrl = currentNaat.src || `/naats/track-${String(currentNaat.id).padStart(2, '0')}.mp3`;
-    return {
-      url: encodeURI(rawUrl),
-      title: currentNaat.title
-    };
-  }, [currentNaat]);
-
-  // Draggable / Movable Modal State (EXACT SAME AS QURAN PLAYER)
   const modalRef = useRef<HTMLDivElement | null>(null);
+
+  // Draggable / Movable Modal State
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  // Reset position to dead center whenever opened
+  useEffect(() => {
+    if (isOpen) {
+      setPosition({ x: 0, y: 0 });
+    }
+  }, [isOpen]);
+
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return;
@@ -104,118 +133,111 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
     if (isOpen && activeItemRef.current) {
       activeItemRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
-  }, [currentId, isOpen]);
+  }, [currentNaat.id, isOpen]);
 
-  const handleAudioError = (e?: any) => {
-    console.error('فائل نہیں ملی یا چل نہیں سکی:', currentTrackUrl, e);
-    alert('فائل نہیں ملی: ' + currentTrackUrl);
+  const showToast = (msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(null), 3000);
   };
 
-  // DIRECT HTML5 PLAY TRACK FUNCTION
-  const playTrack = async (url: string, index: number) => {
-    const encoded = encodeURI(url);
-    console.log('Current track URL:', encoded, 'Track index:', index);
-    setCurrentTrackUrl(encoded);
-
-    if (audioRef.current) {
-      try {
-        audioRef.current.pause();
-        audioRef.current.src = encoded;
-        audioRef.current.load();
-        await audioRef.current.play();
-        setIsPlaying(true);
-        console.log('SUCCESS PLAYING TRACK:', encoded);
-      } catch (err: any) {
-        console.error('Play error for url:', encoded, err);
-        handleAudioError(err);
-      }
-    }
+  const showRedToast = (msg: string) => {
+    setRedToastMsg(msg);
+    setTimeout(() => setRedToastMsg(null), 4000);
   };
 
-  // Handle track events (ended)
-  useEffect(() => {
+  // DIRECT PLAY LOGIC - USE EXACT FILENAME - ROBUST PLAYBACK & ERROR RECOVERY
+  const handleSelectNaat = (naat: NaatItem) => {
+    setCurrentNaat(naat);
+    setCurrentTime(0);
+    showToast(naat.title);
+    setRedToastMsg(null);
+
     if (!audioRef.current) return;
-    const audio = audioRef.current;
-    const onEnded = () => {
-      console.log(`Track finished, playing next track`);
-      handleNext();
-    };
 
-    audio.addEventListener('ended', onEnded);
-    return () => {
-      audio.removeEventListener('ended', onEnded);
-    };
-  }, [currentId]);
+    const url = `/naats/${naat.fileName}`;
+    console.log('PLAYING URL:', url);
+    audioRef.current.src = url;
+    audioRef.current.load();
 
-  // Handle switching naat
-  const handleSelectNaat = (id: number) => {
-    setCurrentId(id);
-    if (audioRef.current) audioRef.current.currentTime = 0;
-
-    const target = naatsData.find(n => n.id === id);
-    if (!target) return;
-
-    setToastMsg(`${target.category}: ${target.title}`);
-    setTimeout(() => setToastMsg(null), 2500);
-
-    const url = encodeURI(target.src || `/naats/track-${String(id).padStart(2, '0')}.mp3`);
-    console.log('User selected track:', id, 'URL:', url);
-    setCurrentTrackUrl(url);
-
-    // Audio handling for local / archive
-    if (target.type === 'local' || target.type === 'archive') {
-      playTrack(url, id);
-    } else if (target.type === 'youtube') {
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-      setIsPlaying(true);
-      setCurrentTrackUrl(`https://youtube.com/watch?v=${target.videoId}`);
+    const playPromise = audioRef.current.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          setIsPlaying(true);
+        })
+        .catch((err: any) => {
+          if (err.name === 'AbortError') {
+            return; // Normal cancellation when rapidly switching tracks
+          }
+          if (err.name === 'NotAllowedError') {
+            console.warn('Autoplay restricted by browser');
+            setIsPlaying(false);
+            return;
+          }
+          console.error('Audio play error:', err);
+          // Try fallback URL with encoding
+          const encoded = `/naats/${encodeURIComponent(naat.fileName)}`;
+          if (audioRef.current && audioRef.current.src !== encoded) {
+            audioRef.current.src = encoded;
+            audioRef.current.load();
+            audioRef.current.play()
+              .then(() => setIsPlaying(true))
+              .catch((err2: any) => {
+                if (err2.name !== 'AbortError' && err2.name !== 'NotAllowedError') {
+                  console.error('Audio fallback failed:', err2);
+                  showRedToast(`چلانے میں دشواری: ${naat.title}`);
+                }
+              });
+          }
+        });
     }
   };
 
-  // Continuous Auto-Play Next (current + 1, loops 100 to 1)
+  // Next / Previous Track (Auto-loop next upon finished, respecting active filter)
   const handleNext = () => {
-    if (currentId < naatsData.length) {
-      handleSelectNaat(currentId + 1);
-    } else {
-      handleSelectNaat(1);
-    }
+    const list = filteredNaats.length > 0 ? filteredNaats : naatsData;
+    const currentIndex = list.findIndex(n => n.id === currentNaat.id);
+    const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % list.length;
+    handleSelectNaat(list[nextIndex]);
   };
 
   const handlePrev = () => {
-    if (currentId > 1) {
-      handleSelectNaat(currentId - 1);
-    } else {
-      handleSelectNaat(naatsData.length);
-    }
+    const list = filteredNaats.length > 0 ? filteredNaats : naatsData;
+    const currentIndex = list.findIndex(n => n.id === currentNaat.id);
+    const prevIndex = currentIndex === -1 ? 0 : (currentIndex - 1 + list.length) % list.length;
+    handleSelectNaat(list[prevIndex]);
   };
+
 
   // Toggle Play / Pause for HTML5 audio
   const handleTogglePlay = () => {
-    if (currentNaat.type === 'youtube') {
-      setIsPlaying(prev => !prev);
-      return;
-    }
-
     if (!audioRef.current) return;
     if (isPlaying) {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      const cleanUrl = encodeURI(currentTrackUrl || currentTrack.url);
-      console.log('User clicked Play, target track URL:', cleanUrl);
-      if (audioRef.current.src !== cleanUrl && !audioRef.current.src.endsWith(cleanUrl)) {
-        audioRef.current.src = cleanUrl;
+      const targetSrc = `/naats/${currentNaat.fileName}`;
+      if (!audioRef.current.src || (!audioRef.current.src.includes(currentNaat.fileName) && !audioRef.current.src.includes(encodeURIComponent(currentNaat.fileName)))) {
+        audioRef.current.src = targetSrc;
         audioRef.current.load();
       }
-      audioRef.current
-        .play()
-        .then(() => setIsPlaying(true))
-        .catch((err) => {
-          console.error('Audio play failed:', err);
-          handleAudioError(err);
-        });
+      const playPromise = audioRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsPlaying(true);
+          })
+          .catch((err: any) => {
+            if (err.name === 'AbortError') return;
+            if (err.name === 'NotAllowedError') {
+              console.warn('Autoplay restricted by browser');
+              setIsPlaying(false);
+              return;
+            }
+            console.error('Play error:', err);
+            showRedToast(`چلانے میں دشواری: ${currentNaat.title}`);
+          });
+      }
     }
   };
 
@@ -229,6 +251,42 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
     }
   };
 
+  // Time Formatter (mm:ss)
+  const formatTime = (secs: number) => {
+    if (isNaN(secs) || secs < 0) return '00:00';
+    const mins = Math.floor(secs / 60);
+    const remainingSecs = Math.floor(secs % 60);
+    const padMins = mins < 10 ? `0${mins}` : `${mins}`;
+    const padSecs = remainingSecs < 10 ? `0${remainingSecs}` : `${remainingSecs}`;
+    return `${padMins}:${padSecs}`;
+  };
+
+  // Playback Rate / Speed Controller (0.75x, 1x, 1.25x, 1.5x, 2x)
+  const changeSpeed = (rate: number) => {
+    setPlaybackRate(rate);
+    if (audioRef.current) {
+      audioRef.current.playbackRate = rate;
+    }
+    showToast(`رفتار: ${rate}x`);
+  };
+
+  // Seekbar Controls (Drag & Click)
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = parseFloat(e.target.value);
+    setCurrentTime(val);
+    if (audioRef.current) {
+      audioRef.current.currentTime = val;
+    }
+  };
+
+  // Skip Forward / Backward
+  const handleSkip = (seconds: number) => {
+    if (!audioRef.current) return;
+    const newTime = Math.min(Math.max(0, audioRef.current.currentTime + seconds), duration || 1000);
+    audioRef.current.currentTime = newTime;
+    setCurrentTime(newTime);
+  };
+
   const handleToggleMute = () => {
     if (!audioRef.current) return;
     if (isMuted) {
@@ -240,32 +298,49 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  // Filtered tracks
-  const filteredTracks = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    return naatsData.filter(item => {
-      const matchCat = activeCategory === 'سب' || item.category === activeCategory;
-      if (!matchCat) return false;
-      if (!q) return true;
-      return (
-        item.id.toString() === q ||
-        item.title.toLowerCase().includes(q) ||
-        item.artist.toLowerCase().includes(q) ||
-        item.category.toLowerCase().includes(q)
-      );
-    });
-  }, [activeCategory, searchQuery]);
-
   if (!isOpen) return null;
 
   return (
     <div 
-      dir="rtl"
-      className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-[9999] p-2 sm:p-4 overflow-y-auto animate-fadeIn"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-xs overflow-hidden select-none animate-fadeIn"
       onClick={(e) => {
         if (e.target === e.currentTarget && !isDragging) onClose();
       }}
     >
+      {/* Hidden Native Audio Element with Time & Metadata tracking */}
+      <audio
+        ref={audioRef}
+        src={`/naats/${currentNaat.fileName}`}
+        preload="metadata"
+        playsInline
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        onEnded={handleNext}
+        onTimeUpdate={() => {
+          if (!isSeeking && audioRef.current) {
+            setCurrentTime(audioRef.current.currentTime);
+          }
+        }}
+        onLoadedMetadata={() => {
+          if (audioRef.current) {
+            setDuration(audioRef.current.duration || 0);
+            audioRef.current.playbackRate = playbackRate;
+          }
+        }}
+        onDurationChange={() => {
+          if (audioRef.current) {
+            setDuration(audioRef.current.duration || 0);
+          }
+        }}
+        onError={(e) => {
+          const audio = e.currentTarget;
+          if (audio.error) {
+            console.error('HTML5 audio error:', audio.error.code, audio.error.message);
+          }
+        }}
+        className="hidden"
+      />
+
       {/* Inner Draggable Box */}
       <div 
         ref={modalRef}
@@ -276,11 +351,19 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
         }}
         className="relative w-full max-w-2xl bg-gradient-to-b from-[#064e3b] via-[#043328] to-[#022c22] rounded-[24px] border border-yellow-400/30 shadow-2xl max-h-[92vh] flex flex-col my-auto overflow-hidden text-amber-50 select-none transition-transform duration-75"
       >
-        {/* Toast Notification */}
+        {/* Toast Notification (Success/Info) */}
         {toastMsg && (
           <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-[#FACC15] text-black font-nastaliq font-bold text-xs px-4 py-1.5 rounded-xl shadow-2xl animate-fadeIn border border-amber-300 flex items-center gap-1.5 pointer-events-none">
             <CheckCircle2 className="w-4 h-4 text-emerald-950" />
             <span>{toastMsg}</span>
+          </div>
+        )}
+
+        {/* Red Toast Notification (Error / 404 File Not Found) */}
+        {redToastMsg && (
+          <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-red-600 text-white font-nastaliq font-bold text-xs px-5 py-2 rounded-xl shadow-2xl animate-bounce border-2 border-white/60 flex items-center gap-2 pointer-events-none">
+            <span>⚠️</span>
+            <span>{redToastMsg}</span>
           </div>
         )}
 
@@ -296,11 +379,11 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
               <div className="flex items-center gap-2">
                 <div>
                   <span className="block text-[11px] text-emerald-300 font-nastaliq font-bold leading-tight">
-                    حمد و نعت
+                    صوتیاتِ نبوی و صوفیانہ کلام
                   </span>
                   <h2 className="text-base sm:text-xl font-bold text-white font-nastaliq leading-tight flex items-center gap-1.5">
                     <span className="text-amber-400 font-mono text-sm">⠿⠿</span>
-                    نعتِ رسول ﷺ
+                    حمد، نعت و کلامِ مدارس
                   </h2>
                 </div>
                 <span className="text-[10px] bg-yellow-400/20 text-[#FACC15] border border-yellow-400/30 px-2 py-0.5 rounded-full font-nastaliq font-bold self-start mt-0.5">
@@ -308,7 +391,7 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
                 </span>
               </div>
               <p className="text-[11px] text-amber-200/90 font-nastaliq mt-0.5">
-                100 منتخب نعتیں
+                {naatsData.length} منتخب کلام • بغیر شرک و غلو
               </p>
             </div>
           </div>
@@ -349,7 +432,7 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
         {/* SCROLLABLE BODY AREA */}
         <div className="flex-1 overflow-y-auto custom-scrollbar p-3.5 sm:p-5 space-y-4">
           
-          {/* NOW PLAYING CONTROLS CARD */}
+          {/* 1. NOW PLAYING CONTROLS CARD */}
           <div className="bg-gradient-to-r from-emerald-900/90 to-[#022c22]/90 border border-yellow-400/30 rounded-2xl p-4 shadow-xl text-center space-y-3 relative overflow-hidden">
             
             {/* Auto Play Indicator Badge */}
@@ -358,258 +441,332 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
               <span>🔄 مسلسل ترنم: آن (اگلا کلام خودکار جاری رہے گا)</span>
             </div>
 
-            {/* Current Item Title & Meta */}
+            {/* Current Item Title & Meta - Directly Matches Clicked Item */}
             <div>
-              <div className="flex items-center justify-center gap-2 mb-1">
+              <div className="flex items-center justify-center gap-2 mb-1 flex-wrap">
                 <span className="px-2 py-0.5 rounded-md bg-amber-400/20 text-amber-300 text-xs font-bold border border-amber-400/30">
-                  {currentNaat.category} #{currentNaat.id}
+                  #{currentNaat.id}
                 </span>
-                <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${
-                  currentNaat.type === 'local'
-                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30'
-                    : currentNaat.type === 'youtube'
-                    ? 'bg-red-500/20 text-red-300 border-red-400/30'
-                    : 'bg-blue-500/20 text-blue-300 border-blue-400/30'
-                }`}>
-                  {currentNaat.type === 'local' && '📥 محفوظ (آف لائن)'}
-                  {currentNaat.type === 'youtube' && '▶️ یوٹیوب'}
-                  {currentNaat.type === 'archive' && '🌐 آرکائیو ڈائریکٹ'}
+                <span className="px-2 py-0.5 rounded-md text-[11px] font-nastaliq font-bold text-emerald-300 border bg-emerald-500/20 border-emerald-400/30">
+                  {currentNaat.category || 'نعت'}
+                </span>
+                <span className="px-2.5 py-0.5 rounded-md text-[11px] font-nastaliq text-amber-200/90 border bg-emerald-950/60 border-yellow-400/20">
+                  {currentNaat.artist || 'پبلک ڈومین'}
                 </span>
               </div>
 
               <h3 className="text-xl sm:text-2xl font-bold font-nastaliq text-amber-200 tracking-wide">
                 {currentNaat.title}
               </h3>
-              <p className="text-xs text-emerald-200/80 font-nastaliq mt-1">
-                {currentNaat.artist}
-              </p>
             </div>
 
-            {/* HYBRID PLAYER RENDERER: YOUTUBE VS HTML5 AUDIO */}
-            {currentNaat.type === 'youtube' && currentNaat.videoId ? (
-              <div className="mt-2 rounded-xl overflow-hidden shadow-2xl border border-yellow-400/30 bg-black/60 max-w-md mx-auto aspect-video">
-                <YouTube
-                  videoId={currentNaat.videoId}
-                  onEnd={handleNext}
-                  onError={(e) => console.log('YouTube Error:', e)}
-                  opts={{
-                    width: '100%',
-                    height: '100%',
-                    playerVars: {
-                      autoplay: 1,
-                      rel: 0,
-                      modestbranding: 1
-                    }
+            {/* 2. PLAYHEAD & SEEKBAR LINE (پلے ہیڈ اور پروگریس لائن) */}
+            <div className="space-y-1.5 pt-1 px-1">
+              <div className="relative flex items-center group">
+                <input
+                  type="range"
+                  min={0}
+                  max={duration || 100}
+                  step="0.5"
+                  value={currentTime}
+                  onChange={handleSeek}
+                  onMouseDown={() => setIsSeeking(true)}
+                  onMouseUp={(e) => {
+                    setIsSeeking(false);
+                    if (audioRef.current) audioRef.current.currentTime = parseFloat((e.target as HTMLInputElement).value);
                   }}
-                  className="w-full h-full"
+                  onTouchStart={() => setIsSeeking(true)}
+                  onTouchEnd={(e) => {
+                    setIsSeeking(false);
+                    if (audioRef.current) audioRef.current.currentTime = parseFloat((e.target as HTMLInputElement).value);
+                  }}
+                  aria-label="آڈیو پلے ہیڈ"
+                  className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-amber-400 bg-emerald-950 border border-yellow-400/30 transition-all shadow-inner"
+                  style={{
+                    background: `linear-gradient(to right, #FACC15 ${(currentTime / (duration || 1)) * 100}%, rgba(2, 44, 34, 0.8) ${(currentTime / (duration || 1)) * 100}%)`
+                  }}
                 />
               </div>
-            ) : (
-              /* Direct HTML5 Audio Player & Action Controls */
-              <div className="space-y-3 pt-1 max-w-md mx-auto">
-                {/* DIRECT HTML5 AUDIO CONTROLS */}
-                <div className="bg-black/40 p-2.5 rounded-xl border border-yellow-400/30">
-                  <audio
-                    ref={audioRef}
-                    controls
-                    src={encodeURI(currentTrackUrl)}
-                    preload="metadata"
-                    onError={handleAudioError}
-                    onPlay={() => setIsPlaying(true)}
-                    onPause={() => setIsPlaying(false)}
-                    onEnded={handleNext}
-                    className="w-full h-10 rounded-lg"
-                  />
-                  <div className="flex items-center justify-between text-[11px] text-amber-200/80 font-nastaliq px-1 pt-1.5">
-                    <span>{currentNaat.title}</span>
-                    <span className="font-mono text-[10px] text-emerald-300 truncate max-w-[220px]">
-                      {currentTrackUrl}
-                    </span>
-                  </div>
-                </div>
 
-                {/* Playback Action Buttons */}
-                <div className="flex items-center justify-center gap-4 pt-2">
-                  <button
-                    type="button"
-                    onClick={handlePrev}
-                    className="w-10 h-10 rounded-full bg-emerald-950/70 hover:bg-emerald-800 text-amber-300 flex items-center justify-center border border-amber-400/30 transition cursor-pointer active:scale-95"
-                    title="پچھلا کلام"
-                  >
-                    <SkipBack className="w-5 h-5" />
-                  </button>
+              {/* THREE TIME METRICS: ELAPSED, TOTAL DURATION, REMAINING */}
+              <div className="flex items-center justify-between text-xs font-mono text-emerald-200/90 px-1">
+                {/* 1. کتنے منٹ تک نعت چل چکی ہے (Elapsed) */}
+                <span className="flex items-center gap-1 bg-emerald-950/80 px-2 py-0.5 rounded-md border border-yellow-400/20 text-[#FACC15]" title="کتنے منٹ چل چکی ہے">
+                  <span className="text-[10px] font-nastaliq text-emerald-300">جاری:</span>
+                  <span className="font-bold">{formatTime(currentTime)}</span>
+                </span>
 
-                  <button
-                    type="button"
-                    onClick={handleTogglePlay}
-                    className="w-14 h-14 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-emerald-950 flex items-center justify-center shadow-lg shadow-amber-500/30 transition cursor-pointer active:scale-95 font-bold"
-                    title={isPlaying ? 'روکیں' : 'چلائیں'}
-                  >
-                    {isPlaying ? (
-                      <Pause className="w-7 h-7 fill-current" />
-                    ) : (
-                      <Play className="w-7 h-7 fill-current ml-0.5" />
-                    )}
-                  </button>
+                {/* 2. کتنے منٹ کی نعت ہے (Total Duration) */}
+                <span className="flex items-center gap-1 text-[11px] text-amber-200/90 font-nastaliq" title="کل دورانیہ">
+                  <span>کل وقت:</span>
+                  <span className="font-mono font-bold text-white">{formatTime(duration)}</span>
+                </span>
 
-                  <button
-                    type="button"
-                    onClick={handleNext}
-                    className="w-10 h-10 rounded-full bg-emerald-950/70 hover:bg-emerald-800 text-amber-300 flex items-center justify-center border border-amber-400/30 transition cursor-pointer active:scale-95"
-                    title="اگلا کلام"
-                  >
-                    <SkipForward className="w-5 h-5" />
-                  </button>
-
-                  {/* Volume Slider */}
-                  <div className="hidden sm:flex items-center gap-1.5 mr-2 bg-emerald-950/60 px-2.5 py-1.5 rounded-xl border border-yellow-400/20">
-                    <button
-                      type="button"
-                      onClick={handleToggleMute}
-                      className="text-amber-300 hover:text-amber-200"
-                    >
-                      {isMuted || volume === 0 ? (
-                        <VolumeX className="w-4 h-4 text-red-400" />
-                      ) : (
-                        <Volume2 className="w-4 h-4" />
-                      )}
-                    </button>
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.05"
-                      value={isMuted ? 0 : volume}
-                      onChange={handleVolumeChange}
-                      className="w-16 accent-amber-400 h-1 bg-emerald-900 rounded-lg cursor-pointer"
-                    />
-                  </div>
-                </div>
+                {/* 3. کتنے منٹ کی باقی ہے (Remaining) */}
+                <span className="flex items-center gap-1 bg-emerald-950/80 px-2 py-0.5 rounded-md border border-yellow-400/20 text-amber-300" title="کتنے منٹ باقی ہے">
+                  <span className="text-[10px] font-nastaliq text-emerald-300">باقی:</span>
+                  <span className="font-bold">-{formatTime(Math.max(0, duration - currentTime))}</span>
+                </span>
               </div>
+            </div>
+
+            {/* 3. PLAYBACK SPEED SELECTOR (سلو اور فاسٹ کرنے کا آپشن) */}
+            <div className="flex flex-wrap items-center justify-between gap-2 bg-emerald-950/60 px-3 py-2 rounded-xl border border-yellow-400/20">
+              <span className="text-xs font-nastaliq text-amber-300 font-bold flex items-center gap-1">
+                <span>⚡ رفتار (Speed):</span>
+              </span>
+
+              {/* Speed Buttons: 0.75x (سلو), 1x (عام), 1.25x (تیز), 1.5x (فاسٹ), 2x */}
+              <div className="flex items-center gap-1 sm:gap-1.5">
+                {[
+                  { rate: 0.75, label: '0.75x سلو' },
+                  { rate: 1, label: '1x عام' },
+                  { rate: 1.25, label: '1.25x تیز' },
+                  { rate: 1.5, label: '1.5x فاسٹ' },
+                  { rate: 2, label: '2x' }
+                ].map(({ rate, label }) => (
+                  <button
+                    key={rate}
+                    type="button"
+                    onClick={() => changeSpeed(rate)}
+                    className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg text-xs font-bold transition cursor-pointer active:scale-95 ${
+                      playbackRate === rate
+                        ? 'bg-amber-400 text-emerald-950 shadow-md font-extrabold border border-amber-300'
+                        : 'bg-emerald-900/50 hover:bg-emerald-800 text-emerald-200 border border-yellow-400/20'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 4. DIRECT PLAY CONTROLS: -10s, PREV, PLAY/PAUSE, NEXT, +10s, VOLUME */}
+            <div className="flex items-center justify-center gap-2 sm:gap-3 pt-1">
+              {/* Skip -10s */}
+              <button
+                type="button"
+                onClick={() => handleSkip(-10)}
+                className="px-2 py-1 rounded-xl bg-emerald-950/70 hover:bg-emerald-800 text-amber-300 border border-amber-400/30 transition cursor-pointer active:scale-95 text-xs font-mono font-bold"
+                title="10 سیکنڈ پیچھے"
+              >
+                ⏪ -10s
+              </button>
+
+              <button
+                type="button"
+                onClick={handlePrev}
+                className="w-10 h-10 rounded-full bg-emerald-950/70 hover:bg-emerald-800 text-amber-300 flex items-center justify-center border border-amber-400/30 transition cursor-pointer active:scale-95"
+                title="پچھلا کلام"
+              >
+                <SkipBack className="w-5 h-5" />
+              </button>
+
+              <button
+                type="button"
+                onClick={handleTogglePlay}
+                className="w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-emerald-950 flex items-center justify-center shadow-lg shadow-amber-500/30 transition cursor-pointer active:scale-95 font-bold"
+                title={isPlaying ? 'روکیں' : 'چلائیں'}
+              >
+                {isPlaying ? (
+                  <Pause className="w-6 h-6 sm:w-7 sm:h-7 fill-current" />
+                ) : (
+                  <Play className="w-6 h-6 sm:w-7 sm:h-7 fill-current ml-0.5" />
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleNext}
+                className="w-10 h-10 rounded-full bg-emerald-950/70 hover:bg-emerald-800 text-amber-300 flex items-center justify-center border border-amber-400/30 transition cursor-pointer active:scale-95"
+                title="اگلا کلام"
+              >
+                <SkipForward className="w-5 h-5" />
+              </button>
+
+              {/* Skip +10s */}
+              <button
+                type="button"
+                onClick={() => handleSkip(10)}
+                className="px-2 py-1 rounded-xl bg-emerald-950/70 hover:bg-emerald-800 text-amber-300 border border-amber-400/30 transition cursor-pointer active:scale-95 text-xs font-mono font-bold"
+                title="10 سیکنڈ آگے"
+              >
+                +10s ⏩
+              </button>
+
+              {/* Volume Slider */}
+              <div className="hidden sm:flex items-center gap-1.5 mr-1 bg-emerald-950/60 px-2 py-1 rounded-xl border border-yellow-400/20">
+                <button
+                  type="button"
+                  onClick={handleToggleMute}
+                  className="text-amber-300 hover:text-amber-200"
+                >
+                  {isMuted || volume === 0 ? (
+                    <VolumeX className="w-4 h-4 text-red-400" />
+                  ) : (
+                    <Volume2 className="w-4 h-4" />
+                  )}
+                </button>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={isMuted ? 0 : volume}
+                  onChange={handleVolumeChange}
+                  className="w-14 accent-amber-400 h-1 bg-emerald-900 rounded-lg cursor-pointer"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* 2. CATEGORY TABS SELECTOR (مدارس، صوفیانہ، حمد، نعت) */}
+          <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-1 pt-1 select-none">
+            {categories.map(cat => {
+              const isActive = selectedCategory === cat.id;
+              const count = categoryCounts[cat.id] || 0;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-nastaliq font-bold whitespace-nowrap transition-all cursor-pointer active:scale-95 ${
+                    isActive
+                      ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-emerald-950 shadow-lg shadow-amber-500/20 border border-amber-300 font-extrabold scale-[1.02]'
+                      : 'bg-emerald-950/70 hover:bg-emerald-900/80 text-emerald-200 border border-yellow-400/20'
+                  }`}
+                >
+                  <span>{cat.icon}</span>
+                  <span>{cat.label}</span>
+                  <span className={`px-1.5 py-0.2 text-[10px] rounded-full font-mono font-bold ${
+                    isActive ? 'bg-emerald-950 text-amber-300' : 'bg-emerald-900 text-emerald-300'
+                  }`}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* 3. SEARCH BAR (ڈارک ایمرلڈ، کوئی وائٹ باکس نہیں) */}
+          <div className="relative">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="کلام، شاعر، یا عنوان تلاش کریں (مثلاً: قرآن، اقبال، عاصم، مدینہ)..."
+              className="w-full bg-emerald-950/80 border border-yellow-400/30 rounded-xl py-2 pr-9 pl-9 text-xs font-nastaliq text-amber-100 placeholder-emerald-400/50 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 shadow-inner"
+            />
+            <Search className="absolute right-3 top-2.5 w-4 h-4 text-emerald-400/70 pointer-events-none" />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute left-2.5 top-2 w-5 h-5 rounded-full bg-emerald-900/80 hover:bg-red-500/80 text-white flex items-center justify-center text-[10px] transition cursor-pointer"
+                title="تلاش صاف کریں"
+              >
+                ✕
+              </button>
             )}
           </div>
 
-          {/* YOUTUBE STYLE COMMENT SECTION PER NAAT */}
-          <CommentSection 
-            contentId={currentTrack.url} 
-            contentTitle={currentTrack.title} 
-          />
-
-          {/* FILTER TABS & SEARCH BAR */}
-          <div className="space-y-3 bg-emerald-950/60 p-3 sm:p-4 rounded-2xl border border-yellow-400/20">
-            {/* Category Tabs: سب | حمد | نعت | نظم */}
-            <div className="flex items-center justify-between gap-2 border-b border-emerald-800/60 pb-3">
-              <div className="flex items-center gap-1.5">
-                {(['سب', 'حمد', 'نعت', 'نظم'] as const).map(tab => {
-                  const isSelected = activeCategory === tab;
-                  return (
-                    <button
-                      key={tab}
-                      type="button"
-                      onClick={() => setActiveCategory(tab)}
-                      className={`px-4 py-1.5 rounded-xl text-xs sm:text-sm font-nastaliq font-bold transition-all cursor-pointer ${
-                        isSelected
-                          ? 'bg-amber-400 text-emerald-950 shadow-md ring-2 ring-amber-300/50'
-                          : 'bg-emerald-900/60 text-amber-200 hover:bg-emerald-800/80 border border-yellow-400/20'
-                      }`}
-                    >
-                      {tab}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <span className="text-[11px] font-nastaliq text-emerald-300">
-                دستیاب: {filteredTracks.length} کلام
-              </span>
-            </div>
-
-            {/* Search Input */}
-            <div className="relative">
-              <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-emerald-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder="حمد و نعتِ رسول ﷺ یا کلام تلاش کریں..."
-                className="w-full pr-9 pl-3 py-2 bg-emerald-900/40 border border-yellow-400/20 rounded-xl text-xs sm:text-sm font-nastaliq text-amber-100 placeholder-emerald-400/60 focus:outline-none focus:border-amber-400/60 focus:ring-1 focus:ring-amber-400/40"
-              />
-            </div>
-          </div>
-
-          {/* TRACKS LIST (100 TRACKS) */}
+          {/* 4. TRACKS LIST - FILTERED BY CATEGORY & SEARCH */}
           <div className="space-y-2">
-            <h4 className="text-xs font-bold font-nastaliq text-amber-300 flex items-center gap-1.5 px-1">
-              <ListMusic className="w-4 h-4 text-amber-400" />
-              <span>فہرستِ کلام (100 حمد و نعتِ رسول ﷺ)</span>
-            </h4>
+            <div className="flex items-center justify-between px-1">
+              <h4 className="text-xs font-bold font-nastaliq text-amber-300 flex items-center gap-1.5">
+                <ListMusic className="w-4 h-4 text-amber-400" />
+                <span>
+                  {selectedCategory} ({filteredNaats.length} کلام)
+                </span>
+              </h4>
+              {searchQuery && (
+                <span className="text-[11px] font-nastaliq text-emerald-300">
+                  تلاش کے نتائج: {filteredNaats.length}
+                </span>
+              )}
+            </div>
 
             <div className="space-y-1.5 max-h-[380px] overflow-y-auto custom-scrollbar pr-1">
-              {filteredTracks.map(item => {
-                const isSelected = item.id === currentId;
-                return (
-                  <div
-                    key={item.id}
-                    ref={isSelected ? activeItemRef : null}
-                    onClick={() => handleSelectNaat(item.id)}
-                    className={`flex items-center justify-between p-2.5 sm:p-3 rounded-xl border transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-gradient-to-r from-amber-400/20 via-emerald-800/70 to-emerald-900/70 border-amber-400 shadow-md scale-[1.01]'
-                        : 'bg-emerald-950/40 hover:bg-emerald-900/50 border-emerald-800/40 text-amber-100'
-                    }`}
+              {filteredNaats.length === 0 ? (
+                <div className="p-8 text-center bg-emerald-950/40 rounded-xl border border-dashed border-emerald-700/50 space-y-2">
+                  <p className="text-sm font-nastaliq text-amber-200">
+                    اس تلاش کے مطابق کوئی کلام نہیں ملا۔
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedCategory('سب کلام');
+                      setSearchQuery('');
+                    }}
+                    className="px-3 py-1 bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 rounded-lg text-xs font-nastaliq border border-amber-400/30 transition"
                   >
-                    <div className="flex items-center gap-3">
-                      {/* Item Number & Play indicator */}
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${
-                        isSelected 
-                          ? 'bg-amber-400 text-emerald-950 shadow-md' 
-                          : 'bg-emerald-900/70 text-amber-300'
-                      }`}>
-                        {isSelected && isPlaying ? (
-                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-950 animate-ping"></span>
-                        ) : (
-                          <span>{item.id}</span>
-                        )}
-                      </div>
-
-                      {/* Title & Artist */}
-                      <div>
-                        <h5 className={`font-nastaliq text-sm sm:text-base font-bold leading-tight ${
-                          isSelected ? 'text-amber-300' : 'text-stone-100'
-                        }`}>
-                          {item.title}
-                        </h5>
-                        <p className="text-[11px] text-emerald-300/70 font-nastaliq mt-0.5">
-                          {item.artist}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Category & Source Badges */}
-                    <div className="flex items-center gap-1.5">
-                      <span className="px-2 py-0.5 rounded-md bg-emerald-900/60 text-amber-300 text-[10px] font-nastaliq font-bold border border-yellow-400/20">
-                        {item.category}
-                      </span>
-                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-nastaliq font-semibold border ${
-                        item.type === 'local'
-                          ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
-                          : item.type === 'youtube'
-                          ? 'bg-red-500/10 text-red-300 border-red-500/30'
-                          : 'bg-blue-500/10 text-blue-300 border-blue-500/30'
-                      }`}>
-                        {item.type === 'local' && '📥 محفوظ'}
-                        {item.type === 'youtube' && '▶️ یوٹیوب'}
-                        {item.type === 'archive' && '🌐 آرکائیو'}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-
-              {filteredTracks.length === 0 && (
-                <div className="text-center py-8 text-emerald-300/70 font-nastaliq text-sm bg-emerald-950/20 rounded-xl border border-dashed border-emerald-800">
-                  کوئی کلام دستیاب نہیں ملا۔ تلاش کا لفظ تبدیل فرمائیں۔
+                    تمام کلام دکھائیں
+                  </button>
                 </div>
+              ) : (
+                filteredNaats.map(item => {
+                  const isSelected = item.id === currentNaat.id;
+                  return (
+                    <div
+                      key={item.id}
+                      ref={isSelected ? activeItemRef : null}
+                      onClick={() => handleSelectNaat(item)}
+                      className={`flex items-center justify-between p-2.5 sm:p-3 rounded-xl border transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-gradient-to-r from-amber-400/20 via-emerald-800/70 to-emerald-900/70 border-amber-400 shadow-md scale-[1.01]'
+                          : 'bg-emerald-950/40 hover:bg-emerald-900/50 border-emerald-800/40 text-amber-100'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                        {/* Item Number & Play indicator */}
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${
+                          isSelected 
+                            ? 'bg-amber-400 text-emerald-950 shadow-md' 
+                            : 'bg-emerald-900/70 text-amber-300'
+                        }`}>
+                          {isSelected && isPlaying ? (
+                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-950 animate-ping"></span>
+                          ) : (
+                            <span>{item.id}</span>
+                          )}
+                        </div>
+
+                        {/* Title & Category & Artist */}
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <h5 className={`font-nastaliq text-sm sm:text-base font-bold leading-tight truncate ${
+                              isSelected ? 'text-amber-300' : 'text-stone-100'
+                            }`}>
+                              {item.title}
+                            </h5>
+                            <span className={`text-[10px] px-1.5 py-0.2 rounded font-nastaliq font-bold shrink-0 ${
+                              item.category === 'مدارس و طلباء' 
+                                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/30'
+                                : item.category === 'صوفیانہ کلام'
+                                ? 'bg-purple-500/20 text-purple-300 border border-purple-400/30'
+                                : item.category === 'حمد و مناجات'
+                                ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30'
+                                : 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30'
+                            }`}>
+                              {item.category}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 mt-0.5 text-[11px] text-emerald-400/70 font-nastaliq">
+                            <span>{item.artist || 'پبلک ڈومین'}</span>
+                            <span className="text-emerald-600 font-mono">•</span>
+                            <span className="font-mono text-[10px] text-emerald-400/50 truncate">
+                              {item.fileName}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <span className="px-2.5 py-1 rounded-lg text-xs font-nastaliq font-bold bg-emerald-900/60 text-amber-300 border border-yellow-400/20 shrink-0 mr-2">
+                        سنیں 🎧
+                      </span>
+                    </div>
+                  );
+                })
               )}
             </div>
           </div>
@@ -619,7 +776,7 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
         {/* FOOTER */}
         <div className="p-3 bg-[#064e3b] border-t border-yellow-400/20 flex items-center justify-between text-[11px] text-emerald-200/80 font-nastaliq px-4">
           <span>تحریکِ ایمان ڈیجیٹل کتب خانہ • صوتیاتِ نبوی</span>
-          <span>۱۰۰ کلامِ حمد و نعتِ رسول ﷺ</span>
+          <span>{filteredNaats.length} کلام (کل {naatsData.length})</span>
         </div>
       </div>
     </div>

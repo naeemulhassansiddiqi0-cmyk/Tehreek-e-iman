@@ -33,7 +33,7 @@ export function App() {
     }
   });
   const [theme, setTheme] = useState<'parchment' | 'dark' | 'light'>('parchment');
-  const [userName, setUserName] = useState<string>('حضرت مولانا محمد نعیم الحسن صدیقی');
+  const [userName, setUserName] = useState<string>('حضرت مولانا محمد نعیم الحسن صدیقی دامت برکاتہم العالیہ');
   const [customLogoSrc, setCustomLogoSrc] = useState<string>('/tehreek-iman-logo.jpg');
   const [aiInitialPrompt, setAiInitialPrompt] = useState<string>('');
   const [aiInitialContext, setAiInitialContext] = useState<string>('');
@@ -137,7 +137,7 @@ export function App() {
   // International Dynamic SEO & Canonical URL State Synchronization
   useEffect(() => {
     try {
-      let title = 'تحریکِ ایمان | جامع اسلامی پورٹل، مکتبہ درسِ نظامی و اوقاتِ صلوٰۃ — مولانا محمد نعیم الحسن صدیقی';
+      let title = 'تحریکِ ایمان | جامع اسلامی پورٹل، مکتبہ درسِ نظامی و امتحانی مرکز — مولانا محمد نعیم الحسن صدیقی دامت برکاتہم العالیہ';
       let desc = 'تحریکِ ایمان — جامع اسلامی ڈیجیٹل کتب خانہ، اوقاتِ صلوٰۃ و دائمی جنتری، اور تعلیمی پورٹل۔ قرآنِ حکیم، صحاح ستہ، فقہ حنفی اور وفاق المدارس امتحانی مرکز۔';
 
       const url = new URL(window.location.href);
@@ -223,12 +223,12 @@ export function App() {
 
       const savedName = localStorage.getItem('madrasa_user_name');
       if (savedName && savedName.includes('نعیم الحسن')) {
-        const fullName = savedName.startsWith('حضرت') ? savedName : `حضرت ${savedName}`;
+        const fullName = savedName.includes('دامت برکاتہم') ? savedName : `${savedName} دامت برکاتہم العالیہ`;
         setUserName(fullName);
       } else if (savedName) {
         setUserName(savedName);
       } else {
-        localStorage.setItem('madrasa_user_name', 'حضرت مولانا محمد نعیم الحسن صدیقی');
+        localStorage.setItem('madrasa_user_name', 'حضرت مولانا محمد نعیم الحسن صدیقی دامت برکاتہم العالیہ');
       }
 
       const savedLogo = localStorage.getItem('madrasa_custom_logo');

@@ -285,18 +285,18 @@ export const Chatbot: React.FC<ChatbotProps> = ({ onSelectBook, apiKey, onSaveTo
           }
           setIsOpen(prev => !prev);
         }}
-        className="fixed bottom-6 right-4 sm:right-6 z-40 flex items-center justify-center w-14 h-14 rounded-full bg-emerald-800 hover:bg-emerald-900 text-white shadow-2xl hover:shadow-emerald-900/40 transition-all duration-200 active:scale-95 focus:outline-none focus:ring-4 focus:ring-emerald-400 cursor-pointer"
+        className="fixed bottom-3 right-3 sm:bottom-5 sm:right-5 z-50 flex items-center justify-center w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-emerald-800 hover:bg-emerald-900 text-white shadow-xl hover:shadow-emerald-900/40 transition-all duration-200 active:scale-95 focus:outline-none focus:ring-4 focus:ring-emerald-400 cursor-pointer"
         title="علمی اتالیق و ذہین کتب خانہ (AI Scholar & Librarian)"
         aria-label="علمی اتالیق چیٹ بوٹ"
       >
         {isOpen ? (
-          <X className="w-6 h-6 text-white" />
+          <X className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
         ) : (
           <div className="relative flex items-center justify-center">
-            <Sparkles className="w-7 h-7 text-amber-300 animate-pulse" />
-            <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+            <Sparkles className="w-5 h-5 sm:w-7 sm:h-7 text-amber-300 animate-pulse" />
+            <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 sm:h-3.5 sm:w-3.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-amber-500 border border-white"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 sm:h-3.5 sm:w-3.5 bg-amber-500 border border-white"></span>
             </span>
           </div>
         )}
@@ -306,7 +306,7 @@ export const Chatbot: React.FC<ChatbotProps> = ({ onSelectBook, apiKey, onSaveTo
       {isOpen && (
         <div
           dir="rtl"
-          className="fixed bottom-36 right-3 left-3 sm:left-auto sm:right-4 md:bottom-20 md:right-5 z-50 w-auto sm:w-[440px] max-h-[75vh] sm:max-h-[640px] h-[580px] flex flex-col bg-white rounded-2xl shadow-2xl border border-emerald-100 overflow-hidden animate-fadeIn"
+          className="fixed inset-x-2 bottom-16 sm:inset-x-auto sm:bottom-20 sm:right-5 z-50 w-auto sm:w-[440px] max-h-[80vh] sm:max-h-[640px] h-[580px] flex flex-col bg-white rounded-2xl shadow-2xl border border-emerald-100 overflow-hidden animate-fadeIn"
           style={{ fontFamily: "'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif" }}
         >
           {/* Header */}

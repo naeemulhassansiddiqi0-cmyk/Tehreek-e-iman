@@ -1,119 +1,24 @@
+import naatsJson from './naats.json';
+
 export interface NaatItem {
   id: number;
   title: string;
-  artist: string;
-  category: 'حمد' | 'نعت' | 'نظم';
-  type: 'local' | 'youtube' | 'archive';
+  artist?: string;
+  category?: string;
+  fileName: string;
   src?: string;
-  fallbackUrl?: string;
-  videoId?: string;
-  duration?: string;
+  type?: string;
 }
 
-export const naatsData: NaatItem[] = [
-  // 1 to 25: حمد باری تعالیٰ
-  { id: 1, title: 'وہی خدا ہے', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-01.mp3' },
-  { id: 2, title: 'اے کریمی نہ بخشی', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-02.mp3' },
-  { id: 3, title: 'خدا کی عظمتیں کیا ہیں', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-03.mp3' },
-  { id: 4, title: 'تو رحیم ہے تو کریم ہے', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-04.mp3' },
-  { id: 5, title: 'نورِ خدا', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-05.mp3' },
-  { id: 6, title: 'ہر شے پہ حکمرانی تیری', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-06.mp3' },
-  { id: 7, title: 'الٰہی تیری چوکھٹ پر', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-07.mp3' },
-  { id: 8, title: 'تیرے جلوے ہر سو', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-08.mp3' },
-  { id: 9, title: 'یا رب جہاں تیرا ہے', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-09.mp3' },
-  { id: 10, title: 'قدرت کے نظارے', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-10.mp3' },
-  { id: 11, title: 'سبحان اللہ باری تعالیٰ', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-11.mp3' },
-  { id: 12, title: 'مولا یا مولا', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-12.mp3' },
-  { id: 13, title: 'عرشِ بریں کا سلطان', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-13.mp3' },
-  { id: 14, title: 'اللہ ہو اللہ ہو', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-14.mp3' },
-  { id: 15, title: 'رحمٰن ہے تو رحیم ہے تو', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-15.mp3' },
-  { id: 16, title: 'تو ہے مالکِ کل', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-16.mp3' },
-  { id: 17, title: 'کبریائے خدا', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-17.mp3' },
-  { id: 18, title: 'دعا و مناجات باری تعالیٰ', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-18.mp3' },
-  { id: 19, title: 'تیرا ذکر ہے راحتِ جاں', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-19.mp3' },
-  { id: 20, title: 'یا ستار یا غفار', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-20.mp3' },
-  { id: 21, title: 'عظمتِ حق تعالیٰ', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-21.mp3' },
-  { id: 22, title: 'ربِ کائنات', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-22.mp3' },
-  { id: 23, title: 'خالقِ ارض و سما', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-23.mp3' },
-  { id: 24, title: 'یا ذوالجلال والاکرام', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-24.mp3' },
-  { id: 25, title: 'حمدِ الٰہی صدائے دل', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-25.mp3' },
+export const naatsData: NaatItem[] = (naatsJson as any[]).map(item => {
+  return {
+    id: item.id,
+    title: item.title,
+    artist: item.artist || 'پبلک ڈومین • تحریکِ ایمان',
+    category: item.category || 'نعتِ رسول ﷺ',
+    fileName: item.fileName,
+    src: `/naats/${encodeURIComponent(item.fileName)}`,
+    type: 'local'
+  };
+});
 
-  // 26 to 70: نعت رسولِ مقبول ﷺ
-  { id: 26, title: 'فاصلوں کو تکلف ہے ہم سے اگر', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-26.mp3' },
-  { id: 27, title: 'مدینے کا سفر ہے اور میں نمدیدہ', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-27.mp3' },
-  { id: 28, title: 'میں تو پنجتنی ہوں', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-28.mp3' },
-  { id: 29, title: 'کرم مانگتا ہوں عطا مانگتا ہوں', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-29.mp3' },
-  { id: 30, title: 'شاہِ مدینہ یثرب کے والی', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-30.mp3' },
-  { id: 31, title: 'تاجدارِ حرم اے شہنشاہِ دیں', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-31.mp3' },
-  { id: 32, title: 'میری الفت مدینے سے یونہی نہیں', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-32.mp3' },
-  { id: 33, title: 'زہے مقدر حضورِ حق سے سلام آیا', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-33.mp3' },
-  { id: 34, title: 'نور والا آیا ہے نور لے کر آیا ہے', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-34.mp3' },
-  { id: 35, title: 'کھلا ہے سبھی کے لیے بابِ رحمت', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-35.mp3' },
-  { id: 36, title: 'مصطفیٰ جانِ رحمت پہ لاکھوں سلام', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-36.mp3' },
-  { id: 37, title: 'بھیگ عطا ہو شہِ بطحیٰ', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-37.mp3' },
-  { id: 38, title: 'ان کی مہک نے دل کے غنچے کھلا دیے', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-38.mp3' },
-  { id: 39, title: 'مدینے بلانا ہمیں اے مصطفیٰ', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-39.mp3' },
-  { id: 40, title: 'صبحِ طیبہ میں ہوئی بٹتا ہے باڑہ نور کا', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-40.mp3' },
-  { id: 41, title: 'لم یات نظیرک فی نظر مثل تو نہ شد پیدا', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-41.mp3' },
-  { id: 42, title: 'کعبے کے بدر الدجیٰ تم پہ کروڑوں درود', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-42.mp3' },
-  { id: 43, title: 'چمک تجھ سے پاتے ہیں سب پانے والے', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-43.mp3' },
-  { id: 44, title: 'تو شمعِ رسالت ہے عالم تیرا پروانہ', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-44.mp3' },
-  { id: 45, title: 'یا شفیع الوریٰ سلام علیک', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-45.mp3' },
-  { id: 46, title: 'آمدِ مصطفیٰ مرحبا مرحبا', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-46.mp3' },
-  { id: 47, title: 'قصیدہ بردہ شریف (مولای صل وسلم)', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-47.mp3' },
-  { id: 48, title: 'درِ نبی پر پڑا رہوں گا', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-48.mp3' },
-  { id: 49, title: 'گنبدِ خضراء کے سائے میں', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-49.mp3' },
-  { id: 50, title: 'کاش میں تیرے دور کا ذرہ ہوتا', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-50.mp3' },
-  { id: 51, title: 'سرکار کا دربار ہے رحمت کا سمندر', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-51.mp3' },
-  { id: 52, title: 'درود و سلام بر سرورِ کونین', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-52.mp3' },
-  { id: 53, title: 'پیارا پیارا مدینہ ہمارا', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-53.mp3' },
-  { id: 54, title: 'یا نبی سلام علیک یا رسول سلام علیک', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-54.mp3' },
-  { id: 55, title: 'مدینے کی پاکیزہ فضائیں', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-55.mp3' },
-  { id: 56, title: 'تجلیاتِ حرم و مدینۃ المنورہ', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-56.mp3' },
-  { id: 57, title: 'مصطفیٰ خیر الوریٰ صدر الرسل', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-57.mp3' },
-  { id: 58, title: 'نورِ مجسم شفیعِ اعظم ﷺ', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-58.mp3' },
-  { id: 59, title: 'سلام بحضورِ سرورِ کائنات ﷺ', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-59.mp3' },
-  { id: 60, title: 'یا ربِ محمد بالمصطفیٰ', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-60.mp3' },
-  { id: 61, title: 'رحمت کی برسات ہے مدینے کے گلیوں میں', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-61.mp3' },
-  { id: 62, title: 'صل علیٰ نبینا صل علیٰ شفیعنا', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-62.mp3' },
-  { id: 63, title: 'مولیٰ یا صل وسلم دائما ابدا', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-63.mp3' },
-  { id: 64, title: 'اے رسولِ امین خاتم المرسلین ﷺ', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-64.mp3' },
-  { id: 65, title: 'گنبدِ خضراء پہ جب نظر پڑی', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-65.mp3' },
-  { id: 66, title: 'سرکار کی آمد مرحبا مرحبا', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-66.mp3' },
-  { id: 67, title: 'چہرہِ والضحیٰ زلفِ واللیل', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-67.mp3' },
-  { id: 68, title: 'بلغ العلیٰ بکمالہ', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-68.mp3' },
-  { id: 69, title: 'کشف الدجیٰ بجمالہ', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-69.mp3' },
-  { id: 70, title: 'حسنت جمیع خصالہ صلو علیہ و آلہ', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-70.mp3' },
-
-  // 71 to 100: حمد و مناجات و نظمیں
-  { id: 71, title: 'حسبی ربی جل اللہ ما فی قلبی غیر اللہ', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-71.mp3' },
-  { id: 72, title: 'حمدِ کبریا - اللہ اکبر کبیرہ', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-72.mp3' },
-  { id: 73, title: 'تیری شان جل جلالہ', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-73.mp3' },
-  { id: 74, title: 'خالقِ کل جہاں مالکِ انس و جاں', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-74.mp3' },
-  { id: 75, title: 'رحمن و رحیم ہے ذاتِ الٰہی', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-75.mp3' },
-  { id: 76, title: 'تیری ذات پاک ہے اے میرے خدا', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-76.mp3' },
-  { id: 77, title: 'مناجات بحضورِ باری تعالیٰ', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-77.mp3' },
-  { id: 78, title: 'اللہ جل شانہ مالکِ ارض و سما', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-78.mp3' },
-  { id: 79, title: 'سبحان اللہ و بحمدہ سبحان اللہ العظیم', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-79.mp3' },
-  { id: 80, title: 'یا ربِ ذوالجلال والاکرام کرم فرما', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'حمد', type: 'local', src: '/naats/track-80.mp3' },
-  { id: 81, title: 'نظم: کاروانِ حیات اور راہِ حق', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نظم', type: 'local', src: '/naats/track-81.mp3' },
-  { id: 82, title: 'نظم: پیغامِ حق اور توحیدِ رب', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نظم', type: 'local', src: '/naats/track-82.mp3' },
-  { id: 83, title: 'نظم: راہیِ مدینہ و طلبِ زیارت', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نظم', type: 'local', src: '/naats/track-83.mp3' },
-  { id: 84, title: 'نظم: صدائے دل و نالہ نیم شبی', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نظم', type: 'local', src: '/naats/track-84.mp3' },
-  { id: 85, title: 'نظم: تجدیدِ وفا و عہدِ بندگی', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نظم', type: 'local', src: '/naats/track-85.mp3' },
-  { id: 86, title: 'نظم: طلبِ معرفتِ الٰہی', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نظم', type: 'local', src: '/naats/track-86.mp3' },
-  { id: 87, title: 'نظم: شمعِ فروزاں دینِ مبین', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نظم', type: 'local', src: '/naats/track-87.mp3' },
-  { id: 88, title: 'نظم: درسِ عبرت و بصیرت', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نظم', type: 'local', src: '/naats/track-88.mp3' },
-  { id: 89, title: 'نظم: راہِ ہدایت و نجات', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نظم', type: 'local', src: '/naats/track-89.mp3' },
-  { id: 90, title: 'نظم: ذکر و فکرِ آخرت', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نظم', type: 'local', src: '/naats/track-90.mp3' },
-  { id: 91, title: 'نعت: یثرب کے تاجدار', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-91.mp3' },
-  { id: 92, title: 'نعت: مدینے کی راہیں', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-92.mp3' },
-  { id: 93, title: 'نعت: درِ رسول پر حاضری', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-93.mp3' },
-  { id: 94, title: 'نعت: گنبدِ خضراء کے انوار', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-94.mp3' },
-  { id: 95, title: 'نعت: سید الرسل ﷺ', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-95.mp3' },
-  { id: 96, title: 'نعت: رحمت اللعالمین ﷺ', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-96.mp3' },
-  { id: 97, title: 'نعت: شفاعتِ کبریٰ کا مژدہ', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-97.mp3' },
-  { id: 98, title: 'نعت: جانِ رحمت جانِ جاناں', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-98.mp3' },
-  { id: 99, title: 'نعت: نورِ مجسم فخرِ آدم', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-99.mp3' },
-  { id: 100, title: 'نعت: خاتم النبیین سید الاولین و الآخرین ﷺ', artist: 'پبلک ڈومین • تحریکِ ایمان', category: 'نعت', type: 'local', src: '/naats/track-100.mp3' }
-];

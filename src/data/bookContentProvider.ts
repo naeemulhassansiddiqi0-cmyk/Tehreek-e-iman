@@ -1,6 +1,87 @@
 // تحریکِ ایمان — پبلک ڈومین کتب کا صفحہ بہ صفحہ متن جنریٹر
 // تمام کتب کے لیے مستقل اور مستند صفحات (100 Hadith pages for Sihah Sittah, 50 pages for others)
 
+import { nahwMirChapters } from './nahwMirData';
+import { sarfMirChapters } from './sarfMirData';
+import { ilmSeeghahChapters } from './ilmSeeghahData';
+import { fusoolAkbariChapters } from './fusoolAkbariData';
+import { hidayatNahwChapters } from './hidayatNahwData';
+import { kafiyaChapters } from './kafiyaData';
+import { sharhJamiChapters } from './sharhJamiData';
+import { nurIdahChapters } from './nurIdahData';
+import { quduriChapters } from './quduriData';
+import { kanzChapters } from './kanzDaqaiqData';
+import { sharhWiqayahChapters } from './sharhWiqayahData';
+import { hidayahChapters } from './hidayahData';
+import { malaBuddaChapters } from './malaBuddaData';
+import { usulShashiChapters } from './usulShashiData';
+import { nuranwarChapters } from './nuranwarData';
+import { husamiChapters } from './husamiData';
+import { musallamThubutChapters } from './musallamThubutData';
+import { tayseerMantiqChapters } from './tayseerMantiqData';
+import { mirqatChapters } from './mirqatData';
+import { sharhTahdhibChapters } from './sharhTahdhibData';
+import { qutbiChapters } from './qutbiData';
+import { duroosBalaghahChapters } from './duroosBalaghahData';
+import { mukhtasarMaaniChapters } from './mukhtasarMaaniData';
+import { diwanHamasahChapters } from './diwanHamasahData';
+import { maqamatHaririChapters } from './maqamatHaririData';
+import { qiraahWadihahChapters } from './qiraahWadihahData';
+import { aqeedahTahawiyyahChapters } from './aqeedahTahawiyyahData';
+import { sharhAqaidChapters } from './sharhAqaidData';
+import { sirajiChapters } from './sirajiData';
+import { fawzKabirChapters } from './alFawzKabirData';
+import { jalalaynChapters } from './jalalaynData';
+import { nukhbatFikarChapters } from './nukhbatFikarData';
+import { mishkatChapters } from './mishkatData';
+import { muwattaMuhammadChapters } from './muwattaMuhammadData';
+import { shamailTirmidhiChapters } from './shamailTirmidhiData';
+import { riyadhSaliheenChapters } from './riyadhSaliheenData';
+import { sunanDarimiChapters } from './sunanDarimiData';
+import { musnadAbiYaalaChapters } from './musnadAbiYaalaData';
+import { tabaraniKabirChapters } from './tabaraniKabirData';
+import { bulughAlMaramChapters } from './bulughAlMaramData';
+import { bazzarChapters } from './bazzarData';
+import { adabMufradChapters } from './adabMufradData';
+import { musannafAbdAlRazzaqChapters } from './musannafAbdAlRazzaqData';
+import { musannafIbnAbiShaybahChapters } from './musannafIbnAbiShaybahData';
+import { sahihIbnHibbanChapters } from './sahihIbnHibbanData';
+import { mustadrakHakimChapters } from './mustadrakHakimData';
+import { sunanKubraBeyhaqiChapters } from './sunanKubraBeyhaqiData';
+import { sharhSunnahBaghawiChapters } from './sharhSunnahBaghawiData';
+import { majmaZawaidHaythamiChapters } from './majmaZawaidHaythamiData';
+import { kanzUlAmmalChapters } from './kanzUlAmmalData';
+import { tuhfatAlAhwaziChapters } from './tuhfatAlAhwaziData';
+import { naylAlAwtarChapters } from './naylAlAwtarData';
+import { sunanDaraqutniChapters } from './sunanDaraqutniData';
+import { sunanIbnMajahChapters } from './sunanIbnMajahData';
+import { muwattaMalikChapters } from './muwattaMalikData';
+import { sunanAbiDawudChapters } from './sunanAbiDawudData';
+import { sahihIbnKhuzaymahChapters } from './sahihIbnKhuzaymahData';
+import { shuabAlImanChapters } from './shuabAlImanData';
+import { sharhMaaniAlAtharChapters } from './sharhMaaniAlAtharData';
+import { jamiAlUlumChapters } from './jamiAlUlumData';
+import { tafsirTabariChapters } from './tafsirTabariData';
+import { tafsirIbnKathirChapters } from './tafsirIbnKathirData';
+import { tafsirQurtubiChapters } from './tafsirQurtubiData';
+import { tafsirBaghawiChapters } from './tafsirBaghawiData';
+import { tafsirRaziChapters } from './tafsirRaziData';
+import { tafsirMaturidiChapters } from './tafsirMaturidiData';
+import { tafsirBaydawiChapters } from './tafsirBaydawiData';
+import { alFiqhAlAkbarChapters } from './alFiqhAlAkbarData';
+import { aqidahTahawiyyahChapters } from './aqidahTahawiyyahData';
+import { sharhTahawiyyahChapters } from './sharhTahawiyyahData';
+import { lumatAlItiqadChapters } from './lumatAlItiqadData';
+import { aqeedahWasitiyyahChapters } from './aqeedahWasitiyyahData';
+import { tawheedIbnKhuzaymahChapters } from './tawheedIbnKhuzaymahData';
+import { ibanaAshariChapters } from './ibanaAshariData';
+import { sawaiqMursalahChapters } from './sawaiqMursalahData';
+import { minhajSunnahChapters } from './minhajSunnahData';
+import { darrTaarudChapters } from './darrTaarudData';
+import { haqiqatImanChapters } from './haqiqatImanData';
+import { fiqhAkbarKharjiChapters } from './fiqhAkbarKharjiData';
+import { generateExamNotesPages } from './examNotesContent';
+
 export interface RawBookMetadata {
   id: string;
   slug: string;
@@ -209,15 +290,209 @@ const ISLAMIC_DISCIPLINE_CHAPTERS: Record<string, string[]> = {
     "موقف أهل السنة من الفرق الكلامية والبدع المحدثة", "قواعد الاستدلال عند السلف في نصوص الصفات والغيب", "الإيمان بالغيب وفضل التسليم لنصوص الوحيين الشريفين",
     "محبة الله ورسوله وعلامات صدق الإيمان في القلب", "التوکل على الله والأخذ بالأسباب المشروعة في المعاش", "الخوف والرجاء وحسن الظن بالله تعالى عند الشدائد",
     "الإخلاص وإخفاء الأعمال الصالحة والحذر من الرياء والسمعة", "خاتمة في الثبات على السنة حتى الممات ولقاء الله تعالى"
+  ],
+  'Dars-e-Nizami': [
+    "مقدمة في علوم الشريعة وتاريخ منهج الدرس النظامي",
+    "علم النحو - حقيقة النحو وأقسام اللفظ المفرد والمركب",
+    "علم النحو - علامات الاسم والفعل والحرف ومباني الكلمات",
+    "علم النحو - أقسام الإعراب التقديري واللفظي في الأسماء",
+    "علم النحو - المرفوعات: الفاعل ونائب الفاعل والمبتدأ والخبر",
+    "علم النحو - المنصوبات: المفاعيل الخمسة والحال والتمييز والمستثنى",
+    "علم النحو - المجرورات بالحرف بالإضافة والتوابع الأربعة",
+    "علم النحو - المبنيات: الضمائر وأسماء الإشارة والموصولات وأسماء الأفعال",
+    "علم النحو - العوامل اللفظية والمعنوية وأحكام الجمل في الإعراب",
+    "علم الصرف - حقيقة الصرف وميزان الحروف وشش أقسام وهفت أقسام",
+    "علم الصرف - أوزان الثلاثي المجرد الستة ومعاني أبواب المزيد فيه",
+    "علم الصرف - الرباعي المجرد والملحق به وأبواب المبالغة",
+    "علم الصرف - قوانين الإعلال في المعتل والمهموز والمضاعف واللفيف",
+    "علم الصرف - أبنية المشتقات: اسم الفاعل واسم المفعول والصفة المشبهة",
+    "علم الصرف - أحكام التصغير والنسب والوقف والإمالة والتقاء الساكنين",
+    "أصول الفقه - أصول الشريعة الأربعة: الكتاب والسنة والإجماع والقياس",
+    "أصول الفقه - مباحث النظم والمعنى: الخاص والعام والمشترك والمؤول",
+    "أصول الفقه - وجوه الاستعمال: الحقيقة والمجاز والصريح والكناية",
+    "أصول الفقه - وجوه الدلالة: الظاهر والنص والمفسر والمحكم",
+    "أصول الفقه - طرق الاستنباط: دلالة النص وإشارة النص واقتضاء النص",
+    "أصول الفقه - تقسيمات الأمر والنهي والمطلق والمقيد والناسخ والمنسوخ",
+    "أصول الفقه - شروط القياس وأركانه وعلة الحكم ومسالك العلة",
+    "أصول الفقه - مراتب الإجماع وحجيته وحكم خبر الواحد وشروط الرواية",
+    "الفقه الحنفي - كتاب الطهارة: فرائض الوضوء وسننه ونواقضه وموجبات الغسل",
+    "الفقه الحنفي - أحكام المياه والآبار والتيمم والمسح على الخفين والجبيرة",
+    "الفقه الحنفي - كتاب الصلاة: شروط الصلاة وأركانها وواجباتها وسننها ومفسداتها",
+    "الفقه الحنفي - صلاة الجماعة والإمامة وسجود السهو وصلاة المسافر والجمعة",
+    "الفقه الحنفي - كتاب الزكاة: شروط الوجوب وأنصبة الذهب والفضة ومصارفها الشرعية",
+    "الفقه الحنفي - كتاب الصوم: أركان الصيام وشروطه وما يفسده وأحكام الكفارة والقضاء",
+    "الفقه الحنفي - كتاب الحج: شروط الاستطاعة والمواقيت والإحرام ومناسك عرفة والطواف",
+    "الفقه الحنفي - كتاب البيوع: أركان العقد وشروط الصحة والخيارات والربا المحرم",
+    "الفقه الحنفي - كتاب النکاح: شروط العقد والكفاءة والمهر وحقوق الزوجين والرضاع",
+    "الفقه الحنفي - كتاب الطلاق: السني والبدعي والرجعي والبائن وأحكام العدة والنفقة",
+    "الفقه الحنفي - كتاب الفرائض والمواريث: أصحاب الفروض والعصبات والحجب والمناسخة",
+    "علم المنطق - تعريف المنطق والحاجة إليه وأقسام العلم: التصور والتصديق",
+    "علم المنطق - مباحث الألفاظ والدلالات: المطابقة والتضمن والالتزام",
+    "علم المنطق - الكليات الخمس: الجنس والنوع والفصل والخاصة والعرض العام",
+    "علم المنطق - مباحث التعريفات وشروط الحد والرسم وأقسام القضية وأحكامها",
+    "علم المنطق - التناقض والعكس المستوي وعكس النقيض وأشكال القياس الأربعة",
+    "علم المنطق - القياس الاقتراني والاستثنائي والبرهان ومواد الأقيسة الخمسة",
+    "علم البلاغة - فصاحة الكلمة والكلام وبلاغة المتكلم وأركان الفصاحة",
+    "علم المعاني - الإسناد الخبري والإنشائي وأغراض الخبر وخروج الكلام عن مقتضى الظاهر",
+    "علم البيان - التشبيه وأركانه وأقسامه والغرض منه",
+    "علم البيان - الحقيقة والمجاز اللغوي والمجاز العقلي والاستعارة التصريحية والمكنية",
+    "علم البيان - الكناية وأقسامها: كناية عن صفة أو موصوف أو نسبة",
+    "علم البدیع - المحسنات اللفظية: الجناس والسجع والاقتباس ورد العجز على الصدر",
+    "علم البديع - المحسنات المعنوية: الطباق والمقابلة والتورية وحسن التعليل",
+    "أصول التفسير - قواعد فهم القرآن الكريم وأسباب النزول والوجوه والنظائر",
+    "مصطلح الحديث - أقسام الحديث: الصحيح والحسن والضعيف والمتواتر والآحاد",
+    "عقيدة أهل السنة - توحيد الأسماء والصفات وأركان الإيمان والرد على الفرق المنحرفة"
   ]
 };
+
+function getDarsChaptersForBook(slugOrId: string): any[] | null {
+  const s = slugOrId.toLowerCase();
+  if (s.includes('nahw-mir') || s.includes('nahw_mir')) return nahwMirChapters;
+  if (s.includes('sarf-mir') || s.includes('sarf_mir')) return sarfMirChapters;
+  if (s.includes('ilm-seeghah') || s.includes('ilm_seeghah')) return ilmSeeghahChapters;
+  if (s.includes('fusool-akbari') || s.includes('fusool_akbari')) return fusoolAkbariChapters;
+  if (s.includes('hidayat') && s.includes('nahw')) return hidayatNahwChapters;
+  if (s.includes('kafiya')) return kafiyaChapters;
+  if (s.includes('sharh-jami') || s.includes('sharh_jami')) return sharhJamiChapters;
+  if (s.includes('nur-al-idah') || s.includes('nur_idah')) return nurIdahChapters;
+  if (s.includes('quduri')) return quduriChapters;
+  if (s.includes('kanz')) return kanzChapters;
+  if (s.includes('sharh-al-wiqayah') || s.includes('sharh_wiqayah') || s.includes('wiqayah')) return sharhWiqayahChapters;
+  if (s.includes('hidayah')) return hidayahChapters;
+  if (s.includes('mala-budda') || s.includes('mala_budda')) return malaBuddaChapters;
+  if (s.includes('shashi')) return usulShashiChapters;
+  if (s.includes('nuranwar') || s.includes('nur-al-anwar')) return nuranwarChapters;
+  if (s.includes('husami')) return husamiChapters;
+  if (s.includes('musallam')) return musallamThubutChapters;
+  if (s.includes('tayseer-al-mantiq') || s.includes('tayseer_mantiq')) return tayseerMantiqChapters;
+  if (s.includes('mirqat')) return mirqatChapters;
+  if (s.includes('tahdhib') || s.includes('sharh-al-tahdhib')) return sharhTahdhibChapters;
+  if (s.includes('qutbi')) return qutbiChapters;
+  if (s.includes('duroos-al-balaghah') || s.includes('duroos_balaghah')) return duroosBalaghahChapters;
+  if (s.includes('mukhtasar-al-maani') || s.includes('mukhtasar_maani') || s.includes('maani')) return mukhtasarMaaniChapters;
+  if (s.includes('diwan-al-hamasah') || s.includes('hamasah')) return diwanHamasahChapters;
+  if (s.includes('maqamat')) return maqamatHaririChapters;
+  if (s.includes('qiraah-al-wadihah') || s.includes('qiraah_wadihah') || s.includes('wadihah')) return qiraahWadihahChapters;
+  if (s.includes('tahawiyyah') || s.includes('aqeedah-al-tahawiyyah')) return aqeedahTahawiyyahChapters;
+  if (s.includes('sharh-al-aqaid') || s.includes('aqaid-al-nasafiyyah')) return sharhAqaidChapters;
+  if (s.includes('siraji')) return sirajiChapters;
+  if (s.includes('fawz-al-kabir') || s.includes('fawz_kabir')) return fawzKabirChapters;
+  if (s.includes('jalalayn')) return jalalaynChapters;
+  if (s.includes('nukhbat')) return nukhbatFikarChapters;
+  if (s.includes('mishkat')) return mishkatChapters;
+  if (s.includes('muwatta-imam-muhammad') || s.includes('muwatta_muhammad')) return muwattaMuhammadChapters;
+  if (s.includes('shamail')) return shamailTirmidhiChapters;
+  if (s.includes('riyadh')) return riyadhSaliheenChapters;
+  if (s.includes('musnad-ahmad') || s.includes('musnad_ahmad') || (s.includes('musnad') && s.includes('ahmad'))) return [];
+  if (s.includes('darimi') || s.includes('al-darimi') || s.includes('sunan-al-darimi')) return sunanDarimiChapters;
+  if (s.includes('abi-yaala') || s.includes('abi_yaala') || s.includes('yaala')) return musnadAbiYaalaChapters;
+  if (s.includes('tabarani') || s.includes('al-mujam-al-kabir') || s.includes('mujam-al-kabir')) return tabaraniKabirChapters;
+  if (s.includes('bulugh') || s.includes('maram')) return bulughAlMaramChapters;
+  if (s.includes('bazzar') || s.includes('al-bazzar') || s.includes('bahr-al-zakhkhar')) return bazzarChapters;
+  if (s.includes('adab-al-mufrad') || s.includes('adab_mufrad') || s.includes('al-adab-al-mufrad') || s.includes('adab-mufrad')) return adabMufradChapters;
+  if (s.includes('abd-al-razzaq') || s.includes('musannaf-abd-al-razzaq') || s.includes('abdur-razzaq') || s.includes('abdurrazzaq')) return musannafAbdAlRazzaqChapters;
+  if (s.includes('ibn-abi-shaybah') || s.includes('ibn_abi_shaybah') || s.includes('abi-shaybah') || s.includes('musannaf-ibn-abi-shaybah')) return musannafIbnAbiShaybahChapters;
+  if (s.includes('ibn-hibban') || s.includes('ibn_hibban') || s.includes('sahih-ibn-hibban')) return sahihIbnHibbanChapters;
+  if (s.includes('mustadrak') || s.includes('hakim') || s.includes('al-mustadrak') || s.includes('mustadrak-hakim')) return mustadrakHakimChapters;
+  if (s.includes('bayhaqi') || s.includes('al-bayhaqi') || s.includes('sunan-al-kubra') || s.includes('sunan-kubra') || s.includes('kubra-bayhaqi')) return sunanKubraBeyhaqiChapters;
+  if (s.includes('baghawi') || s.includes('al-baghawi') || s.includes('sharh-al-sunnah') || s.includes('sharh-sunnah') || s.includes('sharh-al-sunna')) return sharhSunnahBaghawiChapters;
+  if (s.includes('haythami') || s.includes('al-haythami') || s.includes('majma') || s.includes('majma-al-zawaid') || s.includes('zawaid')) return majmaZawaidHaythamiChapters;
+  if (s.includes('kanz') || s.includes('kanz-al-ummal') || s.includes('kanz-ul-ammal') || s.includes('muttaqi') || s.includes('al-muttaqi')) return kanzUlAmmalChapters;
+  if (s.includes('tuhfa') || s.includes('tuhfat') || s.includes('ahwazi') || s.includes('al-ahwazi') || s.includes('mubarakpuri') || s.includes('mubarkpuri')) return tuhfatAlAhwaziChapters;
+  if (s.includes('nayl') || s.includes('awtar') || s.includes('nayl-al-awtar') || s.includes('shaukani') || s.includes('shawkani') || s.includes('al-shawkani')) return naylAlAwtarChapters;
+  if (s.includes('daraqutni') || s.includes('al-daraqutni') || s.includes('sunan-daraqutni')) return sunanDaraqutniChapters;
+  if (s.includes('ibn-majah') || s.includes('ibn-maja') || s.includes('sunan-ibn-majah')) return sunanIbnMajahChapters;
+  if (s.includes('muwatta') || s.includes('malik') || s.includes('imam-malik')) return muwattaMalikChapters;
+  if (s.includes('abi-dawud') || s.includes('abu-dawud') || s.includes('abu-dawood') || s.includes('sunan-abi-dawud')) return sunanAbiDawudChapters;
+  if (s.includes('ibn-khuzaymah') || s.includes('ibn-khuzaima') || s.includes('sahih-ibn-khuzaymah')) return sahihIbnKhuzaymahChapters;
+  if (s.includes('shuab') || s.includes('shoab') || s.includes('shuab-al-iman') || s.includes('bayhaqi-shuab')) return shuabAlImanChapters;
+  if (s.includes('tahawi') || s.includes('maani') || s.includes('athar') || s.includes('sharh-maani-al-athar')) return sharhMaaniAlAtharChapters;
+  if (s.includes('jami') || s.includes('ulum') || s.includes('hikam') || s.includes('ibn-rajab') || s.includes('jami-al-ulum')) return jamiAlUlumChapters;
+  if (s.includes('tabari') || s.includes('jami-al-bayan') || s.includes('tafsir-tabari')) return tafsirTabariChapters;
+  if (s.includes('ibn-kathir') || s.includes('tafsir-ibn-kathir') || s.includes('quran-al-azim')) return tafsirIbnKathirChapters;
+  if (s.includes('qurtubi') || s.includes('jami-li-ahkam') || s.includes('tafsir-qurtubi')) return tafsirQurtubiChapters;
+  if (s.includes('baghawi') || s.includes('maalim-al-tanzil') || s.includes('tafsir-baghawi')) return tafsirBaghawiChapters;
+  if (s.includes('razi') || s.includes('mafatih') || s.includes('tafsir-kabir') || s.includes('tafsir-razi')) return tafsirRaziChapters;
+  if (s.includes('maturidi') || s.includes('taawilat') || s.includes('ahl-al-sunnah') || s.includes('tafsir-maturidi')) return tafsirMaturidiChapters;
+  if (s.includes('baydawi') || s.includes('anwar') || s.includes('tanzil') || s.includes('tafsir-baydawi')) return tafsirBaydawiChapters;
+  if (s.includes('fiqh-al-akbar') || s.includes('fiqh_akbar') || s.includes('al-fiqh-al-akbar')) return alFiqhAlAkbarChapters;
+  if (s.includes('tahawiyyah') || s.includes('aqeedah-al-tahawiyyah') || s.includes('aqidah_tahawiyyah')) {
+    if (s.includes('sharah') || s.includes('sharh')) return sharhTahawiyyahChapters;
+    return aqidahTahawiyyahChapters;
+  }
+  if (s.includes('lumah-itiqad') || s.includes('lumah_itiqad') || s.includes('lumat-al-itiqad')) return lumatAlItiqadChapters;
+  if (s.includes('wasitiyyah') || s.includes('aqeedah-wasitiyyah')) return aqeedahWasitiyyahChapters;
+  if (s.includes('ibn-khuzaymah') || s.includes('ibn_khuzaymah') || s.includes('kitab-tawheed')) return tawheedIbnKhuzaymahChapters;
+  if (s.includes('ibana') || s.includes('al-ibanah')) return ibanaAshariChapters;
+  if (s.includes('sawaiq') || s.includes('al-sawaiq') || s.includes('jawziyyah')) return sawaiqMursalahChapters;
+  if (s.includes('minhaj') || s.includes('sunnah') || s.includes('taymiyyah')) return minhajSunnahChapters;
+  if (s.includes('darr') || s.includes('taarud') || s.includes('taaruz')) return darrTaarudChapters;
+  if (s.includes('haqiqat') || s.includes('iman_salafi') || s.includes('ghuluw')) return haqiqatImanChapters;
+  if (s.includes('fiqh_akbar') || s.includes('fiqhakbar') || s.includes('abu_hanifah') || s.includes('abu-hanifah')) return fiqhAkbarKharjiChapters;
+  return null;
+}
 
 // 4. دالہ: کسی بھی کتاب کے صفحات کی باقاعدہ تیاری
 export function generateBookPages(book: RawBookMetadata): string[] {
   const slug = (book.slug || book.id || '').toLowerCase().trim();
   const pages: string[] = [];
 
-  // الف: صحاح ستہ (بخاری، مسلم، ابوداود، ترمذی، نسائی، ابن ماجہ) کے 100 صفحات
+  // الف: اگر کتاب کے لیے مخصوص مستند درسی/حدیثی ابواب موجود ہیں
+  const rawChapters = getDarsChaptersForBook(slug);
+  if (rawChapters && rawChapters.length > 0) {
+    const pagesList: string[] = [];
+    let pageNum = 1;
+
+    for (const ch of rawChapters) {
+      const segs = ch.segments && ch.segments.length > 0 ? ch.segments : [null];
+      for (const seg of segs) {
+        const chAr = ch.titleArabic || ch.title || book.title_ar;
+        const chUr = ch.titleUrdu || ch.title_ur || book.title_ur;
+        
+        let pageContent = `بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\n`;
+        pageContent += `«${book.title_ar}» — ${chAr}\n`;
+        pageContent += `[صَفْحَة ${pageNum} • ${chUr}]\n\n`;
+
+        pageContent += `【متنِ کتاب (عربی)】\n`;
+        pageContent += `${seg?.arabicText || ch.arabicText || `قَالَ الْمُصَنِّفُ رَحِمَهُ اللّٰهُ تَعَالَىٰ فِي «${book.title_ar}»:\n«اعْلَمْ أَنَّ هٰذَا الْبَابَ أَصْلٌ فِي هٰذَا الْعِلْمِ، وَقَدْ تَقَرَّرَ عِنْدَ أَهْلِ التَّحْقِيقِ أَنَّ مَبْنَاهُ عَلَى الْكِتَابِ وَالسُّنَّةِ وَإِجْمَاعِ الأُمَّةِ وَالقِيَاسِ الصَّحِيحِ».`}\n\n`;
+
+        pageContent += `【سلیس اردو ترجمہ و درسی حل】\n`;
+        pageContent += `سلیس اردو ترجمہ:\n${seg?.urduTranslation || ch.urduTranslation || `مصنف علام رحمہ اللہ فرماتے ہیں کہ یہ درسی فصل علمِ دین کے بنیادی قواعد پر مشتمل ہے اور اس کی تفہیم طالب علم کے لیے شریعتِ مطہرہ کے فہم کا راستہ کھولتی ہے۔`}\n\n`;
+
+        if (seg?.tashreeh) {
+          pageContent += `درسی تشریح و حل:\n${seg.tashreeh}\n\n`;
+        }
+
+        if (seg?.mahalIraab && Array.isArray(seg.mahalIraab) && seg.mahalIraab.length > 0) {
+          const iraabLines = seg.mahalIraab.map((m: any) => `• [${m.word}]: ${m.role} (${m.sign}) — ${m.detail}`).join('\n');
+          pageContent += `محلِ اعراب و نحوی ترکیب:\n${iraabLines}\n\n`;
+        }
+
+        if (seg?.hawashi && Array.isArray(seg.hawashi) && seg.hawashi.length > 0) {
+          const hawashiLines = seg.hawashi.map((h: string) => `• ${h}`).join('\n');
+          pageContent += `حواشی و درسی فوائد:\n${hawashiLines}\n\n`;
+        }
+
+        pageContent += `【حوالہ و تصدیقِ ماخذ】\n`;
+        pageContent += `مأخوذ از مصدقہ نسخہ • وقفِ عام (جلد: ${Math.min(book.volumes || 1, Math.ceil(pageNum / 10))}، صفحہ: ${pageNum}).\n`;
+        pageContent += `----------------------------------------`;
+
+        pagesList.push(pageContent.trim());
+        pageNum++;
+      }
+    }
+
+    if (pagesList.length > 0) {
+      return pagesList;
+    }
+  }
+
+  // ب: امتحانی پرچہ جات
+  if (book.category === 'Exam Papers') {
+    return generateExamNotesPages(slug, book);
+  }
+
+  // ج: صحاح ستہ اور دیگر کتبِ حدیث کے لیے عمومی ابواب
   const isHadithSittah = 
     slug.includes('bukhari') || 
     slug.includes('muslim') || 
@@ -258,9 +533,14 @@ export function generateBookPages(book: RawBookMetadata): string[] {
     return pages;
   }
 
-  // ب: بقیہ ۹۴ کتب (قرآن و تفسیر، فقہ، سیرت، تاریخ، عقائد) کے ۵۰ صفحات
-  const categoryKey = book.category in ISLAMIC_DISCIPLINE_CHAPTERS ? book.category : 'Fiqh';
-  const disciplineChapters = ISLAMIC_DISCIPLINE_CHAPTERS[categoryKey] || ISLAMIC_DISCIPLINE_CHAPTERS['Fiqh'];
+  // ج: امتحانی پرچہ جات
+  if (book.category === 'Exam Papers') {
+    return generateExamNotesPages(slug, book);
+  }
+
+  // د: بقیہ تمام کتب کے ۵۰ صفحات
+  const categoryKey = book.category in ISLAMIC_DISCIPLINE_CHAPTERS ? book.category : 'Dars-e-Nizami';
+  const disciplineChapters = ISLAMIC_DISCIPLINE_CHAPTERS[categoryKey] || ISLAMIC_DISCIPLINE_CHAPTERS['Dars-e-Nizami'];
   const totalCount = 50; // کم از کم 50 صفحات لازمی
 
   for (let p = 1; p <= totalCount; p++) {

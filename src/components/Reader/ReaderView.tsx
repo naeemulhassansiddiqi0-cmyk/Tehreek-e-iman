@@ -38,6 +38,7 @@ import { OfflineBooksManagerModal } from './OfflineBooksManagerModal';
 import { searchInsideBook } from '../../services/databaseService';
 import { hasFiqhFullText, loadFiqhFullText, convertFullTextToChapters, getFiqhFullTextSlug } from '../../services/fiqhFullTextService';
 import { getTranslationSourceInfo, translateArabicFiqhToUrdu, translateParagraph, isUrduText, isSameAsArabic } from '../../services/fiqhUrduTranslator';
+import { GlobalComments } from '../GlobalComments';
 
 interface ReaderViewProps {
   selectedBook: Book;
@@ -277,7 +278,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
     if (readingMode === 'page') {
       if (hasNextSegment) {
         setActiveSegmentIndex(prev => prev + 1);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        try { window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); } catch { window.scrollTo(0, 0); }
         return;
       }
     }
@@ -293,7 +294,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
     if (hasNextChapter) {
       setActiveChapterIndex(prev => prev + 1);
       setActiveSegmentIndex(0);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      try { window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); } catch { window.scrollTo(0, 0); }
     }
   };
 
@@ -301,7 +302,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
     if (readingMode === 'page') {
       if (hasPrevSegment) {
         setActiveSegmentIndex(prev => prev - 1);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        try { window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); } catch { window.scrollTo(0, 0); }
         return;
       }
     }
@@ -316,13 +317,13 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
     if (hasPrevChapter) {
       setActiveChapterIndex(prev => prev - 1);
       setActiveSegmentIndex(0);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      try { window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); } catch { window.scrollTo(0, 0); }
     }
   };
 
   const handleJumpToSegment = (segIdx: number) => {
     setActiveSegmentIndex(segIdx);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    try { window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); } catch { window.scrollTo(0, 0); }
   };
 
   // Instant 0ms Synchronous Hadith Resolver + Background Enrichment
@@ -338,7 +339,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
       setActiveChapterIndex(existingIndex);
       setActiveSegmentIndex(0);
       setIsIndexOpen(false);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      try { window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); } catch { window.scrollTo(0, 0); }
       return;
     }
 
@@ -365,7 +366,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
     setActiveChapterIndex(targetIdx !== -1 ? targetIdx : updated.length - 1);
     setActiveSegmentIndex(0);
     setIsIndexOpen(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    try { window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); } catch { window.scrollTo(0, 0); }
 
     // 3. BACKGROUND ASYNC ENRICHMENT (without blocking UI or freezing navigation)
     fetchHadithByNumber(selectedBook.id, hadithNumber)
@@ -2251,6 +2252,14 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
             })}
           </div>
         ) : null}
+
+        {/* Realtime Global Comments for this Book / Reading Context */}
+        <div className="mt-10 pt-6 border-t border-emerald-700/60 max-w-4xl mx-auto w-full">
+          <GlobalComments 
+            page={`/reader/${selectedBook.id}`} 
+            title={`${selectedBook.title} پر علمی تبصرے و آراء`} 
+          />
+        </div>
       </div>{/* Chapter & Hadith Table of Contents Drawer */}
       <ChapterIndexDrawer
         book={{ ...selectedBook, chapters }}

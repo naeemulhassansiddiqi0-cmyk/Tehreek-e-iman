@@ -22,7 +22,7 @@ export const TehreekImanLogo: React.FC<TehreekImanLogoProps> = ({
       >
         <img
           src={customImgSrc}
-          alt="تحریکِ ایمان - حضرت مولانا محمد نعیم الحسن صدیقی"
+          alt="تحریکِ ایمان - بانی و سرپرست حضرت مولانا محمد نعیم الحسن صدیقی دامت برکاتہم العالیہ"
           className="w-full h-full rounded-full object-cover border border-emerald-950/30"
           onError={() => setImgError(true)}
         />
@@ -35,7 +35,7 @@ export const TehreekImanLogo: React.FC<TehreekImanLogoProps> = ({
     <div
       style={{ width: size, height: size }}
       className={`relative flex items-center justify-center shrink-0 rounded-full bg-gradient-to-tr from-emerald-950 via-emerald-850 to-emerald-700 border-2 border-amber-400 shadow-lg select-none group hover:scale-105 transition-transform duration-200 ${className}`}
-      title="تحریکِ ایمان | حضرت مولانا محمد نعیم الحسن صدیقی"
+      title="تحریکِ ایمان | بانی و سرپرست حضرت مولانا محمد نعیم الحسن صدیقی دامت برکاتہم العالیہ"
     >
       <svg
         viewBox="0 0 100 100"

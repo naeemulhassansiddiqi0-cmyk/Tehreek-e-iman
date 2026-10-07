@@ -29,22 +29,23 @@ export default function RootLayout({
         {/* Simple white header with Logo text "تحریک ایمان" on right, centered Search Bar */}
         <header className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-xs">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-20 gap-4">
+            <div className="flex items-center justify-between py-2 sm:py-2.5 min-h-[5.5rem] sm:min-h-[6rem] gap-3 sm:gap-6">
               
-              {/* Right: Logo text "تحریک ایمان" */}
-              <div className="flex items-center gap-3 select-none shrink-0">
-                <a href="/" className="flex items-center gap-3">
+              {/* Right: Logo text "تحریک ایمان" مع بانی و سرپرست */}
+              <div className="flex items-center gap-3 sm:gap-4 select-none shrink-0 py-1">
+                <a href="/" className="flex items-center gap-3 sm:gap-4">
                   <img
                     src="/tehreek-iman-logo.jpg"
-                    alt="تحریک ایمان"
-                    className="w-11 h-11 rounded-full object-cover border-2 border-emerald-700 shadow-xs"
+                    alt="تحریکِ ایمان - بانی و سرپرست حضرت مولانا محمد نعیم الحسن صدیقی دامت برکاتہم العالیہ"
+                    className="w-14 h-14 sm:w-[74px] sm:h-[74px] rounded-full object-cover border-2 border-amber-500 shadow-md ring-2 ring-emerald-800/30"
                   />
-                  <div className="flex flex-col">
-                    <span className="font-nastaliq text-2xl font-black text-emerald-800 tracking-tight leading-none">
-                      تحریک ایمان
+                  <div className="flex flex-col justify-center">
+                    <span className="font-nastaliq text-2xl sm:text-3xl font-black text-emerald-900 tracking-tight leading-tight">
+                      تحریکِ ایمان
                     </span>
-                    <span className="text-[11px] font-medium text-stone-500 font-nastaliq mt-0.5">
-                      جامع ڈیجیٹل کتب خانہ
+                    <span className="font-nastaliq text-xs sm:text-sm font-bold text-amber-900 leading-tight mt-1 flex flex-wrap items-center gap-1">
+                      <span className="text-emerald-800 font-bold">بانی و سرپرست:</span>
+                      <span className="text-stone-800">حضرت مولانا محمد نعیم الحسن صدیقی دامت برکاتہم العالیہ</span>
                     </span>
                   </div>
                 </a>
