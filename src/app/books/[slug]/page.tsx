@@ -133,11 +133,11 @@ export default function BookDetailPage() {
 
   useEffect(() => {
     if (!isChunkedBook) return;
-    fetch(`/data/musnad-ahmad/chunks/meta.json?v=14000_${Date.now()}`, { cache: 'no-store' })
+    fetch(`/data/musnad-ahmad/chunks/meta.json?v=15000_${Date.now()}`, { cache: 'no-store' })
       .then(res => res.ok ? res.json() : null)
       .then(meta => {
         if (meta?.totalPages && typeof meta.totalPages === 'number') {
-          setChunkMetaTotalPages(Math.max(meta.totalPages, 14000));
+          setChunkMetaTotalPages(Math.max(meta.totalPages, 15000));
         }
       })
       .catch(() => {});
