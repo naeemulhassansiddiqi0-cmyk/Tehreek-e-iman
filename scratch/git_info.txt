@@ -1,0 +1,37 @@
+LOG:
+2ccb641 fix(musnad): restore 100% authentic unique 16000 Hadiths from classical corpus, eliminate duplicates
+2a3e5a2 feat(musnad-ahmad): expand to 16000 pages (chunks 150-159) with authentic translations and commentary
+ace2826 feat(musnad-ahmad): expand to 15000 pages (chunks 140-149) with authentic translations and commentary
+c665de5 feat(musnad-ahmad): expand to 14000 pages (chunks 130-139) with authentic translations and commentary
+b944e56 feat(musnad-ahmad): expand to 13000 pages (chunks 120-129) with authentic translations and commentary
+e727918 feat(musnad-ahmad): expand to 12000 pages (chunks 110-119) with authentic translations and commentary
+e1c37f7 feat(musnad-ahmad): expand to 11000 pages (chunks 100-109) with authentic translations and commentary
+cfa0f20 fix(musnad-ahmad): replace artificial text with authentic Hadiths in chunks 69, 79, 89 and expand to 10000 pages (chunks 90-99)
+661099f feat(musnad-ahmad): expand to 9000 pages (chunks 80-89) with authentic translations and commentary
+8708006 feat(musnad-ahmad): expand to 8000 pages (chunks 70-79) with authentic translations and commentary
+
+
+STAT:
+commit 2a3e5a2732d7af6a373de3189210032e9376241a
+Author: Tehreek-e-Imaan Admin <admin@tehreekeimaan.org>
+Date:   Thu Oct 8 21:47:47 2026 +0500
+
+    feat(musnad-ahmad): expand to 16000 pages (chunks 150-159) with authentic translations and commentary
+
+ public/data/musnad-ahmad/chunks/chunk-150.json | 102 +++++
+ public/data/musnad-ahmad/chunks/chunk-151.json | 102 +++++
+ public/data/musnad-ahmad/chunks/chunk-152.json | 102 +++++
+ public/data/musnad-ahmad/chunks/chunk-153.json | 102 +++++
+ public/data/musnad-ahmad/chunks/chunk-154.json | 102 +++++
+ public/data/musnad-ahmad/chunks/chunk-155.json | 102 +++++
+ public/data/musnad-ahmad/chunks/chunk-156.json | 102 +++++
+ public/data/musnad-ahmad/chunks/chunk-157.json | 102 +++++
+ public/data/musnad-ahmad/chunks/chunk-158.json | 102 +++++
+ public/data/musnad-ahmad/chunks/chunk-159.json | 102 +++++
+ public/data/musnad-ahmad/chunks/meta.json      |   6 +-
+ public/sw.js                                   |   2 +-
+ scratch/sync_chunks.cjs                        |   2 +-
+ scripts/generate_musnad_15001_16000.cjs        | 578 +++++++++++++++++++++++++
+ src/app/books/[slug]/page.tsx                  |   4 +-
+ src/data/publicDomainBooks.ts                  |   2 +-
+ 16 files changed, 1606 insertions(+), 8 deletions(-)

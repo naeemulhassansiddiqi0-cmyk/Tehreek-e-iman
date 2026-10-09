@@ -483,7 +483,7 @@ export default function BookDetailPage() {
     }
 
     setChunkLoading(true);
-    fetch(`/data/musnad-ahmad/chunks/chunk-${currentChunkIndex}.json?v=1624`)
+    fetch(`/data/musnad-ahmad/chunks/chunk-${currentChunkIndex}.json?v=17000_${Date.now()}`)
       .then(res => {
         if (!res.ok) throw new Error(`Status ${res.status}`);
         return res.json();
