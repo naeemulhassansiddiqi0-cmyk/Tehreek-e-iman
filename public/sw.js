@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tehreek-iman-cache-v16000-restored';
+const CACHE_NAME = 'tehreek-iman-cache-v17000';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
