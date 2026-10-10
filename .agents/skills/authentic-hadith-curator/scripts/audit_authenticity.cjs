@@ -48,8 +48,8 @@ for (let chunkId = startChunk; chunkId <= endChunk; chunkId++) {
     if (!arMatn) emptyFields.push(`Page ${idx + 1}: Missing Arabic matn`);
     arabicMatns.push(arMatn);
 
-    // 2. Urdu Translation
-    const urMatch = p.match(/سلیس اردو ترجمہ:\s*\nحضرت [^:]+:\s*['"]?([\s\S]*?)['"]?\s*\(مسند الإمام/);
+    // 2. Urdu Translation - Robust extraction matching both formats
+    const urMatch = p.match(/سلیس اردو ترجمہ:\s*\n(?:حضرت\s+[^\n:]{2,120}?(?:رضي الله عن[هها]+)?\s*سے روایت ہے کہ:\s*)?['"]?([\s\S]*?)['"]?\s*\(مسند الإمام/);
     const urTarjuma = urMatch ? urMatch[1].trim() : '';
     if (!urTarjuma) emptyFields.push(`Page ${idx + 1}: Missing Urdu translation`);
     urduTranslations.push(urTarjuma);
