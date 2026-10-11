@@ -143,8 +143,53 @@ export default function BookDetailPage() {
       .catch(() => {});
   }, [isChunkedBook]);
 
-  // Pagination state: 0-indexed
-  const [currentPage, setCurrentPage] = useState<number>(0);
+  // Pagination state: 0-indexed (initializes from ?page= or ?p= query param if present)
+  const [currentPage, setCurrentPage] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const search = new URLSearchParams(window.location.search);
+        const p = search.get('page') || search.get('p');
+        if (p) {
+          const num = parseInt(p, 10);
+          if (!isNaN(num) && num > 0) return num - 1;
+        }
+      } catch {
+        // ignore
+      }
+    }
+    return 0;
+  });
+
+  // Sync currentPage to URL query parameter (?page=N)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const url = new URL(window.location.href);
+        const pageNum = currentPage + 1;
+        if (url.searchParams.get('page') !== pageNum.toString()) {
+          url.searchParams.set('page', pageNum.toString());
+          window.history.replaceState(null, '', url.toString());
+        }
+      } catch {
+        // ignore
+      }
+    }
+  }, [currentPage]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      try {
+        const search = new URLSearchParams(window.location.search);
+        const p = search.get('page') || search.get('p');
+        if (p) {
+          const num = parseInt(p, 10);
+          if (!isNaN(num) && num > 0) setCurrentPage(num - 1);
+        }
+      } catch {}
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const currentVolume = useMemo(() => {
     if (!isChunkedBook) return null;
