@@ -16,6 +16,7 @@ dist-ssr/
 !.env.example
 out/
 scratch/
+private_archive/
 backup_all_chunks_before_v2/
 *.extras.v2.json
 *.bak
