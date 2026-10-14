@@ -38,6 +38,7 @@ import { muwattaMuhammadChapters } from './muwattaMuhammadData';
 import { shamailTirmidhiChapters } from './shamailTirmidhiData';
 import { riyadhSaliheenChapters } from './riyadhSaliheenData';
 import { sunanDarimiChapters } from './sunanDarimiData';
+import { quranChapters } from './quranData';
 import { musnadAbiYaalaChapters } from './musnadAbiYaalaData';
 import { tabaraniKabirChapters } from './tabaraniKabirData';
 import { bulughAlMaramChapters } from './bulughAlMaramData';
@@ -485,6 +486,24 @@ export function generateBookPages(book: RawBookMetadata): string[] {
     if (pagesList.length > 0) {
       return pagesList;
     }
+  }
+
+  // الف - 1: القرآن الکریم (114 سورتیں بمطابق Tanzil Project مصحف عثمانی مدنی و ترجمہ مولانا فتح محمد جالندھری)
+  if (slug === 'quran' || slug === 'al-quran') {
+    return quranChapters.map((ch, idx) => {
+      let pageContent = `بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\n`;
+      pageContent += `«${ch.titleArabic}» — ${ch.titleUrdu}\n`;
+      pageContent += `[سورة رقم ${idx + 1} از 114 • صَفْحَة ${idx + 1}]\n\n`;
+      pageContent += `【متنِ سورت مبارکہ (عربی)】\n`;
+      const arabText = ch.segments.map(s => s.arabicText).join('\n\n');
+      pageContent += `${arabText}\n\n`;
+      pageContent += `【سلیس اردو ترجمہ (مولانا فتح محمد جالندھری)】\n`;
+      const urduText = ch.segments.map(s => s.urduTranslation).join('\n\n');
+      pageContent += `${urduText}\n\n`;
+      pageContent += `【ماخذ و لائسنس】\n`;
+      pageContent += `ماخذ: Tanzil Project (tanzil.net) • مصحف عثمانی مدنی • لائسنس: Creative Commons Attribution 3.0 (CC BY 3.0) • اردو ترجمہ: مولانا فتح محمد جالندھری (پبلک ڈومین)\n`;
+      return pageContent.trim();
+    });
   }
 
   // ب: امتحانی پرچہ جات

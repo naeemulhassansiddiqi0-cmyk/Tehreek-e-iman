@@ -221,6 +221,29 @@ export default function BookDetailPage() {
   const [showSearchResults, setShowSearchResults] = useState<boolean>(false);
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [showScholarlySections, setShowScholarlySections] = useState<boolean>(false);
+  const [userReviewStatus, setUserReviewStatus] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    try {
+      const local = localStorage.getItem('tehreek_review_status');
+      if (local) {
+        const parsed = JSON.parse(local);
+        if (parsed?.verified_by_user) {
+          setUserReviewStatus(parsed.verified_by_user);
+          return;
+        }
+      }
+    } catch {}
+
+    fetch('/review_status.json')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.verified_by_user) {
+          setUserReviewStatus(data.verified_by_user);
+        }
+      })
+      .catch(() => {});
+  }, []);
   const readerTopRef = useRef<HTMLDivElement>(null);
   const mainContentRef = useRef<HTMLElement>(null);
   const asideRef = useRef<HTMLElement>(null);
@@ -599,7 +622,7 @@ export default function BookDetailPage() {
     if (isHadith || !currentNonHadithPage) return null;
     const raw = currentNonHadithPage;
     
-    const hasMatn = raw.includes('【متنِ کتاب') || raw.includes('【متنِ کتاب (عربی)】') || raw.includes('【متن الحديث الإسنادي】') || raw.includes('【متن الحديث');
+    const hasMatn = raw.includes('【متنِ کتاب') || raw.includes('【متنِ کتاب (عربی)】') || raw.includes('【متن الحديث الإسنادي】') || raw.includes('【متن الحديث') || raw.includes('【متنِ سورت');
     const hasUrdu = raw.includes('【سلیس') || raw.includes('【سلیس اردو ترجمہ') || raw.includes('【اردو ترجمہ و مفہوم】') || raw.includes('【اردو ترجمہ');
     
     if (!hasMatn && !hasUrdu) return null;
@@ -1331,6 +1354,22 @@ export default function BookDetailPage() {
                   مصنف: {book.author} {book.death_year ? `(${book.death_year}ھ)` : ''} • {book.category}
                   {isHadith && ` • کل احادیث: ${totalHadithsCount.toLocaleString('ur-PK')}`}
                 </p>
+                {/* باقاعدہ ریکارڈ: ماخذ، لنک، لائسنس اور مترجم */}
+                <div className="mt-2.5 flex flex-wrap items-center gap-2 text-[11px] font-nastaliq bg-stone-50 border border-gray-200/80 rounded-xl px-3 py-1.5 text-stone-600">
+                  <span className="font-bold text-emerald-900">ماخذ: {book.source_name || "اوپن پبلک کارپس"}</span>
+                  {book.source_link && (
+                    <a
+                      href={book.source_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-700 hover:underline flex items-center gap-0.5"
+                    >
+                      <span>(ماخذ لنک ↗)</span>
+                    </a>
+                  )}
+                  <span>• لائسنس: {book.source_license || "Public Domain"}</span>
+                  {book.translator && <span>• مترجم: {book.translator}</span>}
+                </div>
               </div>
             </div>
 
@@ -1695,9 +1734,20 @@ export default function BookDetailPage() {
                       className="border-b border-gray-100 py-6 space-y-3 hover:bg-emerald-50/20 transition-colors px-2 sm:px-4 rounded-2xl"
                     >
                       <div className="flex items-center justify-between text-xs text-stone-400">
-                        <span className="font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 font-nastaliq">
-                          حدیث نمبر: {hadithNum?.toLocaleString('ur-PK')}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 font-nastaliq">
+                            حدیث نمبر: {hadithNum?.toLocaleString('ur-PK')}
+                          </span>
+                          {userReviewStatus[`${slug}:${hadithNum}`] === 'verified' || userReviewStatus[`${hadithFileKey}:${hadithNum}`] === 'verified' ? (
+                            <span className="font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2.5 py-0.5 rounded-full font-nastaliq text-[11px]">
+                              ✓ تصدیق شدہ
+                            </span>
+                          ) : (
+                            <span className="font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full font-nastaliq text-[11px]">
+                              مشینی مسودہ — زیرِ نظرثانی
+                            </span>
+                          )}
+                        </div>
                         <span className="text-[11px] font-nastaliq text-stone-400">
                           {book.title_ur} • صفحہ {currentPage + 1}
                         </span>

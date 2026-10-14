@@ -23,6 +23,11 @@ export interface PublicDomainBook {
   description?: string;
   cover_url: string;
   source_type: 'public';
+  source_name?: string;
+  source_link?: string;
+  source_license?: string;
+  translator?: string;
+  cover_only?: boolean;
 }
 
 interface RawPublicDomainBook {
@@ -38,6 +43,11 @@ interface RawPublicDomainBook {
   intro_ur: string;
   cover_url: string;
   source_type: 'public';
+  source_name?: string;
+  source_link?: string;
+  source_license?: string;
+  translator?: string;
+  cover_only?: boolean;
 }
 
 export interface ModernBook {
@@ -55,9 +65,33 @@ export interface ModernBook {
   source_type: 'external';
   external_link: string;
   publisher?: string;
+  source_name?: string;
+  source_link?: string;
+  source_license?: string;
+  translator?: string;
+  cover_only?: boolean;
 }
 
 const rawPublicDomainBooks: RawPublicDomainBook[] = [
+  {
+    "id": "quran",
+    "slug": "quran",
+    "title_ur": "القرآن الکریم",
+    "title_ar": "القرآن الكريم (مصحف المدينة النبوية)",
+    "author": "کلام اللہ جل جلالہ",
+    "death_year": "",
+    "category": "Quran & Tafseer",
+    "pages": 114,
+    "volumes": 1,
+    "intro_ur": "کلام اللہ جل جلالہ، مصحف عثمانی مدنی کے مطابق مکمل ۱۱۴ سورتیں اور ۶۲۳۶ آیات، مع مستند اردو ترجمہ مولانا فتح محمد جالندھری (پبلک ڈومین)۔",
+    "cover_url": "/images/books/quran.svg",
+    "source_type": "public",
+    "source_name": "Tanzil Project (tanzil.net) / Quran.com",
+    "source_link": "https://tanzil.net",
+    "source_license": "Creative Commons Attribution 3.0 (CC BY 3.0) / Public Domain Translation",
+    "translator": "مولانا فتح محمد جالندھری (پبلک ڈومین)",
+    "cover_only": false
+  },
   {
     "id": "sahih-bukhari",
     "slug": "sahih-bukhari",
@@ -70,7 +104,12 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "volumes": 9,
     "intro_ur": "امتِ مسلمہ کا اصح الکتب بعد کتاب اللہ جس میں صرف اور صرف صحیح ترین متصل احادیث کا انتخاب کیا گیا ہے۔ یہ فقہ الحدیث اور ترتیبِ ابواب کا بے مثال شاہکار ہے۔",
     "cover_url": "/images/books/bukhari.svg",
-    "source_type": "public"
+    "source_type": "public",
+    "source_name": "Fawaz Ahmed Hadith API (GitHub: fawazahmed0/hadith-api)",
+    "source_link": "https://github.com/fawazahmed0/hadith-api",
+    "source_license": "The Unlicense / MIT",
+    "translator": "مولانا محمد داود راز رحمہ اللہ (مشینی مسودہ برائے اسکالر نظرثانی)",
+    "cover_only": false
   },
   {
     "id": "sahih-muslim",
@@ -84,7 +123,12 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "volumes": 8,
     "intro_ur": "طرقِ احادیث اور سیاقِ الفاظ کے کمالِ ضبط کا مظہر جس میں ہر حدیث کے تمام طرق اور اسانید ایک ہی مقام پر جمع ہیں۔ حسنِ ترتیب میں اس کا کوئی ثانی نہیں۔",
     "cover_url": "/images/books/muslim.svg",
-    "source_type": "public"
+    "source_type": "public",
+    "source_name": "Fawaz Ahmed Hadith API (GitHub: fawazahmed0/hadith-api)",
+    "source_link": "https://github.com/fawazahmed0/hadith-api",
+    "source_license": "The Unlicense / MIT",
+    "translator": "علامہ وحید الزماں رحمہ اللہ (مشینی مسودہ برائے اسکالر نظرثانی)",
+    "cover_only": false
   },
   {
     "id": "sunan-abu-dawood",
@@ -98,7 +142,12 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "volumes": 5,
     "intro_ur": "احادیثِ احکام کا سب سے مستند اور معتبر مرجع جس پر ائمہ مجتہدین اور فقہاء کا ہمیشہ سے دار و مدار رہا ہے۔ فقہی استدلال میں بنیادی حیثیت رکھتی ہے۔",
     "cover_url": "/images/books/abu-dawood.svg",
-    "source_type": "public"
+    "source_type": "public",
+    "source_name": "Fawaz Ahmed Hadith API (GitHub: fawazahmed0/hadith-api)",
+    "source_link": "https://github.com/fawazahmed0/hadith-api",
+    "source_license": "The Unlicense / MIT",
+    "translator": "مولانا وحید الزماں رحمہ اللہ (مشینی مسودہ برائے اسکالر نظرثانی)",
+    "cover_only": false
   },
   {
     "id": "jami-tirmidhi",
@@ -112,7 +161,12 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "volumes": 6,
     "intro_ur": "صحاح ستہ کی وہ جامع کتاب جس میں احادیث کے درجاتِ صحت اور فقہاء کے مذاہب کا مقارنہ انتہائی شستہ اسلوب میں بیان کیا گیا ہے۔",
     "cover_url": "/images/books/tirmizi.svg",
-    "source_type": "public"
+    "source_type": "public",
+    "source_name": "Fawaz Ahmed Hadith API (GitHub: fawazahmed0/hadith-api)",
+    "source_link": "https://github.com/fawazahmed0/hadith-api",
+    "source_license": "The Unlicense / MIT",
+    "translator": "مولانا بدیع الزماں رحمہ اللہ (مشینی مسودہ برائے اسکالر نظرثانی)",
+    "cover_only": false
   },
   {
     "id": "sunan-nasai",
@@ -126,7 +180,12 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "volumes": 6,
     "intro_ur": "اسانید کی باریکیوں اور علتوں کی شناخت میں بے نظیر کتاب، جس میں امام نسائی نے انتہائی سخت اور کڑی شرائط کے ساتھ روایات کا انتخاب کیا ہے۔",
     "cover_url": "/images/books/nasai.svg",
-    "source_type": "public"
+    "source_type": "public",
+    "source_name": "Fawaz Ahmed Hadith API (GitHub: fawazahmed0/hadith-api)",
+    "source_link": "https://github.com/fawazahmed0/hadith-api",
+    "source_license": "The Unlicense / MIT",
+    "translator": "مولانا وحید الزماں رحمہ اللہ (مشینی مسودہ برائے اسکالر نظرثانی)",
+    "cover_only": false
   },
   {
     "id": "sunan-ibn-majah",
@@ -140,7 +199,12 @@ const rawPublicDomainBooks: RawPublicDomainBook[] = [
     "volumes": 5,
     "intro_ur": "حسنِ ترتیب اور نادر فقہی زوائد کا گنجینہ جس کی کمال ابواب بندی نے اسے صحاح ستہ کے چھٹے رکن کا درجہ عطا کیا ہے۔",
     "cover_url": "/images/books/ibn-majah.svg",
-    "source_type": "public"
+    "source_type": "public",
+    "source_name": "Fawaz Ahmed Hadith API (GitHub: fawazahmed0/hadith-api)",
+    "source_link": "https://github.com/fawazahmed0/hadith-api",
+    "source_license": "The Unlicense / MIT",
+    "translator": "مولانا عطاء اللہ ساجد رحمہ اللہ (مشینی مسودہ برائے اسکالر نظرثانی)",
+    "cover_only": false
   },
   {
     "id": "muwatta-imam-malik",

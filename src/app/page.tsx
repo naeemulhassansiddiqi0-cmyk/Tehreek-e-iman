@@ -154,8 +154,12 @@ export default function HomePage() {
               {filteredPublicBooks.map(book => (
                 <div
                   key={book.id}
-                  onClick={() => { window.location.href = `/books/${book.slug}`; }}
-                  className="group bg-white rounded-2xl border border-gray-100 hover:border-emerald-700/40 p-3 sm:p-4 flex flex-col justify-between transition-all duration-200 hover:shadow-xl hover:-translate-y-1 cursor-pointer"
+                  onClick={() => {
+                    if (!book.cover_only) {
+                      window.location.href = `/books/${book.slug}`;
+                    }
+                  }}
+                  className={`group bg-white rounded-2xl border border-gray-100 hover:border-emerald-700/40 p-3 sm:p-4 flex flex-col justify-between transition-all duration-200 hover:shadow-xl hover:-translate-y-1 ${book.cover_only ? 'cursor-default opacity-90' : 'cursor-pointer'}`}
                 >
                   <div className="space-y-3">
                     {/* Cover Image: 3D Mockup with Spotlight Background */}
@@ -205,19 +209,25 @@ export default function HomePage() {
 
                   {/* Card Footer Button */}
                   <div className="pt-4 mt-2 border-t border-gray-50 flex items-center justify-between text-xs font-bold font-nastaliq text-emerald-800 group-hover:text-emerald-900">
-                    <a
-                      href={`/books/${book.slug}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        window.location.href = `/books/${book.slug}`;
-                      }}
-                      className="flex items-center gap-1 hover:underline"
-                    >
-                      <BookOpen className="w-3.5 h-3.5 text-amber-500" />
-                      <span>کتاب پڑھیں</span>
-                    </a>
+                    {book.cover_only ? (
+                      <span className="flex items-center gap-1 text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
+                        <span>جلد آ رہی ہے (اجازت درکار)</span>
+                      </span>
+                    ) : (
+                      <a
+                        href={`/books/${book.slug}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.location.href = `/books/${book.slug}`;
+                        }}
+                        className="flex items-center gap-1 hover:underline"
+                      >
+                        <BookOpen className="w-3.5 h-3.5 text-amber-500" />
+                        <span>کتاب پڑھیں</span>
+                      </a>
+                    )}
                     <span className="text-[11px] text-stone-400">
-                      {(Array.isArray(book.pages) ? book.pages.length : book.pages).toLocaleString('ur-PK')} ص
+                      {book.cover_only ? 'اجازت درکار' : `${(Array.isArray(book.pages) ? book.pages.length : book.pages).toLocaleString('ur-PK')} ص`}
                     </span>
                   </div>
                 </div>

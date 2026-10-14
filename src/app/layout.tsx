@@ -67,6 +67,9 @@ export default function RootLayout({
                 <a href="/" className="px-4 py-2 rounded-2xl bg-emerald-800 text-white shadow-xs">
                   کتب خانہ
                 </a>
+                <a href="/sources-and-licenses" className="px-4 py-2 rounded-2xl text-stone-700 hover:bg-gray-100">
+                  ماخذ اور لائسنس
+                </a>
                 <a href="/admin/books" className="px-4 py-2 rounded-2xl text-stone-700 hover:bg-gray-100">
                   انتظامیہ
                 </a>

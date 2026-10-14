@@ -22,3 +22,7 @@ backup_all_chunks_before_v2/
 *.bak
 test_anchor.json
 test_check.json
+review.html
+review_status.json
+sources/
+
