@@ -15,13 +15,23 @@ import {
   Share2,
   Check,
   Loader2,
-  Sliders
+  Sliders,
+  Bookmark,
+  BookmarkCheck,
+  Copy,
+  FileEdit,
+  Eye,
+  EyeOff,
+  UserCheck,
+  Layers
 } from "lucide-react";
 import { UrduStyler } from "@/components/UrduStyler";
 import { GlobalComments } from "@/components/GlobalComments";
 import { WordLookupModal } from "@/components/Reader/WordLookupModal";
+import { NarratorModal } from "@/components/Reader/NarratorModal";
+import { lookupNarrator, NarratorInfo } from "@/services/rijalService";
 import { WordLookupContextInfo } from "@/types";
-import { getDarsiAnalysis, DarsiAnalysis } from "@/services/darsiPipelineService";
+import { getDarsiAnalysis, DarsiAnalysis, segmentSanadAndMatn, stripTashkeel } from "@/services/darsiPipelineService";
 
 interface HadithItem {
   hadithnumber?: number;
@@ -103,7 +113,10 @@ interface HadithCardDarsiViewProps {
   currentPage: number;
   bookFontSize: number;
   isVerified: boolean;
+  globalTashkeel: boolean;
   renderClickableArabic: (text: string, fullSentence?: string, translation?: string) => React.ReactNode;
+  onOpenNarrator: (narrator: NarratorInfo) => void;
+  onWordClick: (word: string, sentenceText?: string, translation?: string) => void;
 }
 
 function HadithCardDarsiView({
@@ -115,14 +128,42 @@ function HadithCardDarsiView({
   currentPage,
   bookFontSize,
   isVerified,
-  renderClickableArabic
+  globalTashkeel,
+  renderClickableArabic,
+  onOpenNarrator,
+  onWordClick
 }: HadithCardDarsiViewProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [showWordByWord, setShowWordByWord] = useState<boolean>(false);
+  const [showNotes, setShowNotes] = useState<boolean>(false);
+  const [localTashkeel, setLocalTashkeel] = useState<boolean>(globalTashkeel);
+  const [copiedRef, setCopiedRef] = useState<boolean>(false);
   const [analysis, setAnalysis] = useState<DarsiAnalysis | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  
+  // Student Notes & Bookmarking in LocalStorage
+  const noteKey = `tehreek_notes_${slug}_${hadithNum}`;
+  const bmKey = `tehreek_bm_${slug}_${hadithNum}`;
+  const [localNotes, setLocalNotes] = useState<string>('');
+  const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
 
   useEffect(() => {
-    if (isOpen && !analysis && !loading) {
+    setLocalTashkeel(globalTashkeel);
+  }, [globalTashkeel]);
+
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const savedNote = localStorage.getItem(noteKey);
+        if (savedNote) setLocalNotes(savedNote);
+        const savedBm = localStorage.getItem(bmKey);
+        if (savedBm === 'true') setIsBookmarked(true);
+      }
+    } catch {}
+  }, [noteKey, bmKey]);
+
+  useEffect(() => {
+    if ((isOpen || showWordByWord) && !analysis && !loading) {
       setLoading(true);
       getDarsiAnalysis(slug, hadithNum, arabText, hadith.urdu)
         .then(res => {
@@ -132,13 +173,81 @@ function HadithCardDarsiView({
           setLoading(false);
         });
     }
-  }, [isOpen, analysis, loading, slug, hadithNum, arabText, hadith.urdu]);
+  }, [isOpen, showWordByWord, analysis, loading, slug, hadithNum, arabText, hadith.urdu]);
+
+  const toggleBookmark = () => {
+    const next = !isBookmarked;
+    setIsBookmarked(next);
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(bmKey, next ? 'true' : 'false');
+      }
+    } catch {}
+  };
+
+  const handleCopyWithRef = () => {
+    const textToCopy = `【حدیث شریف】
+${localTashkeel ? arabText : stripTashkeel(arabText)}
+
+【سلیس اردو ترجمہ】
+${hadith.urdu || analysis?.urduTranslation || ''}
+
+📚 حوالہ: ${bookTitle} • حدیث شریف نمبر: ${hadithNum} (صفحہ ${(currentPage + 1).toLocaleString('ur-PK')})
+🌐 ماخذ: تحریکِ ایمان اسلامی پورٹل • https://tehreek-e-iman.pages.dev/books/${slug}`;
+
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(textToCopy);
+      setCopiedRef(true);
+      setTimeout(() => setCopiedRef(false), 2200);
+    }
+  };
+
+  // Sanad vs Matn separation
+  const { sanad, matn } = useMemo(() => {
+    return segmentSanadAndMatn(arabText);
+  }, [arabText]);
+
+  // Display text respecting Tashkeel toggle
+  const displaySanad = localTashkeel ? sanad : stripTashkeel(sanad);
+  const displayMatn = localTashkeel ? (matn || arabText) : stripTashkeel(matn || arabText);
+
+  // Render Sanad with clickable Narrator chips
+  const renderSanadText = () => {
+    if (!sanad) return null;
+    const tokens = displaySanad.split(/(\s+)/);
+    return tokens.map((tok, i) => {
+      if (/^\s+$/.test(tok)) return tok;
+      const narrator = lookupNarrator(tok);
+      if (narrator) {
+        return (
+          <span
+            key={i}
+            onClick={() => onOpenNarrator(narrator)}
+            className="inline-flex items-center gap-0.5 px-1.5 py-0.5 mx-0.5 rounded-md bg-emerald-100/90 text-emerald-950 font-bold hover:bg-emerald-200 border border-emerald-300 transition-colors cursor-pointer select-text text-xs"
+            title={`راوی: ${narrator.name} (${narrator.rank}) — ترجمہ و تعارف کے لیے کلک کریں`}
+          >
+            <UserCheck className="w-3 h-3 text-emerald-800" />
+            <span>{tok}</span>
+          </span>
+        );
+      }
+      return (
+        <span
+          key={i}
+          onClick={() => onWordClick(tok, arabText, hadith.urdu)}
+          className="cursor-pointer hover:bg-amber-100/60 rounded px-0.5 transition-colors select-text inline-block"
+        >
+          {tok}
+        </span>
+      );
+    });
+  };
 
   return (
     <div className="border border-gray-100/90 rounded-2xl p-4 sm:p-6 space-y-4 hover:border-emerald-200 transition-all bg-white shadow-2xs">
-      {/* 1. Header & Breadcrumb */}
+      {/* 1. Header & Controls Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 pb-3 text-xs">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="font-bold text-emerald-900 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 font-nastaliq">
             حدیث شریف نمبر: {hadithNum.toLocaleString('ur-PK')}
           </span>
@@ -152,20 +261,96 @@ function HadithCardDarsiView({
             </span>
           )}
         </div>
-        <span className="text-[11px] font-nastaliq text-stone-400">
-          {bookTitle} • صفحہ {(currentPage + 1).toLocaleString('ur-PK')}
-        </span>
+
+        {/* Action Buttons Toolbar for Madaris Students */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {/* Tashkeel Toggle Button */}
+          <button
+            type="button"
+            onClick={() => setLocalTashkeel(!localTashkeel)}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold font-nastaliq transition cursor-pointer border ${
+              localTashkeel
+                ? 'bg-emerald-50 text-emerald-900 border-emerald-200 hover:bg-emerald-100'
+                : 'bg-amber-100 text-amber-900 border-amber-300 font-black'
+            }`}
+            title="اعراب ہٹائیں / دکھائیں (طلبۂ درسِ نظامی کے لیے عبارت خوانی کی مشق)"
+          >
+            {localTashkeel ? <Eye className="w-3 h-3 text-emerald-700" /> : <EyeOff className="w-3 h-3 text-amber-800" />}
+            <span>{localTashkeel ? 'مع اعراب' : 'بغیر اعراب (مشق)'}</span>
+          </button>
+
+          {/* Copy with Reference Button */}
+          <button
+            type="button"
+            onClick={handleCopyWithRef}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold font-nastaliq bg-stone-50 hover:bg-emerald-50 text-stone-700 hover:text-emerald-900 border border-gray-200 transition cursor-pointer"
+            title="عربی متن، اردو ترجمہ اور مکمل حوالہ کاپی کریں"
+          >
+            {copiedRef ? <Check className="w-3 h-3 text-emerald-700" /> : <Copy className="w-3 h-3 text-stone-500" />}
+            <span>{copiedRef ? 'کاپی ہو گیا' : 'حوالے کے ساتھ نقل کریں'}</span>
+          </button>
+
+          {/* Bookmark Button */}
+          <button
+            type="button"
+            onClick={toggleBookmark}
+            className={`p-1.5 rounded-lg border transition cursor-pointer ${
+              isBookmarked
+                ? 'bg-amber-50 text-amber-600 border-amber-300'
+                : 'bg-stone-50 hover:bg-stone-100 text-stone-400 hover:text-stone-700 border-gray-200'
+            }`}
+            title={isBookmarked ? 'محفوظ شدہ حدیث (بک مارک ہٹائیں)' : 'حدیث کو محفوظ کریں (بک مارک)'}
+          >
+            {isBookmarked ? <BookmarkCheck className="w-3.5 h-3.5 fill-amber-500 text-amber-600" /> : <Bookmark className="w-3.5 h-3.5" />}
+          </button>
+
+          {/* Student Darsi Notes Button */}
+          <button
+            type="button"
+            onClick={() => setShowNotes(!showNotes)}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold font-nastaliq transition cursor-pointer border ${
+              showNotes || localNotes
+                ? 'bg-indigo-50 text-indigo-900 border-indigo-200 shadow-2xs'
+                : 'bg-stone-50 hover:bg-stone-100 text-stone-600 border-gray-200'
+            }`}
+            title="اس حدیث شریف پر اپنے علمی نوٹس لکھیں"
+          >
+            <FileEdit className="w-3 h-3 text-indigo-700" />
+            <span>{localNotes ? 'علمی نوٹس (1)' : 'نوٹ شامل کریں'}</span>
+          </button>
+        </div>
       </div>
 
-      {/* 2. المتن الأصلي (عربی متن مع کلک ایبل الفاظ) */}
-      <div className="space-y-1.5">
+      {/* 2. Sanad Section (سندِ حدیث شریف) */}
+      {sanad && (
+        <div className="bg-stone-50/70 border border-stone-200/70 rounded-xl p-3 space-y-1.5">
+          <div className="flex items-center justify-between">
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-stone-700 bg-stone-200/80 px-2 py-0.5 rounded-md font-nastaliq">
+              <span>سندِ حدیث شریف (سلسلۂ اسناد)</span>
+            </span>
+            <span className="text-[10px] text-stone-400 font-nastaliq">
+              💡 راوی کے نام پر کلک کر کے جرح و تعدیل دیکھیں
+            </span>
+          </div>
+          <p
+            className="font-arabic text-stone-700 text-right leading-relaxed select-text"
+            dir="rtl"
+            style={{ fontSize: (bookFontSize + 1) + 'px', lineHeight: '2.2' }}
+          >
+            {renderSanadText()}
+          </p>
+        </div>
+      )}
+
+      {/* 3. المتن الأصلي (متنِ حدیث شریف) */}
+      <div className="bg-amber-50/20 border border-amber-200/40 rounded-xl p-3.5 sm:p-4 space-y-2">
         <div className="flex items-center justify-between">
-          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-900 bg-amber-50 border border-amber-200/60 px-2 py-0.5 rounded-md font-nastaliq">
+          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-900 bg-amber-100/80 border border-amber-300/70 px-2.5 py-0.5 rounded-md font-nastaliq">
             <BookOpen className="w-3.5 h-3.5 text-amber-800" />
-            <span>المتن الأصلي المعتمد (عربی متن)</span>
+            <span>متنِ حدیث مبارک (کلامِ نبوی ﷺ)</span>
           </span>
           <span className="text-[10px] text-stone-400 font-nastaliq">
-            💡 ہر لفظ پر کلک کر کے صرف و نحو دیکھیں
+            💡 ہر عربی لفظ پر کلک کر کے صرف و نحو دیکھیں
           </span>
         </div>
         <p
@@ -173,32 +358,109 @@ function HadithCardDarsiView({
           dir="rtl"
           style={{ fontSize: (bookFontSize + 4) + 'px', lineHeight: '2.5' }}
         >
-          {arabText ? renderClickableArabic(arabText, arabText, hadith.urdu) : null}
+          {renderClickableArabic(displayMatn, arabText, hadith.urdu)}
         </p>
       </div>
 
-      {/* 3. سلیس اردو ترجمہ */}
-      {hadith.urdu && (
-        <div className="pt-2 border-t border-dashed border-gray-100 space-y-1">
-          <span className="text-[11px] font-bold text-emerald-900 font-nastaliq">
-            سلیس اردو ترجمہ:
+      {/* 4. سلیس اور با محاورہ اردو ترجمہ */}
+      <div className="pt-2 border-t border-dashed border-gray-100 space-y-1.5">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold text-emerald-950 font-nastaliq flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-700"></span>
+            <span>سلیس و با محاورہ اردو ترجمہ:</span>
           </span>
-          <p
-            className="urdu-text text-emerald-950 text-right select-text pr-1"
-            dir="rtl"
-            style={{ fontSize: bookFontSize + 'px', lineHeight: '2' }}
+          {/* Word by word Toggle */}
+          <button
+            type="button"
+            onClick={() => setShowWordByWord(!showWordByWord)}
+            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[11px] font-bold font-nastaliq bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 transition cursor-pointer"
           >
-            {hadith.urdu}
-          </p>
+            <Layers className="w-3 h-3 text-emerald-800" />
+            <span>{showWordByWord ? 'لفظی ترجمہ گرڈ چھپائیں' : 'لفظ بہ لفظ انٹرلینیئر ترجمہ'}</span>
+          </button>
+        </div>
+        <p
+          className="urdu-text text-emerald-950 text-right select-text pr-1 font-nastaliq"
+          dir="rtl"
+          style={{ fontSize: bookFontSize + 'px', lineHeight: '2.1' }}
+        >
+          {hadith.urdu || analysis?.urduTranslation || 'ترجمہ لوڈ کیا جا رہا ہے...'}
+        </p>
+      </div>
+
+      {/* 5. لفظ بہ لفظ انٹرلینیئر ترجمہ گرڈ (Word-by-Word Interlinear Grid) */}
+      {showWordByWord && (
+        <div className="pt-2 border-t border-emerald-100/70 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-amber-900 font-nastaliq flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-amber-600"></span>
+              <span>لفظ بہ لفظ لغوی و صرفی تحقیق (انٹرلینیئر گرڈ):</span>
+            </span>
+            <span className="text-[10px] text-stone-400 font-nastaliq">
+              💡 کسی بھی لفظ پر کلک کر کے مکمل باب و مادہ دیکھیں
+            </span>
+          </div>
+
+          {loading ? (
+            <div className="flex items-center justify-center py-4 gap-2 text-stone-400 text-xs font-nastaliq">
+              <Loader2 className="w-4 h-4 animate-spin text-emerald-700" />
+              <span>لفظی تحقیق تیار ہو رہی ہے...</span>
+            </div>
+          ) : analysis?.wordByWord ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 pt-1" dir="rtl">
+              {analysis.wordByWord.map((wItem, wIdx) => (
+                <div
+                  key={wIdx}
+                  onClick={() => onWordClick(wItem.arabic, arabText, hadith.urdu)}
+                  className="bg-amber-50/50 hover:bg-amber-100/70 border border-amber-200/80 rounded-xl p-2 text-center transition cursor-pointer flex flex-col justify-between shadow-2xs group"
+                >
+                  <span className="font-arabic text-stone-900 font-bold text-base leading-relaxed group-hover:text-amber-950">
+                    {localTashkeel ? wItem.arabic : stripTashkeel(wItem.arabic)}
+                  </span>
+                  <span className="urdu-text text-emerald-950 font-bold text-xs mt-1 border-t border-amber-200/50 pt-1 leading-snug">
+                    {wItem.urdu}
+                  </span>
+                  <span className="text-[9px] text-stone-500 font-arabic mt-0.5 truncate block" title={wItem.sarf}>
+                    {wItem.sarf.split('،')[0]}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : null}
         </div>
       )}
 
-      {/* 4 & 5. درسی تجزیہ، اعراب، تشریح اور تخریج (Interactive Toggle) */}
+      {/* 6. ذاتی علمی نوٹس (Student Marginalia) */}
+      {showNotes && (
+        <div className="bg-indigo-50/50 border border-indigo-200 rounded-2xl p-3.5 space-y-2" dir="rtl">
+          <div className="flex items-center justify-between text-xs font-nastaliq text-indigo-950">
+            <span className="font-bold flex items-center gap-1.5">
+              <FileEdit className="w-3.5 h-3.5 text-indigo-700" />
+              <span>ذاتی علمی و درسی نوٹس (برائے طلبۂ درسِ نظامی و اساتذہ):</span>
+            </span>
+            <span className="text-[10px] text-stone-400">خودکار محفوظ (LocalStorage)</span>
+          </div>
+          <textarea
+            value={localNotes}
+            onChange={(e) => {
+              setLocalNotes(e.target.value);
+              try {
+                localStorage.setItem(noteKey, e.target.value);
+              } catch {}
+            }}
+            placeholder="اس حدیث شریف پر اپنے درسی نوٹس، اساتذہ کے اہم نکات، فقہی جزئیات یا امتحانی فوائد درج فرمائیں..."
+            className="w-full p-3 bg-white border border-indigo-200 rounded-xl text-xs font-nastaliq text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition resize-y min-h-[75px]"
+            rows={3}
+          />
+        </div>
+      )}
+
+      {/* 7. درسی تجزیہ، اعراب، تشریح اور تخریج (Interactive Toggle) */}
       <div className="pt-2">
         <button
           type="button"
           onClick={() => setIsOpen(prev => !prev)}
-          className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-bold font-nastaliq transition cursor-pointer border ${
+          className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold font-nastaliq transition cursor-pointer border ${
             isOpen 
               ? 'bg-emerald-800 text-white border-emerald-900 shadow-xs' 
               : 'bg-emerald-50/70 hover:bg-emerald-100/70 text-emerald-950 border-emerald-200/80'
@@ -220,11 +482,11 @@ function HadithCardDarsiView({
               </div>
             ) : analysis ? (
               <div className="space-y-3">
-                {/* Tashreeh */}
+                {/* Tashreeh & Fiqhi Schools */}
                 <div className="bg-emerald-50/30 rounded-xl p-3.5 border border-emerald-100/70 shadow-2xs space-y-1.5">
                   <h4 className="text-xs font-bold text-teal-900 font-nastaliq flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-teal-600"></span>
-                    <span>درسی تشریح و مفہوم (برائے طلبۂ درسِ نظامی):</span>
+                    <span>درسی تشریح و فقہی مذاہب (احناف، شوافع، مالکیہ، حنابلہ):</span>
                   </h4>
                   <div className="text-xs font-nastaliq text-stone-800 text-right select-text leading-loose space-y-1 pr-1">
                     {analysis.tashreeh.split('\n').map((line, lidx) => (
@@ -233,7 +495,7 @@ function HadithCardDarsiView({
                   </div>
                 </div>
 
-                {/* Mahal-e-I'rab */}
+                {/* Mahal-e-I'rab & Nahwi Tarkeeb */}
                 <div className="bg-indigo-50/30 rounded-xl p-3.5 border border-indigo-100/60 shadow-2xs space-y-1.5">
                   <h4 className="text-xs font-bold text-indigo-950 font-nastaliq flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-indigo-600"></span>
@@ -250,7 +512,7 @@ function HadithCardDarsiView({
                 <div className="bg-amber-50/40 rounded-xl p-3.5 border border-amber-200/60 shadow-2xs space-y-1.5">
                   <h4 className="text-xs font-bold text-amber-950 font-nastaliq flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-amber-600"></span>
-                    <span>حواشی و درسی فوائد و تخریج:</span>
+                    <span>حواشی، تخریج و درسی فوائد:</span>
                   </h4>
                   <div className="text-xs font-nastaliq text-stone-700 leading-loose space-y-1 pr-1">
                     {analysis.hawashi.map((hw, hwidx) => (
@@ -400,6 +662,57 @@ export default function BookDetailPage() {
   const [lookupWord, setLookupWord] = useState<string | null>(null);
   const [lookupContext, setLookupContext] = useState<WordLookupContextInfo | null>(null);
   const [pipelineAnalysis, setPipelineAnalysis] = useState<DarsiAnalysis | null>(null);
+  
+  // Madaris Student & Ulama Specialized Tools State
+  const [globalTashkeel, setGlobalTashkeel] = useState<boolean>(true);
+  const [activeNarrator, setActiveNarrator] = useState<NarratorInfo | null>(null);
+  const [showPageWordByWord, setShowPageWordByWord] = useState<boolean>(false);
+  const [showPageNotes, setShowPageNotes] = useState<boolean>(false);
+  const [pageNotes, setPageNotes] = useState<string>('');
+  const [isPageBookmarked, setIsPageBookmarked] = useState<boolean>(false);
+  const [copiedPageRef, setCopiedPageRef] = useState<boolean>(false);
+
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const pNum = currentPage + 1;
+        const savedNote = localStorage.getItem(`tehreek_notes_${slug || 'book'}_p${pNum}`);
+        setPageNotes(savedNote || '');
+        const savedBm = localStorage.getItem(`tehreek_bm_${slug || 'book'}_p${pNum}`);
+        setIsPageBookmarked(savedBm === 'true');
+      }
+    } catch {}
+  }, [slug, currentPage]);
+
+  const togglePageBookmark = () => {
+    const next = !isPageBookmarked;
+    setIsPageBookmarked(next);
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`tehreek_bm_${slug || 'book'}_p${currentPage + 1}`, next ? 'true' : 'false');
+      }
+    } catch {}
+  };
+
+  const handleCopyPageWithRef = () => {
+    if (!parsedDarsPage) return;
+    const arabicToCopy = globalTashkeel ? parsedDarsPage.matn : stripTashkeel(parsedDarsPage.matn);
+    const urduToCopy = parsedDarsPage.urduTranslation || pipelineAnalysis?.urduTranslation || '';
+    const textToCopy = `【متنِ کتاب (عربی)】
+${arabicToCopy}
+
+【سلیس اردو ترجمہ】
+${urduToCopy}
+
+📚 حوالہ: ${book?.title_ur || 'کتاب'} • صفحہ ${(currentPage + 1).toLocaleString('ur-PK')}
+🌐 ماخذ: تحریکِ ایمان اسلامی پورٹل • https://tehreek-e-iman.pages.dev/books/${slug}`;
+
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(textToCopy);
+      setCopiedPageRef(true);
+      setTimeout(() => setCopiedPageRef(false), 2200);
+    }
+  };
 
   const handleWordClick = (word: string, sentenceText?: string, translation?: string) => {
     const cleaned = word.replace(/[.,:;!?()،؛؟"«»۝0-9٠-٩]/g, '').trim();
@@ -416,7 +729,8 @@ export default function BookDetailPage() {
 
   const renderClickableArabic = (text: string, fullSentence?: string, translation?: string) => {
     if (!text) return null;
-    return text.split(/(\s+)/).map((token, i) => {
+    const displayText = globalTashkeel ? text : stripTashkeel(text);
+    return displayText.split(/(\s+)/).map((token, i) => {
       if (/^\s+$/.test(token)) return token;
       return (
         <span
@@ -1032,10 +1346,15 @@ export default function BookDetailPage() {
     const romanMode = isRomanUrdu(q);
     const convertedTerms = romanMode ? romanToUrduTerms(q) : [];
 
-    // کسی بھی term (original یا converted) سے match چیک کریں
+    // کسی بھی term (original یا converted) سے match چیک کریں (مع اعراب اور بغیر اعراب)
+    const qStripped = stripTashkeel(q).toLowerCase();
     const matchesText = (text: string): boolean => {
       const tLower = text.toLowerCase();
       if (tLower.includes(qLower)) return true;
+      if (qStripped) {
+        const tStripped = stripTashkeel(text).toLowerCase();
+        if (tStripped.includes(qStripped)) return true;
+      }
       for (const term of convertedTerms) {
         if (tLower.includes(term.toLowerCase())) return true;
       }
@@ -1357,6 +1676,21 @@ export default function BookDetailPage() {
               A+
             </button>
           </div>
+
+          {/* Tashkeel Toggle Button (Global for Madaris Students) */}
+          <button
+            type="button"
+            onClick={() => setGlobalTashkeel(prev => !prev)}
+            className={`px-3 py-1.5 rounded-xl border transition cursor-pointer text-xs flex items-center gap-1.5 font-nastaliq font-bold ${
+              globalTashkeel
+                ? 'bg-emerald-50 text-emerald-900 border-emerald-300 hover:bg-emerald-100'
+                : 'bg-amber-100 text-amber-950 border-amber-300 font-black shadow-xs'
+            }`}
+            title="پورے صفحے پر اعراب ہٹائیں / دکھائیں (طلبۂ درسِ نظامی کے لیے عبارت خوانی کی مشق)"
+          >
+            {globalTashkeel ? <Eye className="w-3.5 h-3.5 text-emerald-700" /> : <EyeOff className="w-3.5 h-3.5 text-amber-800" />}
+            <span>{globalTashkeel ? 'مع اعراب' : 'بغیر اعراب (مشق)'}</span>
+          </button>
 
           {/* Urdu Styler Button (Desktop Only, Hidden on Mobile < 768px) */}
           <button
@@ -1933,7 +2267,10 @@ export default function BookDetailPage() {
                       currentPage={currentPage}
                       bookFontSize={bookFontSize}
                       isVerified={isVerified}
+                      globalTashkeel={globalTashkeel}
                       renderClickableArabic={renderClickableArabic}
+                      onOpenNarrator={setActiveNarrator}
+                      onWordClick={handleWordClick}
                     />
                   );
                 })}
@@ -1962,15 +2299,76 @@ export default function BookDetailPage() {
                 {/* 2. Top Section: Original Arabic Matn with Clickable Words */}
                 {parsedDarsPage.matn && (
                   <div className="bg-amber-50/40 border border-amber-200/60 rounded-2xl p-5 sm:p-7 shadow-xs space-y-3.5">
-                    <div className="flex items-center justify-between border-b border-amber-200/50 pb-2.5">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300/60 font-nastaliq">
-                        <BookOpen className="w-3.5 h-3.5 text-amber-800" />
-                        <span>المتن الأصلي المعتمد (عربی متن)</span>
-                      </span>
-                      <span className="text-[11px] font-bold text-amber-850 font-nastaliq">
-                        {isChunkedBook ? `حدیث شریف نمبر: ${(currentPage + 1).toLocaleString('ur-PK')}` : 'متنِ کتاب (مستند عربی متن)'}
-                      </span>
+                    <div className="flex flex-wrap items-center justify-between border-b border-amber-200/50 pb-2.5 gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300/60 font-nastaliq">
+                          <BookOpen className="w-3.5 h-3.5 text-amber-800" />
+                          <span>المتن الأصلي المعتمد (عربی متن)</span>
+                        </span>
+                        <span className="text-[11px] font-bold text-amber-850 font-nastaliq">
+                          {isChunkedBook ? `حدیث شریف نمبر: ${(currentPage + 1).toLocaleString('ur-PK')}` : 'متنِ کتاب (مستند عربی متن)'}
+                        </span>
+                      </div>
+
+                      {/* Action Toolbar for Page */}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {/* Tashkeel Toggle */}
+                        <button
+                          type="button"
+                          onClick={() => setGlobalTashkeel(!globalTashkeel)}
+                          className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold font-nastaliq transition cursor-pointer border ${
+                            globalTashkeel
+                              ? 'bg-emerald-50 text-emerald-900 border-emerald-200'
+                              : 'bg-amber-100 text-amber-900 border-amber-300 font-black'
+                          }`}
+                          title="اعراب ہٹائیں / دکھائیں (طلبۂ درسِ نظامی کے لیے عبارت خوانی کی مشق)"
+                        >
+                          {globalTashkeel ? <Eye className="w-3 h-3 text-emerald-700" /> : <EyeOff className="w-3 h-3 text-amber-800" />}
+                          <span>{globalTashkeel ? 'مع اعراب' : 'بغیر اعراب (مشق)'}</span>
+                        </button>
+
+                        {/* Copy with Reference */}
+                        <button
+                          type="button"
+                          onClick={handleCopyPageWithRef}
+                          className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold font-nastaliq bg-white hover:bg-emerald-50 text-stone-700 hover:text-emerald-900 border border-gray-200 transition cursor-pointer"
+                          title="عربی متن، اردو ترجمہ اور مکمل حوالہ کاپی کریں"
+                        >
+                          {copiedPageRef ? <Check className="w-3 h-3 text-emerald-700" /> : <Copy className="w-3 h-3 text-stone-500" />}
+                          <span>{copiedPageRef ? 'کاپی ہو گیا' : 'حوالے کے ساتھ نقل کریں'}</span>
+                        </button>
+
+                        {/* Bookmark Button */}
+                        <button
+                          type="button"
+                          onClick={togglePageBookmark}
+                          className={`p-1.5 rounded-lg border transition cursor-pointer ${
+                            isPageBookmarked
+                              ? 'bg-amber-50 text-amber-600 border-amber-300'
+                              : 'bg-white hover:bg-stone-100 text-stone-400 hover:text-stone-700 border-gray-200'
+                          }`}
+                          title={isPageBookmarked ? 'محفوظ شدہ صفحہ (بک مارک ہٹائیں)' : 'صفحہ کو محفوظ کریں (بک مارک)'}
+                        >
+                          {isPageBookmarked ? <BookmarkCheck className="w-3.5 h-3.5 fill-amber-500 text-amber-600" /> : <Bookmark className="w-3.5 h-3.5" />}
+                        </button>
+
+                        {/* Student Notes Button */}
+                        <button
+                          type="button"
+                          onClick={() => setShowPageNotes(!showPageNotes)}
+                          className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold font-nastaliq transition cursor-pointer border ${
+                            showPageNotes || pageNotes
+                              ? 'bg-indigo-50 text-indigo-900 border-indigo-200 shadow-2xs'
+                              : 'bg-white hover:bg-stone-100 text-stone-600 border-gray-200'
+                          }`}
+                          title="اس صفحہ پر اپنے علمی نوٹس لکھیں"
+                        >
+                          <FileEdit className="w-3 h-3 text-indigo-700" />
+                          <span>{pageNotes ? 'علمی نوٹس (1)' : 'نوٹ شامل کریں'}</span>
+                        </button>
+                      </div>
                     </div>
+
                     <p
                       className="font-arabic arabic-text text-right leading-loose text-stone-900 select-text px-1"
                       dir="rtl"
@@ -1992,9 +2390,14 @@ export default function BookDetailPage() {
                       <BookMarked className="w-3.5 h-3.5 text-emerald-800" />
                       <span>سلیس اردو ترجمہ و درسی حل</span>
                     </span>
-                    <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100/70 border border-emerald-200 px-2.5 py-0.5 rounded-full font-nastaliq">
-                      ✓ مستند و مصدقہ
-                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setShowPageWordByWord(!showPageWordByWord)}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold font-nastaliq bg-emerald-100/90 hover:bg-emerald-200 text-emerald-900 border border-emerald-300 transition cursor-pointer"
+                    >
+                      <Layers className="w-3 h-3 text-emerald-800" />
+                      <span>{showPageWordByWord ? 'لفظی ترجمہ گرڈ چھپائیں' : 'لفظ بہ لفظ انٹرلینیئر ترجمہ'}</span>
+                    </button>
                   </div>
 
                   {/* Urdu Translation */}
@@ -2007,12 +2410,66 @@ export default function BookDetailPage() {
                         </h4>
                       </div>
                       <p
-                        className="urdu-text text-emerald-950 text-right select-text leading-loose pr-3.5"
+                        className="urdu-text text-emerald-950 text-right select-text leading-loose pr-3.5 font-nastaliq"
                         dir="rtl"
                         style={{ fontSize: bookFontSize + 'px', lineHeight: '2.2' }}
                       >
                         {parsedDarsPage.urduTranslation || pipelineAnalysis?.urduTranslation}
                       </p>
+                    </div>
+                  )}
+
+                  {/* Interlinear Grid for Page */}
+                  {showPageWordByWord && pipelineAnalysis?.wordByWord && (
+                    <div className="pt-2 border-t border-emerald-100/70 space-y-2">
+                      <span className="text-[11px] font-bold text-amber-900 font-nastaliq flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-amber-600"></span>
+                        <span>لفظ بہ لفظ لغوی و صرفی تحقیق (انٹرلینیئر گرڈ):</span>
+                      </span>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 pt-1" dir="rtl">
+                        {pipelineAnalysis.wordByWord.map((wItem, wIdx) => (
+                          <div
+                            key={wIdx}
+                            onClick={() => handleWordClick(wItem.arabic, parsedDarsPage.matn, parsedDarsPage.urduTranslation)}
+                            className="bg-amber-50/50 hover:bg-amber-100/70 border border-amber-200/80 rounded-xl p-2 text-center transition cursor-pointer flex flex-col justify-between shadow-2xs group"
+                          >
+                            <span className="font-arabic text-stone-900 font-bold text-base leading-relaxed group-hover:text-amber-950">
+                              {globalTashkeel ? wItem.arabic : stripTashkeel(wItem.arabic)}
+                            </span>
+                            <span className="urdu-text text-emerald-950 font-bold text-xs mt-1 border-t border-amber-200/50 pt-1 leading-snug">
+                              {wItem.urdu}
+                            </span>
+                            <span className="text-[9px] text-stone-500 font-arabic mt-0.5 truncate block" title={wItem.sarf}>
+                              {wItem.sarf.split('،')[0]}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Student Notes Drawer for Page */}
+                  {showPageNotes && (
+                    <div className="bg-indigo-50/50 border border-indigo-200 rounded-2xl p-3.5 space-y-2" dir="rtl">
+                      <div className="flex items-center justify-between text-xs font-nastaliq text-indigo-950">
+                        <span className="font-bold flex items-center gap-1.5">
+                          <FileEdit className="w-3.5 h-3.5 text-indigo-700" />
+                          <span>ذاتی علمی و درسی نوٹس (برائے طلبۂ درسِ نظامی و اساتذہ):</span>
+                        </span>
+                        <span className="text-[10px] text-stone-400">خودکار محفوظ (LocalStorage)</span>
+                      </div>
+                      <textarea
+                        value={pageNotes}
+                        onChange={(e) => {
+                          setPageNotes(e.target.value);
+                          try {
+                            localStorage.setItem(`tehreek_notes_${slug || 'book'}_p${currentPage + 1}`, e.target.value);
+                          } catch {}
+                        }}
+                        placeholder="اس صفحہ کے متن پر اپنے درسی نوٹس، اساتذہ کے اہم نکات، فقہی جزئیات یا امتحانی فوائد درج فرمائیں..."
+                        className="w-full p-3 bg-white border border-indigo-200 rounded-xl text-xs font-nastaliq text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition resize-y min-h-[75px]"
+                        rows={3}
+                      />
                     </div>
                   )}
 
@@ -2209,6 +2666,14 @@ export default function BookDetailPage() {
             setLookupWord(null);
             setLookupContext(null);
           }}
+        />
+      )}
+
+      {/* Narrator Rijal Info Modal */}
+      {activeNarrator && (
+        <NarratorModal
+          narrator={activeNarrator}
+          onClose={() => setActiveNarrator(null)}
         />
       )}
 

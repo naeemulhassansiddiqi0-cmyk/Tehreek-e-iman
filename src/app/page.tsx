@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { BookOpen, ExternalLink, Sparkles, BookMarked, Search } from 'lucide-react';
+import { BookOpen, ExternalLink, Sparkles, BookMarked, Search, GraduationCap, Layers } from 'lucide-react';
 import { publicDomainBooks, modernBooks, BookCategoryTitle } from '../data/publicDomainBooks';
 import { NaatPlayer } from '../components/NaatPlayer';
+import { WIFAQ_DARJAT, getDarjaForBookSlug } from '../data/wifaqCurriculum';
 
 const CATEGORY_CHIPS: { id: BookCategoryTitle | 'all'; title_ur: string }[] = [
   { id: 'all', title_ur: 'تمام کتب' },
@@ -18,7 +19,9 @@ const CATEGORY_CHIPS: { id: BookCategoryTitle | 'all'; title_ur: string }[] = [
 ];
 
 export default function HomePage() {
+  const [viewMode, setViewMode] = useState<'categories' | 'dars-e-nizami'>('categories');
   const [selectedCategory, setSelectedCategory] = useState<BookCategoryTitle | 'all'>('all');
+  const [selectedDarjaId, setSelectedDarjaId] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showNaatPlayer, setShowNaatPlayer] = useState(false);
 
@@ -31,10 +34,27 @@ export default function HomePage() {
     return modernBooks.filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
   }, []);
 
+  const selectedDarja = useMemo(() => {
+    return WIFAQ_DARJAT.find(d => d.id === selectedDarjaId);
+  }, [selectedDarjaId]);
+
   const filteredPublicBooks = useMemo(() => {
     return uniquePublicBooks.filter(book => {
-      const matchCat = selectedCategory === 'all' || book.category === selectedCategory;
-      if (!matchCat) return false;
+      // 1. View Mode Filtering
+      if (viewMode === 'dars-e-nizami') {
+        if (selectedDarjaId === 'all') {
+          const allDarsiSlugs = new Set(WIFAQ_DARJAT.flatMap(d => d.bookSlugs));
+          if (!allDarsiSlugs.has(book.slug)) return false;
+        } else {
+          const darja = WIFAQ_DARJAT.find(d => d.id === selectedDarjaId);
+          if (!darja || !darja.bookSlugs.includes(book.slug)) return false;
+        }
+      } else {
+        const matchCat = selectedCategory === 'all' || book.category === selectedCategory;
+        if (!matchCat) return false;
+      }
+
+      // 2. Search Query Filtering
       if (!searchQuery.trim()) return true;
       const q = searchQuery.toLowerCase().trim();
       return (
@@ -44,9 +64,13 @@ export default function HomePage() {
         book.intro_ur.toLowerCase().includes(q)
       );
     });
-  }, [uniquePublicBooks, selectedCategory, searchQuery]);
+  }, [uniquePublicBooks, viewMode, selectedCategory, selectedDarjaId, searchQuery]);
 
   const filteredModernBooks = useMemo(() => {
+    // If user is filtering specifically by Dars-e-Nizami darjat, we only show modern books if relevant
+    if (viewMode === 'dars-e-nizami') {
+      return [];
+    }
     return uniqueModernBooks.filter(book => {
       const matchCat = selectedCategory === 'all' || book.category === selectedCategory;
       if (!matchCat) return false;
@@ -59,17 +83,17 @@ export default function HomePage() {
         book.intro_ur.toLowerCase().includes(q)
       );
     });
-  }, [uniqueModernBooks, selectedCategory, searchQuery]);
+  }, [uniqueModernBooks, viewMode, selectedCategory, searchQuery]);
 
   return (
     <div className="bg-white min-h-screen text-stone-900 pb-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-10">
         
-        {/* Top: 6 Category Chips Filter & Search */}
+        {/* Top: Header, Search, and Curriculum Mode Toggle */}
         <div className="flex flex-col items-center gap-4 text-center">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-800 text-xs font-semibold">
             <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-            <span>مکتبہ شاملہ طرز — کتبِ علومِ اسلامیہ</span>
+            <span>مکتبہ شاملہ طرز — کتبِ علومِ اسلامیہ مع وفاق المدارس نصاب</span>
           </div>
 
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black font-nastaliq text-emerald-900 leading-relaxed">
@@ -80,7 +104,7 @@ export default function HomePage() {
           </p>
 
           {/* Search Bar */}
-          <div className="w-full max-w-md relative my-2">
+          <div className="w-full max-w-md relative my-1">
             <Search className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
@@ -91,34 +115,112 @@ export default function HomePage() {
             />
           </div>
 
-          {/* 6 Category Chips */}
-          <div className="flex flex-wrap items-center justify-center gap-2.5 pt-2">
-            {CATEGORY_CHIPS.map(chip => {
-              const isSelected = selectedCategory === chip.id;
-              return (
-                <button
-                  key={chip.id}
-                  type="button"
-                  onClick={() => setSelectedCategory(chip.id)}
-                  className={`px-5 py-2 rounded-2xl text-sm font-nastaliq font-bold transition-all duration-150 cursor-pointer ${
-                    isSelected
-                      ? 'bg-emerald-800 text-white shadow-md ring-2 ring-emerald-700/30 -translate-y-0.5'
-                      : 'bg-white text-stone-700 border border-gray-200 hover:border-emerald-700 hover:bg-emerald-50/50 shadow-xs'
-                  }`}
-                >
-                  {chip.title_ur}
-                </button>
-              );
-            })}
+          {/* View Mode Switcher: Categories vs Wifaq ul Madaris Classes */}
+          <div className="inline-flex items-center gap-1.5 p-1.5 bg-stone-100 rounded-2xl border border-stone-200 shadow-inner">
+            <button
+              type="button"
+              onClick={() => setViewMode('categories')}
+              className={`flex items-center gap-2 px-4 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-nastaliq font-bold transition-all duration-150 cursor-pointer ${
+                viewMode === 'categories'
+                  ? 'bg-emerald-800 text-white shadow-md'
+                  : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/50'
+              }`}
+            >
+              <Layers className="w-4 h-4" />
+              <span>موضوعاتی کتب خانہ (تمام علوم)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('dars-e-nizami')}
+              className={`flex items-center gap-2 px-4 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-nastaliq font-bold transition-all duration-150 cursor-pointer ${
+                viewMode === 'dars-e-nizami'
+                  ? 'bg-amber-600 text-white shadow-md'
+                  : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/50'
+              }`}
+            >
+              <GraduationCap className="w-4 h-4" />
+              <span>وفاق المدارس نصاب (درجات وار)</span>
+            </button>
           </div>
 
+          {/* Filter Chips Layer */}
+          {viewMode === 'categories' ? (
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+              {CATEGORY_CHIPS.map(chip => {
+                const isSelected = selectedCategory === chip.id;
+                return (
+                  <button
+                    key={chip.id}
+                    type="button"
+                    onClick={() => setSelectedCategory(chip.id)}
+                    className={`px-4 sm:px-5 py-2 rounded-2xl text-xs sm:text-sm font-nastaliq font-bold transition-all duration-150 cursor-pointer ${
+                      isSelected
+                        ? 'bg-emerald-800 text-white shadow-md ring-2 ring-emerald-700/30 -translate-y-0.5'
+                        : 'bg-white text-stone-700 border border-gray-200 hover:border-emerald-700 hover:bg-emerald-50/50 shadow-xs'
+                    }`}
+                  >
+                    {chip.title_ur}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="space-y-4 w-full">
+              <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setSelectedDarjaId('all')}
+                  className={`px-4 sm:px-5 py-2 rounded-2xl text-xs sm:text-sm font-nastaliq font-bold transition-all duration-150 cursor-pointer ${
+                    selectedDarjaId === 'all'
+                      ? 'bg-amber-700 text-white shadow-md ring-2 ring-amber-600/30 -translate-y-0.5'
+                      : 'bg-white text-stone-700 border border-amber-200 hover:border-amber-600 hover:bg-amber-50/50 shadow-xs'
+                  }`}
+                >
+                  تمام درسی کتب ({WIFAQ_DARJAT.reduce((acc, d) => acc + d.bookSlugs.length, 0)})
+                </button>
+                {WIFAQ_DARJAT.map(darja => {
+                  const isSelected = selectedDarjaId === darja.id;
+                  return (
+                    <button
+                      key={darja.id}
+                      type="button"
+                      onClick={() => setSelectedDarjaId(darja.id)}
+                      className={`px-4 sm:px-5 py-2 rounded-2xl text-xs sm:text-sm font-nastaliq font-bold transition-all duration-150 cursor-pointer ${
+                        isSelected
+                          ? 'bg-amber-700 text-white shadow-md ring-2 ring-amber-600/30 -translate-y-0.5'
+                          : 'bg-white text-stone-700 border border-amber-200 hover:border-amber-600 hover:bg-amber-50/50 shadow-xs'
+                      }`}
+                    >
+                      {darja.title_ur}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Darja Informative Banner */}
+              {selectedDarja && (
+                <div className="bg-gradient-to-r from-amber-50 via-amber-100/50 to-amber-50 border border-amber-200 rounded-2xl p-4 text-center max-w-2xl mx-auto space-y-1 shadow-xs">
+                  <div className="inline-block px-3 py-0.5 rounded-full bg-amber-200 text-amber-900 text-xs font-bold font-nastaliq">
+                    {selectedDarja.stage_ur}
+                  </div>
+                  <h3 className="font-bold text-amber-950 font-nastaliq text-base sm:text-lg">
+                    {selectedDarja.title_ur} — نصابِ کتب
+                  </h3>
+                  <p className="text-xs sm:text-sm text-stone-700 font-nastaliq leading-relaxed">
+                    {selectedDarja.description_ur}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Hamd & Naat Player Button */}
-          <div className="flex items-center justify-center gap-3 pt-2">
+          <div className="flex items-center justify-center gap-3 pt-1">
             <button 
               onClick={() => setShowNaatPlayer(true)} 
               title="حمد و نعتِ رسول ﷺ سنیں"
               aria-label="حمد و نعتِ رسول ﷺ پلیئر"
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl shadow font-nastaliq font-bold flex items-center gap-2 cursor-pointer transition active:scale-95 text-sm sm:text-base border border-emerald-500/40"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl shadow font-nastaliq font-bold flex items-center gap-2 cursor-pointer transition active:scale-95 text-xs sm:text-sm border border-emerald-500/40"
             >
               🎙️ حمد و نعتِ رسول ﷺ - 100 نعتیں
             </button>
@@ -181,6 +283,15 @@ export default function HomePage() {
                       <span className="absolute top-2 right-2 px-2.5 py-1 rounded-lg bg-emerald-950/90 backdrop-blur-md text-amber-300 text-[10px] font-bold font-nastaliq shadow-sm border border-amber-400/30 z-10">
                         {book.category}
                       </span>
+                      {(() => {
+                        const darjaInfo = getDarjaForBookSlug(book.slug);
+                        if (!darjaInfo) return null;
+                        return (
+                          <span className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-amber-500/95 backdrop-blur-md text-stone-950 text-[10px] font-bold font-nastaliq shadow-sm border border-amber-300/80 z-10">
+                            {darjaInfo.badge_ur}
+                          </span>
+                        );
+                      })()}
                       <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-stone-900/85 backdrop-blur-md text-amber-100 text-[10px] font-semibold border border-stone-700 z-10">
                         {book.volumes} جلدیں
                       </span>
