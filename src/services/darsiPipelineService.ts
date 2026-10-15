@@ -108,46 +108,118 @@ const COMMON_PARTICLES: Record<string, { urdu: string; sarf: string; nahw: strin
   'سَمِعْتُ': { urdu: 'میں نے سنا', sarf: 'فعل ماض مجرد + تاء الفاعل', nahw: 'فعل ماض مبني على السكون والتاء فاعل' }
 };
 
-// Segment Sanad vs Matn from Arabic text
+// Segment Sanad vs Matn from Arabic text accurately using index mapping and prophetic markers
 export function segmentSanadAndMatn(arabicText: string): { sanad: string; matn: string } {
   if (!arabicText) return { sanad: '', matn: '' };
-  const clean = arabicText.replace(/‏/g, '').trim();
+  const raw = arabicText.replace(/‏/g, '').trim();
 
-  // Common transitions to Matn
-  const triggers = [
-    'أَنَّ النَّبِيَّ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ قَالَ:',
-    'أَنَّ رَسُولَ اللَّهِ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ قَالَ:',
-    'قَالَ رَسُولُ اللَّهِ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ:',
-    'قَالَ رَسُولُ اللَّهِ ﷺ:',
-    'سَمِعْتُ رَسُولَ اللَّهِ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ يَقُولُ:',
-    'سَمِعْتُ النَّبِيَّ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ يَقُولُ:',
-    'أَنَّ النَّبِيَّ ﷺ قَالَ:',
-    'قَالَ النَّبِيُّ ﷺ:',
-    'عَنِ النَّبِيِّ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ قَالَ:',
-    'عَنِ النَّبِيِّ ﷺ قَالَ:',
-    'قَالَ:'
-  ];
-
-  for (const trig of triggers) {
-    const idx = clean.indexOf(trig);
-    if (idx !== -1) {
-      return {
-        sanad: clean.substring(0, idx + trig.length).trim(),
-        matn: clean.substring(idx + trig.length).trim()
-      };
+  // Build character map from stripped to raw
+  let stripped = '';
+  const indexMap: number[] = [];
+  for (let i = 0; i < raw.length; i++) {
+    const ch = raw[i];
+    if (!/[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/.test(ch)) {
+      indexMap.push(i);
+      stripped += ch;
     }
   }
 
-  // Fallback: look for last "قَالَ"
-  const lastQal = clean.lastIndexOf('قَالَ');
-  if (lastQal > 20 && lastQal < clean.length - 15) {
-    return {
-      sanad: clean.substring(0, lastQal + 4).trim(),
-      matn: clean.substring(lastQal + 4).replace(/^[:\s]+/, '').trim()
-    };
+  // Primary Prophetic Action / Speech Markers
+  const patterns = [
+    // 1. Direct speech / hearing of Prophet
+    /(?:^|[\s،,.:])(سمعت\s+رسول\s+الله)/,
+    /(?:^|[\s،,.:])(سمعت\s+النبي)/,
+    /(?:^|[\s،,.:])(سمع\s+رسول\s+الله)/,
+    /(?:^|[\s،,.:])(سمع\s+النبي)/,
+    /(?:^|[\s،,.:])(قال\s+رسول\s+الله)/,
+    /(?:^|[\s،,.:])(قال\s+النبي)/,
+    /(?:^|[\s،,.:])(يقول\s+رسول\s+الله)/,
+    /(?:^|[\s،,.:])(يقول\s+النبي)/,
+    /(?:^|[\s،,.:])(عن\s+رسول\s+الله\s*(?:صلى\s+الله\s+عليه\s+وسلم|ﷺ)?\s*(?:أنه|انه)?\s*قال)/,
+    /(?:^|[\s،,.:])(عن\s+النبي\s*(?:صلى\s+الله\s+عليه\s+وسلم|ﷺ)?\s*(?:أنه|انه)?\s*قال)/,
+    /(?:^|[\s،,.:])(أن\s+رسول\s+الله\s*(?:صلى\s+الله\s+عليه\s+وسلم|ﷺ)?\s*(?:قال|أمر|نهى|كان|قضى|بعث|خطب|صلى|دخل|خرج|أتى|اتي|أهدى|اهدى))/,
+    /(?:^|[\s،,.:])(أن\s+النبي\s*(?:صلى\s+الله\s+عليه\s+وسلم|ﷺ)?\s*(?:قال|أمر|نهى|كان|قضى|بعث|خطب|صلى|دخل|خرج|أتى|اتي|أهدى|اهدى))/,
+
+    // 2. Prophetic action and states
+    /(?:^|[\s،,.:])(قام\s+النبي|قام\s+رسول\s+الله)/,
+    /(?:^|[\s،,.:])(كان\s+النبي|كان\s+رسول\s+الله)/,
+    /(?:^|[\s،,.:])(خرج\s+النبي|خرج\s+رسول\s+الله)/,
+    /(?:^|[\s،,.:])(دخل\s+النبي|دخل\s+رسول\s+الله)/,
+    /(?:^|[\s،,.:])(أتى\s+النبي|أتى\s+رسول\s+الله|اتي\s+النبي|اتي\s+رسول\s+الله)/,
+    /(?:^|[\s،,.:])(جاء\s+النبي|جاء\s+رسول\s+الله)/,
+    /(?:^|[\s،,.:])(أمر\s+النبي|أمر\s+رسول\s+الله|امر\s+النبي|امر\s+رسول\s+الله)/,
+    /(?:^|[\s،,.:])(نهى\s+النبي|نهى\s+رسول\s+الله)/,
+    /(?:^|[\s،,.:])(بعث\s+النبي|بعث\s+رسول\s+الله)/,
+    /(?:^|[\s،,.:])(قضى\s+النبي|قضى\s+رسول\s+الله)/,
+    /(?:^|[\s،,.:])(صلى\s+بنا\s+النبي|صلى\s+بنا\s+رسول\s+الله|صلى\s+لنا\s+رسول\s+الله)/,
+    /(?:^|[\s،,.:])(سألت\s+النبي|سألت\s+رسول\s+الله|سالت\s+النبي|سالت\s+رسول\s+الله)/,
+    /(?:^|[\s،,.:])(سأل\s+رجل\s+النبي|سأل\s+رجل\s+رسول\s+الله)/,
+    /(?:^|[\s،,.:])(رأيت\s+النبي|رأيت\s+رسول\s+الله|رايت\s+النبي|رايت\s+رسول\s+الله)/,
+    /(?:^|[\s،,.:])(شهدت\s+النبي|شهدت\s+رسول\s+الله)/,
+    /(?:^|[\s،,.:])(غزونا\s+مع\s+النبي|غزونا\s+مع\s+رسول\s+الله)/,
+    /(?:^|[\s،,.:])(كنا\s+مع\s+النبي|كنا\s+مع\s+رسول\s+الله)/,
+    /(?:^|[\s،,.:])(كنا\s+عند\s+النبي|كنا\s+عند\s+رسول\s+الله)/,
+    /(?:^|[\s،,.:])(أتي\s+النبي|أتي\s+رسول\s+الله|أتينا\s+النبي|أتينا\s+رسول\s+الله)/,
+    /(?:^|[\s،,.:])(أول\s+ما\s+بدئ\s+به\s+رسول\s+الله|اول\s+ما\s+بدئ\s+به\s+رسول\s+الله)/,
+    /(?:^|[\s،,.:])(بينا\s+أنا\s+أمشي|بينا\s+انا\s+امشي|بينما\s+أنا\s+أمشي)/,
+  ];
+
+  let bestSplit = -1;
+  for (const pat of patterns) {
+    const m = pat.exec(stripped);
+    if (m && m[1]) {
+      const strippedOffset = m.index + (m[0].length - m[1].length);
+      const rawOffset = indexMap[strippedOffset];
+      if (rawOffset > 20 && (bestSplit === -1 || rawOffset < bestSplit)) {
+        bestSplit = rawOffset;
+      }
+    }
   }
 
-  return { sanad: '', matn: clean };
+  // Fallback 1: Sahabi statement (e.g. 'عن <صحابي> ... قال / قالت / يقول')
+  if (bestSplit === -1) {
+    const sahabiPat = /(?:عن|ان|أن)\s+[^،,.:]+?(?:رضي\s+الله\s+عن[هها]+)?\s*[\-ـ]*\s*(?:،|,)?\s*(?:قال|قالت|يقول|تحدث|حدثت)\s*[:،,.\s\-ـ]*([^\s،,.:])/g;
+    let sm;
+    while ((sm = sahabiPat.exec(stripped)) !== null) {
+      const idx = sm.index + sm[0].length - sm[1].length;
+      const rawOffset = indexMap[idx];
+      if (rawOffset > 25) {
+        bestSplit = rawOffset;
+        break;
+      }
+    }
+  }
+
+  // Fallback 2: First 'قال :' or 'قال:' after transmission verbs
+  if (bestSplit === -1) {
+    const qalPat = /(?:حدثنا|اخبرنا|حدثني|اخبرني|عن).+?(?:قال|قالت|يقول)\s*[:،,]/;
+    const qm = qalPat.exec(stripped);
+    if (qm) {
+      const idx = qm.index + qm[0].length;
+      const rawOffset = indexMap[idx];
+      if (rawOffset > 20 && rawOffset < raw.length - 15) {
+        bestSplit = rawOffset;
+      }
+    }
+  }
+
+  if (bestSplit !== -1 && bestSplit > 15 && bestSplit < raw.length - 10) {
+    let s = raw.substring(0, bestSplit).trim();
+    let m = raw.substring(bestSplit).trim();
+
+    // Strip leading punctuation from Matn: colons, quotes, dashes, commas
+    m = m.replace(/^[:،,."«»\s\-ـ]+/, '').trim();
+
+    // Format Sanad cleanly: strip trailing punctuation
+    s = s.replace(/[:،,.\s\-ـ]+$/, '').trim();
+    if (/(?:قَالَ|قَالَتْ|يَقُولُ|تَقُولُ|قال|قالت|يقول|تقول)$/.test(s)) {
+      s += ':';
+    }
+
+    return { sanad: s, matn: m };
+  }
+
+  return { sanad: '', matn: raw };
 }
 
 // Morphological word analyzer

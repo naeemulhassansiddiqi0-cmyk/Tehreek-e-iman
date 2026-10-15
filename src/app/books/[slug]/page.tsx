@@ -29,7 +29,7 @@ import { UrduStyler } from "@/components/UrduStyler";
 import { GlobalComments } from "@/components/GlobalComments";
 import { WordLookupModal } from "@/components/Reader/WordLookupModal";
 import { NarratorModal } from "@/components/Reader/NarratorModal";
-import { lookupNarrator, NarratorInfo } from "@/services/rijalService";
+import { parseSanadNarratorSegments, NarratorInfo } from "@/services/rijalService";
 import { WordLookupContextInfo } from "@/types";
 import { getDarsiAnalysis, DarsiAnalysis, segmentSanadAndMatn, stripTashkeel } from "@/services/darsiPipelineService";
 
@@ -211,35 +211,39 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
   const displaySanad = localTashkeel ? sanad : stripTashkeel(sanad);
   const displayMatn = localTashkeel ? (matn || arabText) : stripTashkeel(matn || arabText);
 
-  // Render Sanad with clickable Narrator chips
+  // Render Sanad with compound clickable Narrator chips and interactive words
   const renderSanadText = () => {
     if (!sanad) return null;
-    const tokens = displaySanad.split(/(\s+)/);
-    return tokens.map((tok, i) => {
-      if (/^\s+$/.test(tok)) return tok;
-      const narrator = lookupNarrator(tok);
-      if (narrator) {
+    const segments = parseSanadNarratorSegments(displaySanad);
+    return segments.map((seg, segIdx) => {
+      if (seg.type === 'narrator' && seg.narrator) {
+        const narrator = seg.narrator;
         return (
           <span
-            key={i}
+            key={`narrator-${segIdx}`}
             onClick={() => onOpenNarrator(narrator)}
-            className="inline-flex items-center gap-0.5 px-1.5 py-0.5 mx-0.5 rounded-md bg-emerald-100/90 text-emerald-950 font-bold hover:bg-emerald-200 border border-emerald-300 transition-colors cursor-pointer select-text text-xs"
-            title={`راوی: ${narrator.name} (${narrator.rank}) — ترجمہ و تعارف کے لیے کلک کریں`}
+            className="inline-flex items-center gap-1 px-2 py-0.5 mx-1 rounded-md bg-emerald-100/95 text-emerald-950 font-bold hover:bg-emerald-200 border border-emerald-300 transition-colors cursor-pointer select-text text-xs shadow-2xs"
+            title={`راوی: ${narrator.name} (${narrator.rank}) — سوانح و توثیق کے لیے کلک کریں`}
           >
-            <UserCheck className="w-3 h-3 text-emerald-800" />
-            <span>{tok}</span>
+            <UserCheck className="w-3.5 h-3.5 text-emerald-800" />
+            <span>{seg.text}</span>
           </span>
         );
       }
-      return (
-        <span
-          key={i}
-          onClick={() => onWordClick(tok, arabText, hadith.urdu)}
-          className="cursor-pointer hover:bg-amber-100/60 rounded px-0.5 transition-colors select-text inline-block"
-        >
-          {tok}
-        </span>
-      );
+
+      const tokens = seg.text.split(/(\s+)/);
+      return tokens.map((tok, tokIdx) => {
+        if (/^\s+$/.test(tok)) return tok;
+        return (
+          <span
+            key={`word-${segIdx}-${tokIdx}`}
+            onClick={() => onWordClick(tok, arabText, hadith.urdu)}
+            className="cursor-pointer hover:bg-amber-100/60 rounded px-0.5 transition-colors select-text inline-block"
+          >
+            {tok}
+          </span>
+        );
+      });
     });
   };
 
@@ -1639,7 +1643,7 @@ ${urduToCopy}
               {book.title_ur || book.title}
             </h1>
             <span className="hidden md:inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-100 font-nastaliq">
-              {book.category}
+              {book.category === 'Hadith' || isHadith ? 'حدیث شریف' : book.category}
             </span>
           </div>
         </div>
@@ -1937,12 +1941,14 @@ ${urduToCopy}
                   </h2>
                 </div>
                 <p className="text-xs text-stone-500 font-nastaliq mt-1">
-                  مصنف: {book.author} {book.death_year ? `(${book.death_year}ھ)` : ''} • {book.category}
+                  مصنف: {book.author} {book.death_year ? `(${book.death_year}ھ)` : ''} • {book.category === 'Hadith' || isHadith ? 'حدیث شریف' : book.category}
                   {isHadith && ` • کل احادیث: ${totalHadithsCount.toLocaleString('ur-PK')}`}
                 </p>
                 {/* باقاعدہ ریکارڈ: ماخذ، لنک، لائسنس اور مترجم */}
                 <div className="mt-2.5 flex flex-wrap items-center gap-2 text-[11px] font-nastaliq bg-stone-50 border border-gray-200/80 rounded-xl px-3 py-1.5 text-stone-600">
-                  <span className="font-bold text-emerald-900">ماخذ: {book.source_name || "اوپن پبلک کارپس"}</span>
+                  <span className="font-bold text-emerald-900">
+                    {isHadith ? 'ماخذ: مستند عالمی ذخیرۂ حدیث (تصدیق شدہ نسخہ)' : `ماخذ: ${book.source_name || "اوپن پبلک کارپس"}`}
+                  </span>
                   {book.source_link && (
                     <a
                       href={book.source_link}
@@ -1950,10 +1956,10 @@ ${urduToCopy}
                       rel="noopener noreferrer"
                       className="text-blue-700 hover:underline flex items-center gap-0.5"
                     >
-                      <span>(ماخذ لنک ↗)</span>
+                      <span dir="ltr">(ماخذ لنک ↗)</span>
                     </a>
                   )}
-                  <span>• لائسنس: {book.source_license || "Public Domain"}</span>
+                  <span>• لائسنس: <span dir="ltr">{book.source_license || "Public Domain"}</span></span>
                   {book.translator && <span>• مترجم: {book.translator}</span>}
                 </div>
               </div>
