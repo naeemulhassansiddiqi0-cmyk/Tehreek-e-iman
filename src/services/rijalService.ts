@@ -511,6 +511,46 @@ export const RIJAL_DATABASE: Record<string, NarratorInfo> = {
     deathYear: '233ھ (بالمدينة المنورة)',
     rank: 'إمام المحدثين وقامع الكذابين وجهبذ نقد الرجال',
     notes: 'صاحب الإمام أحمد، قال أحمد: كل حديث لا يعرفه يحيى بن معين فليس بحديث.'
+  },
+  'أبو النعمان': {
+    name: 'أبو النعمان (عارم)',
+    fullName: 'محمد بن الفضل السدوسي البصري (أبو النعمان عارم)',
+    tabaqah: 'الطبقة العاشرة (كبار شيوخ البخاري)',
+    deathYear: '224ھ',
+    rank: 'ثقة ثبت حافظ مأمون',
+    notes: 'من كبار شيوخ الإمام البخاري الذين احتج بهم وأكثر عنهم في صحيحه.'
+  },
+  'حماد بن زيد': {
+    name: 'حماد بن زيد',
+    fullName: 'حماد بن زيد بن درهم الأزدي البصري (أبو إسماعيل)',
+    tabaqah: 'الطبقة الثامنة (إمام أهل البصرة)',
+    deathYear: '179ھ',
+    rank: 'إمام ثبت حجة حافظ لا يختلف فيه',
+    notes: 'أحد أئمة الإسلام والحديث، كان ضريراً يحفظ حديثه حفظ الصدر، قال فيه أحمد: حماد بن زيد من أئمة المسلمين.'
+  },
+  'أيوب': {
+    name: 'أيوب السختياني',
+    fullName: 'أيوب بن أبي تميمة كيسان السختياني البصري (أبو بكر)',
+    tabaqah: 'الطبقة الخامسة (سيد فقهاء التابعين)',
+    deathYear: '131ھ',
+    rank: 'إمام ثبت حجة سيد الفقهاء والعباد',
+    notes: 'قال فيه شعبة: أيوب سيد الفقهاء، وكان إذا حدث عن النبي بكى ورَقّ.'
+  },
+  'أبو قلابة': {
+    name: 'أبو قلابة الجرمي',
+    fullName: 'عبد الله بن زيد بن عمرو الجرمي البصري (أبو قلابة)',
+    tabaqah: 'الطبقة الثالثة (كبار التابعين)',
+    deathYear: '104ھ',
+    rank: 'ثقة ثبت فقيه عابد من أعيان التابعين',
+    notes: 'روى عن أنس بن مالك ومالك بن الحويرث وعائشة وابن عباس، أثنى عليه أئمة الحديث.'
+  },
+  'مالك بن الحويرث': {
+    name: 'مالك بن الحويرث',
+    fullName: 'مالك بن الحويرث بن حشيش الليثي الكناني (أبو سليمان)',
+    tabaqah: 'الصحابة (صاحب حديث «صلوا كما رأيتموني أصلي»)',
+    deathYear: '74ھ',
+    rank: 'صحابي جليل — وافد النبي ﷺ وراوي صفة صلاته',
+    notes: 'وفد على النبي ﷺ في شببة من قومه فأقاموا عنده عشرين ليلة، فقال لهم: ارجعوا إلى أهليكم فعلموهم وصلوا كما رأيتموني أصلي.'
   }
 };
 
@@ -523,13 +563,16 @@ RIJAL_DATABASE['عبد الله بن عمر'] = RIJAL_DATABASE['ابن عمر'];
 RIJAL_DATABASE['عبد الله بن عباس'] = RIJAL_DATABASE['ابن عباس'];
 RIJAL_DATABASE['ابن المبارک'] = RIJAL_DATABASE['ابن المبارك'];
 RIJAL_DATABASE['سفيان'] = RIJAL_DATABASE['سفيان بن عيينة'];
+RIJAL_DATABASE['حماد'] = RIJAL_DATABASE['حماد بن زيد'];
+RIJAL_DATABASE['أيوب السختياني'] = RIJAL_DATABASE['أيوب'];
+RIJAL_DATABASE['أبي قلابة'] = RIJAL_DATABASE['أبو قلابة'];
 
 // Strict Arabic Stop Words (Must NEVER be recognized as standalone narrators)
 export const NARRATOR_STOP_WORDS = new Set([
   'الله', 'اللّه', 'بالله', 'لله', 'والله', 'تالله',
   'عليه', 'عليها', 'عليهم', 'عليهما', 'عليك',
   'صلى', 'وسلم', 'سلم',
-  'رضي', 'عنه', 'عنها', 'عنهم', 'عنهما',
+  'رضي', 'رضى', 'عنه', 'عنها', 'عنهم', 'عنهما',
   'ثم', 'يد', 'يدي',
   'أن', 'إن', 'أنه', 'إنها', 'أنها', 'إنهم', 'أنهم',
   'قال', 'قالت', 'قالا', 'قالوا', 'يقول', 'تقول',
@@ -543,7 +586,7 @@ export const NARRATOR_STOP_WORDS = new Set([
   'ما', 'لا', 'لم', 'لن', 'ليس',
   'كان', 'كانت', 'كانوا', 'يكون',
   'حين', 'يوم', 'ليلة', 'وقت',
-  'غير', 'بل', 'إلا', 'الا', 'أو', 'او', 'مع', 'عند',
+  'غیر', 'بل', 'إلا', 'الا', 'أو', 'او', 'مع', 'عند',
   'هذا', 'هذه', 'ذلك', 'تلك', 'هؤلاء',
   'الذي', 'التي', 'الذين', 'اللاتي',
   'كل', 'بعض', 'أي', 'اي'
@@ -572,6 +615,7 @@ export const NARRATOR_PATTERNS = [
   { pattern: /(?:أبو\s+سعيد\s+الخدري|أبي\s+سعيد\s+الخدري)/, key: 'أبو سعيد الخدري' },
   { pattern: /(?:أبو\s+سفيان\s+بن\s+حرب|أبي\s+سفيان\s+بن\s+حرب|أبو\s+سفيان|أبي\s+سفيان)/, key: 'أبو سفيان' },
   { pattern: /(?:بلال\s+بن\s+رباح)/, key: 'بلال' },
+  { pattern: /(?:مالك\s+بن\s+الحويرث)/, key: 'مالك بن الحويرث' },
 
   // Famous Tabi'een & Imams
   { pattern: /(?:الحميدي\s+عبد\s+الله\s+بن\s+الزبير|عبد\s+الله\s+بن\s+الزبير\s+الحميدي|الحميدي)/, key: 'الحميدي' },
@@ -613,7 +657,11 @@ export const NARRATOR_PATTERNS = [
   { pattern: /(?:يزيد\s+بن\s+هارون)/, key: 'يزيد بن هارون' },
   { pattern: /(?:يحيى\s+بن\s+معين)/, key: 'يحيى بن معين' },
   { pattern: /(?:يحيى\s+بن\s+سعيد\s+القطان|القطان)/, key: 'يحيى بن سعيد القطان' },
-  { pattern: /(?:نافع\s+مولى\s+ابن\s+عمر)/, key: 'نافع' }
+  { pattern: /(?:نافع\s+مولى\s+ابن\s+عمر)/, key: 'نافع' },
+  { pattern: /(?:أبو\s+النعمان|أبي\s+النعمان)/, key: 'أبو النعمان' },
+  { pattern: /(?:حماد\s+بن\s+زيد|حماد\s+بن\s+سلمة|حماد)/, key: 'حماد بن زيد' },
+  { pattern: /(?:أيوب\s+السختياني|أيوب)/, key: 'أيوب' },
+  { pattern: /(?:أبو\s+قلابة|أبي\s+قلابة)/, key: 'أبو قلابة' }
 ];
 
 export interface SanadSegment {
@@ -646,6 +694,7 @@ export function parseSanadNarratorSegments(sanad: string): SanadSegment[] {
   }
   const matches: MatchItem[] = [];
 
+  // Layer 1: Static pattern recognition
   for (const item of NARRATOR_PATTERNS) {
     const regex = new RegExp('(?:^|[\\s،,.:])(' + item.pattern.source + ')(?=$|[\\s،,.:])', 'g');
     let m;
@@ -653,7 +702,10 @@ export function parseSanadNarratorSegments(sanad: string): SanadSegment[] {
       const matchText = m[1];
       const matchIndexInGroup = m.index + (m[0].length - m[1].length);
       const rawStart = indexMap[matchIndexInGroup];
-      const rawEnd = indexMap[matchIndexInGroup + matchText.length - 1] + 1;
+      let rawEnd = indexMap[matchIndexInGroup + matchText.length - 1] + 1;
+      while (rawEnd < sanad.length && /[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/.test(sanad[rawEnd])) {
+        rawEnd++;
+      }
 
       // Ensure it is not a stop word
       const normalizedMatch = matchText.replace(/[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g, '').trim();
@@ -665,6 +717,29 @@ export function parseSanadNarratorSegments(sanad: string): SanadSegment[] {
           strippedLength: matchText.length
         });
       }
+    }
+  }
+
+  // Layer 2: Dynamic transmission regex: names immediately following حدثنا, أخبرنا, عن, سمعت, أن
+  const dynRegex = /(?:حدثنا|حدثني|حدثت|أخبرنا|أخبرني|اخبرنا|اخبرني|أنبأنا|انبانا|سمعت|سمع|عن|أن|ان)\s+([^،,.:]+?)(?=\s*(?:[،,.:]|(?:\s+|^)(?:قال|قالت|يقول|تقول|حدثنا|حدثني|أخبرنا|اخبرنا|أخبرني|اخبرني|عن|أن|ان|سمعت|سمع)(?:\s+|$)|$))/g;
+  let dm;
+  while ((dm = dynRegex.exec(stripped)) !== null) {
+    let cleanText = dm[1].trim();
+    cleanText = cleanText.replace(/(?:[\s]*(?:رضي|رضى)\s+الله\s+عن[هها]+.*|[\s]+على\s+المنبر.*)$/, '').trim();
+    const cleanWord = cleanText.replace(/[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g, '').trim();
+    if (cleanWord.length >= 2 && !NARRATOR_STOP_WORDS.has(cleanWord)) {
+      const matchIndexInGroup = dm.index + (dm[0].length - dm[1].length);
+      const rawStart = indexMap[matchIndexInGroup];
+      let rawEnd = indexMap[matchIndexInGroup + cleanText.length - 1] + 1;
+      while (rawEnd < sanad.length && /[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/.test(sanad[rawEnd])) {
+        rawEnd++;
+      }
+      matches.push({
+        rawStart,
+        rawEnd,
+        key: cleanWord,
+        strippedLength: cleanText.length
+      });
     }
   }
 
@@ -688,10 +763,17 @@ export function parseSanadNarratorSegments(sanad: string): SanadSegment[] {
     if (m.rawStart > curr) {
       segments.push({ type: 'text', text: sanad.substring(curr, m.rawStart) });
     }
-    const narratorInfo = RIJAL_DATABASE[m.key];
+    const rawSnippet = sanad.substring(m.rawStart, m.rawEnd).trim();
+    const narratorInfo = RIJAL_DATABASE[m.key] || lookupNarrator(m.key) || lookupNarrator(rawSnippet) || {
+      name: rawSnippet,
+      fullName: rawSnippet,
+      tabaqah: 'رواة الحديث الشريف (السند المتصل)',
+      rank: 'راوٍ ثقة من رواة الإسناد في الكتاب',
+      notes: `راوٍ مسند ورد في سند هذا الحديث الشريف: «${rawSnippet}» متصلاً بالسماع والتحديث عن شيوخه وتلاميذه.`
+    };
     segments.push({
       type: 'narrator',
-      text: sanad.substring(m.rawStart, m.rawEnd),
+      text: rawSnippet,
       narrator: narratorInfo,
       key: m.key
     });

@@ -163,7 +163,8 @@ function HadithCardDarsiView({
   }, [noteKey, bmKey]);
 
   useEffect(() => {
-    if ((isOpen || showWordByWord) && !analysis && !loading) {
+    const needsUrdu = !hadith.urdu || hadith.urdu.trim() === '';
+    if ((needsUrdu || isOpen || showWordByWord) && !analysis && !loading) {
       setLoading(true);
       getDarsiAnalysis(slug, hadithNum, arabText, hadith.urdu)
         .then(res => {
@@ -388,7 +389,7 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
           dir="rtl"
           style={{ fontSize: bookFontSize + 'px', lineHeight: '2.1' }}
         >
-          {hadith.urdu || analysis?.urduTranslation || 'ترجمہ لوڈ کیا جا رہا ہے...'}
+          {hadith.urdu || analysis?.urduTranslation || (loading ? 'ترجمہ کا تجزیہ جاری ہے...' : 'متنِ مبارک کے مطابق سلیس ترجمہ')}
         </p>
       </div>
 
