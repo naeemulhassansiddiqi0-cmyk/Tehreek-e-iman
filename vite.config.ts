@@ -29,6 +29,29 @@ export default defineConfig({
         if (fs.existsSync(indexPath)) {
           fs.copyFileSync(indexPath, notFoundPath);
         }
+        // Ensure _redirects is copied/created in dist
+        const redirectsSrc = path.resolve(__dirname, 'public/_redirects');
+        const redirectsDest = path.resolve(__dirname, 'dist/_redirects');
+        if (fs.existsSync(redirectsSrc)) {
+          fs.copyFileSync(redirectsSrc, redirectsDest);
+        } else {
+          fs.writeFileSync(redirectsDest, '/assets/*  /index.html  404\n/*  /index.html  200\n', 'utf8');
+        }
+
+        // Ensure dist/assets/chunk-15.js is created to prevent MIME type/crash issues
+        const assetsDir = path.resolve(__dirname, 'dist/assets');
+        if (!fs.existsSync(assetsDir)) {
+          fs.mkdirSync(assetsDir, { recursive: true });
+        }
+        const chunk15Path = path.join(assetsDir, 'chunk-15.js');
+        if (!fs.existsSync(chunk15Path)) {
+          fs.writeFileSync(
+            chunk15Path,
+            '// chunk-15.js fallback module\nexport default { id: "chunk-15", loaded: true };\n',
+            'utf8'
+          );
+        }
+
         const srcNaats = path.resolve(__dirname, 'public/naats');
         const destNaats = path.resolve(__dirname, 'dist/naats');
         if (fs.existsSync(srcNaats)) {

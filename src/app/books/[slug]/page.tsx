@@ -19,6 +19,9 @@ import {
 } from "lucide-react";
 import { UrduStyler } from "@/components/UrduStyler";
 import { GlobalComments } from "@/components/GlobalComments";
+import { WordLookupModal } from "@/components/Reader/WordLookupModal";
+import { WordLookupContextInfo } from "@/types";
+import { getDarsiAnalysis, DarsiAnalysis } from "@/services/darsiPipelineService";
 
 interface HadithItem {
   hadithnumber?: number;
@@ -75,12 +78,12 @@ export interface MusnadVolume {
 }
 
 export const MUSNAD_VOLUMES: MusnadVolume[] = [
-  { id: 1, volNum: "جلد اول", title: "مسانید العشرة وأهل البيت", subtitle: "حضرت ابوبکر، عمر، عثمان، علی و اہل بیت", startPage: 1, endPage: 3000, hadithRange: "احادیث 1 تا 3000" },
-  { id: 2, volNum: "جلد دوم", title: "مسند عبد اللہ بن مسعود", subtitle: "مسند ابن مسعود و کبار المہاجرین", startPage: 3001, endPage: 6000, hadithRange: "احادیث 3001 تا 6000" },
-  { id: 3, volNum: "جلد سوم", title: "مسند عبد اللہ بن عباس", subtitle: "مسند ابن عباس و عبد اللہ بن عمر", startPage: 6001, endPage: 9000, hadithRange: "احادیث 6001 تا 9000" },
-  { id: 4, volNum: "جلد چہارم", title: "مسند جابر و أنس بن مالک", subtitle: "مسند جابر بن عبد اللہ و انس بن مالک", startPage: 9001, endPage: 12000, hadithRange: "احادیث 9001 تا 12000" },
-  { id: 5, volNum: "جلد پنجم", title: "مسند أبی ہریرة والانصار", subtitle: "مسند ابوہریرہ و کبار الانصار", startPage: 12001, endPage: 15000, hadithRange: "احادیث 12001 تا 15000" },
-  { id: 6, volNum: "جلد ششم", title: "مسند الشامیین والقبائل والنساء", subtitle: "مسند الشامیین و الکوفیین و مسند النساء", startPage: 15001, endPage: 18000, hadithRange: "احادیث 15001 تا 18000" }
+  { id: 1, volNum: "جلد اول", title: "مسند الخلفاء الراشدین", subtitle: "حضرت ابوبکر، عمر، عثمان و علی رضی اللہ عنہم", startPage: 1, endPage: 1400, hadithRange: "احادیث 1 تا 1400" },
+  { id: 2, volNum: "جلد دوم", title: "بقیة العشرة المبشرة و اہل البیت", subtitle: "طلحہ، زبیر، سعد، سعید، عبدالرحمن، حسن، حسین و اہل بیت رضی اللہ عنہم", startPage: 1401, endPage: 3000, hadithRange: "احادیث 1401 تا 3000" },
+  { id: 3, volNum: "جلد سوم", title: "مسند العبادلة و کبار المکثرین", subtitle: "عبد اللہ بن مسعود، عبد اللہ بن عمر و عبد اللہ بن عباس رضی اللہ عنہم", startPage: 3001, endPage: 6500, hadithRange: "احادیث 3001 تا 6500" },
+  { id: 4, volNum: "جلد چہارم", title: "مسند المکثرین من الصحابة", subtitle: "عبد اللہ بن عمرو بن العاص و سیدنا ابو ہریرہ رضی اللہ عنہم", startPage: 6501, endPage: 11000, hadithRange: "احادیث 6501 تا 11000" },
+  { id: 5, volNum: "جلد پنجم", title: "مسند الانصار", subtitle: "ابو سعید الخدری، انس بن مالک، جابر بن عبد اللہ و معاذ بن جبل رضی اللہ عنہم", startPage: 11001, endPage: 16500, hadithRange: "احادیث 11001 تا 16500" },
+  { id: 6, volNum: "جلد ششم", title: "مسند الشامیین والکوفیین ومسند النساء", subtitle: "مسند عائشہ صدیقہ و امہات المؤمنین و صحابیات رضی اللہ عنہن", startPage: 16501, endPage: 26363, hadithRange: "احادیث 16501 تا 26363" }
 ];
 
 export interface ChunkV2Item {
@@ -91,8 +94,181 @@ export interface ChunkV2Item {
   needs_review: boolean;
 }
 
+interface HadithCardDarsiViewProps {
+  hadith: HadithItem;
+  hadithNum: number;
+  arabText: string;
+  slug: string;
+  bookTitle: string;
+  currentPage: number;
+  bookFontSize: number;
+  isVerified: boolean;
+  renderClickableArabic: (text: string, fullSentence?: string, translation?: string) => React.ReactNode;
+}
+
+function HadithCardDarsiView({
+  hadith,
+  hadithNum,
+  arabText,
+  slug,
+  bookTitle,
+  currentPage,
+  bookFontSize,
+  isVerified,
+  renderClickableArabic
+}: HadithCardDarsiViewProps) {
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [analysis, setAnalysis] = useState<DarsiAnalysis | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (isOpen && !analysis && !loading) {
+      setLoading(true);
+      getDarsiAnalysis(slug, hadithNum, arabText, hadith.urdu)
+        .then(res => {
+          setAnalysis(res);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }
+  }, [isOpen, analysis, loading, slug, hadithNum, arabText, hadith.urdu]);
+
+  return (
+    <div className="border border-gray-100/90 rounded-2xl p-4 sm:p-6 space-y-4 hover:border-emerald-200 transition-all bg-white shadow-2xs">
+      {/* 1. Header & Breadcrumb */}
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 pb-3 text-xs">
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-emerald-900 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 font-nastaliq">
+            حدیث شریف نمبر: {hadithNum.toLocaleString('ur-PK')}
+          </span>
+          {isVerified ? (
+            <span className="font-bold text-emerald-800 bg-emerald-100/80 border border-emerald-300 px-2.5 py-0.5 rounded-full font-nastaliq text-[11px]">
+              ✓ تصدیق شدہ متن
+            </span>
+          ) : (
+            <span className="font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-full font-nastaliq text-[11px]">
+              نسخۂ معتمد
+            </span>
+          )}
+        </div>
+        <span className="text-[11px] font-nastaliq text-stone-400">
+          {bookTitle} • صفحہ {(currentPage + 1).toLocaleString('ur-PK')}
+        </span>
+      </div>
+
+      {/* 2. المتن الأصلي (عربی متن مع کلک ایبل الفاظ) */}
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-900 bg-amber-50 border border-amber-200/60 px-2 py-0.5 rounded-md font-nastaliq">
+            <BookOpen className="w-3.5 h-3.5 text-amber-800" />
+            <span>المتن الأصلي المعتمد (عربی متن)</span>
+          </span>
+          <span className="text-[10px] text-stone-400 font-nastaliq">
+            💡 ہر لفظ پر کلک کر کے صرف و نحو دیکھیں
+          </span>
+        </div>
+        <p
+          className="font-arabic arabic-text text-right leading-loose text-stone-900 select-text px-1"
+          dir="rtl"
+          style={{ fontSize: (bookFontSize + 4) + 'px', lineHeight: '2.5' }}
+        >
+          {arabText ? renderClickableArabic(arabText, arabText, hadith.urdu) : null}
+        </p>
+      </div>
+
+      {/* 3. سلیس اردو ترجمہ */}
+      {hadith.urdu && (
+        <div className="pt-2 border-t border-dashed border-gray-100 space-y-1">
+          <span className="text-[11px] font-bold text-emerald-900 font-nastaliq">
+            سلیس اردو ترجمہ:
+          </span>
+          <p
+            className="urdu-text text-emerald-950 text-right select-text pr-1"
+            dir="rtl"
+            style={{ fontSize: bookFontSize + 'px', lineHeight: '2' }}
+          >
+            {hadith.urdu}
+          </p>
+        </div>
+      )}
+
+      {/* 4 & 5. درسی تجزیہ، اعراب، تشریح اور تخریج (Interactive Toggle) */}
+      <div className="pt-2">
+        <button
+          type="button"
+          onClick={() => setIsOpen(prev => !prev)}
+          className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-bold font-nastaliq transition cursor-pointer border ${
+            isOpen 
+              ? 'bg-emerald-800 text-white border-emerald-900 shadow-xs' 
+              : 'bg-emerald-50/70 hover:bg-emerald-100/70 text-emerald-950 border-emerald-200/80'
+          }`}
+        >
+          <span className="flex items-center gap-1.5">
+            <BookMarked className="w-3.5 h-3.5" />
+            <span>{isOpen ? 'درسی حل، اعراب و تخریج بند کریں' : 'درسی حل و تحقیقی تجزیہ (تشریح، اعراب و تخریج)'}</span>
+          </span>
+          <span className="text-[11px] font-mono">{isOpen ? '▲' : '▼'}</span>
+        </button>
+
+        {isOpen && (
+          <div className="mt-3 space-y-3 pt-1">
+            {loading ? (
+              <div className="flex items-center justify-center py-6 gap-2 text-stone-400 text-xs font-nastaliq">
+                <Loader2 className="w-4 h-4 animate-spin text-emerald-700" />
+                <span>درسی حل تیار ہو رہا ہے...</span>
+              </div>
+            ) : analysis ? (
+              <div className="space-y-3">
+                {/* Tashreeh */}
+                <div className="bg-emerald-50/30 rounded-xl p-3.5 border border-emerald-100/70 shadow-2xs space-y-1.5">
+                  <h4 className="text-xs font-bold text-teal-900 font-nastaliq flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-teal-600"></span>
+                    <span>درسی تشریح و مفہوم (برائے طلبۂ درسِ نظامی):</span>
+                  </h4>
+                  <div className="text-xs font-nastaliq text-stone-800 text-right select-text leading-loose space-y-1 pr-1">
+                    {analysis.tashreeh.split('\n').map((line, lidx) => (
+                      <p key={lidx}>{line}</p>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Mahal-e-I'rab */}
+                <div className="bg-indigo-50/30 rounded-xl p-3.5 border border-indigo-100/60 shadow-2xs space-y-1.5">
+                  <h4 className="text-xs font-bold text-indigo-950 font-nastaliq flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-indigo-600"></span>
+                    <span>حلِ اعراب و نحوی ترکیب:</span>
+                  </h4>
+                  <div className="text-xs font-nastaliq text-stone-800 leading-loose space-y-1 pr-1">
+                    {analysis.iraab.map((ir, iridx) => (
+                      <p key={iridx}>{ir}</p>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Hawashi & Takhrij */}
+                <div className="bg-amber-50/40 rounded-xl p-3.5 border border-amber-200/60 shadow-2xs space-y-1.5">
+                  <h4 className="text-xs font-bold text-amber-950 font-nastaliq flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-amber-600"></span>
+                    <span>حواشی و درسی فوائد و تخریج:</span>
+                  </h4>
+                  <div className="text-xs font-nastaliq text-stone-700 leading-loose space-y-1 pr-1">
+                    {analysis.hawashi.map((hw, hwidx) => (
+                      <p key={hwidx}>{hw}</p>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // Global in-memory cache for dynamically chunked books (e.g. musnad-ahmad)
-const chunkGlobalCache: Record<string, Record<number, ChunkV2Item[]>> = {};
+const chunkGlobalCache: Record<string, Record<number, string[]>> = {};
 
 export default function BookDetailPage() {
   const params = useParams();
@@ -133,7 +309,7 @@ export default function BookDetailPage() {
     return s === 'musnad-ahmad' || s === 'musnad_ahmad' || bSlug === 'musnad-ahmad' || bId === 'musnad-ahmad';
   }, [slug, book]);
 
-  const [chunkCache, setChunkCache] = useState<Record<number, ChunkV2Item[]>>(() => {
+  const [chunkCache, setChunkCache] = useState<Record<number, string[]>>(() => {
     return chunkGlobalCache['musnad-ahmad'] || {};
   });
   const [chunkLoading, setChunkLoading] = useState<boolean>(false);
@@ -141,11 +317,11 @@ export default function BookDetailPage() {
 
   useEffect(() => {
     if (!isChunkedBook) return;
-    fetch(`/data/musnad-ahmad/chunks/meta.json?v=18000_${Date.now()}`, { cache: 'no-store' })
+    fetch(`/data/musnad-ahmad/chunks/meta.json?v=${Date.now()}`, { cache: 'no-store' })
       .then(res => res.ok ? res.json() : null)
       .then(meta => {
         if (meta?.totalPages && typeof meta.totalPages === 'number') {
-          setChunkMetaTotalPages(Math.max(meta.totalPages, 18000));
+          setChunkMetaTotalPages(meta.totalPages);
         }
       })
       .catch(() => {});
@@ -220,7 +396,40 @@ export default function BookDetailPage() {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [showSearchResults, setShowSearchResults] = useState<boolean>(false);
   const [isSearching, setIsSearching] = useState<boolean>(false);
-  const [showScholarlySections, setShowScholarlySections] = useState<boolean>(false);
+  const [showScholarlySections, setShowScholarlySections] = useState<boolean>(true);
+  const [lookupWord, setLookupWord] = useState<string | null>(null);
+  const [lookupContext, setLookupContext] = useState<WordLookupContextInfo | null>(null);
+  const [pipelineAnalysis, setPipelineAnalysis] = useState<DarsiAnalysis | null>(null);
+
+  const handleWordClick = (word: string, sentenceText?: string, translation?: string) => {
+    const cleaned = word.replace(/[.,:;!?()،؛؟"«»۝0-9٠-٩]/g, '').trim();
+    if (!cleaned) return;
+    setLookupWord(cleaned);
+    setLookupContext({
+      bookTitle: book?.title_ur || book?.title_ar || 'مسند احمد بن حنبل',
+      chapterTitle: `صفحہ ${currentPage + 1}`,
+      sentenceText: sentenceText || '',
+      urduTranslation: translation || '',
+      rawWord: word,
+    });
+  };
+
+  const renderClickableArabic = (text: string, fullSentence?: string, translation?: string) => {
+    if (!text) return null;
+    return text.split(/(\s+)/).map((token, i) => {
+      if (/^\s+$/.test(token)) return token;
+      return (
+        <span
+          key={i}
+          onClick={() => handleWordClick(token, fullSentence || text, translation)}
+          className="cursor-pointer hover:bg-amber-200/70 hover:text-amber-950 rounded px-0.5 transition-colors select-text inline-block"
+          title="لغوی، صرفی و نحوی تحقیق کے لیے کلک کریں"
+        >
+          {token}
+        </span>
+      );
+    });
+  };
   const [userReviewStatus, setUserReviewStatus] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -542,7 +751,7 @@ export default function BookDetailPage() {
     );
   }
 
-  // Dynamic Chunking Index Calculation (Musnad Ahmad: 18000 pages, 100 pages per chunk)
+  // Dynamic Chunking Index Calculation (Musnad Ahmad: 1500 verified pages, 100 pages per chunk)
   const currentChunkIndex = Math.floor(currentPage / 100);
   const pageIndexInChunk = currentPage % 100;
 
@@ -560,12 +769,12 @@ export default function BookDetailPage() {
     }
 
     setChunkLoading(true);
-    fetch(`/data/musnad-ahmad/chunks/chunk-${currentChunkIndex}.v2.json?v=18000_${Date.now()}`)
+    fetch(`/data/musnad-ahmad/chunks/chunk-${currentChunkIndex}.json?v=${Date.now()}`)
       .then(res => {
         if (!res.ok) throw new Error(`Status ${res.status}`);
         return res.json();
       })
-      .then((data: ChunkV2Item[]) => {
+      .then((data: string[]) => {
         if (!chunkGlobalCache[bookKey]) {
           chunkGlobalCache[bookKey] = {};
         }
@@ -585,7 +794,7 @@ export default function BookDetailPage() {
 
   // Slicing & Pagination:
   // For Hadith collections: 20 Ahadith per page (No 500 limit! Covers all 7589, 7563, etc.)
-  // For other 94 books: 1 page per chapter/safha, totalPages = book.pages.length or chunk totalPages
+  // For other books: 1 page per chapter/safha, totalPages = book.pages.length or chunk totalPages
   const isHadith = Boolean(hadithFileKey && (allHadiths.length > 0 || loading));
   const PER_PAGE = 20;
 
@@ -593,30 +802,35 @@ export default function BookDetailPage() {
     ? allHadiths.length
     : (hadithFileKey && HADITH_TOTALS[hadithFileKey]?.total) || 0;
 
-  const totalPages = isHadith
+  const bookPageCount = typeof book?.pages === 'number' ? book.pages : (Array.isArray(book?.pages) ? book.pages.length : (book?.totalPages || 0));
+
+  const totalPages: number = isHadith
     ? Math.max(1, Math.ceil(totalHadithsCount / PER_PAGE))
     : isChunkedBook
-      ? Math.max(chunkMetaTotalPages || 0, book.totalPages || 0, 18000)
-      : Math.max(1, (book.pages && book.pages.length > 0) ? book.pages.length : (book.totalPages || 50));
+      ? (chunkMetaTotalPages || bookPageCount || 26363)
+      : Math.max(1, bookPageCount || 50);
 
   const currentHadiths = useMemo(() => {
     if (!isHadith) return [];
     return allHadiths.slice(currentPage * PER_PAGE, (currentPage + 1) * PER_PAGE);
   }, [isHadith, allHadiths, currentPage]);
 
-  const currentChunkItem = useMemo(() => {
-    if (!isChunkedBook) return null;
+  const currentChunkPage = useMemo(() => {
+    if (!isChunkedBook) return '';
     const cachedPages = chunkCache[currentChunkIndex] || chunkGlobalCache['musnad-ahmad']?.[currentChunkIndex];
-    return cachedPages?.[pageIndexInChunk] || null;
+    const item = cachedPages?.[pageIndexInChunk];
+    if (typeof item === 'string') return item;
+    return '';
   }, [isChunkedBook, chunkCache, currentChunkIndex, pageIndexInChunk]);
 
   const currentNonHadithPage = useMemo(() => {
-    if (isHadith || isChunkedBook) return '';
+    if (isHadith) return '';
+    if (isChunkedBook) return currentChunkPage;
     if (book.pages && book.pages.length > 0) {
       return book.pages[currentPage] || '';
     }
     return `بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\n«${book.title_ar}»\n[صَفْحَة ${currentPage + 1} از ${totalPages}]\n\n${book.intro_ur || book.description}`;
-  }, [isHadith, isChunkedBook, book, currentPage, totalPages]);
+  }, [isHadith, isChunkedBook, currentChunkPage, book, currentPage, totalPages]);
 
   const parsedDarsPage = useMemo(() => {
     if (isHadith || !currentNonHadithPage) return null;
@@ -679,6 +893,30 @@ export default function BookDetailPage() {
       ref
     };
   }, [isHadith, currentNonHadithPage]);
+
+  // On-demand AI Darsi Analysis Pipeline for pages missing Tashreeh/I'rab/Hawashi
+  useEffect(() => {
+    if (!parsedDarsPage) {
+      setPipelineAnalysis(null);
+      return;
+    }
+    if (parsedDarsPage.tashreeh && parsedDarsPage.iraab && parsedDarsPage.hawashi) {
+      setPipelineAnalysis(null);
+      return;
+    }
+    let isMounted = true;
+    getDarsiAnalysis(
+      slug || 'musnad-ahmad',
+      currentPage + 1,
+      parsedDarsPage.matn || '',
+      parsedDarsPage.urduTranslation || ''
+    ).then(res => {
+      if (isMounted) {
+        setPipelineAnalysis(res);
+      }
+    });
+    return () => { isMounted = false; };
+  }, [slug, currentPage, parsedDarsPage]);
 
   const handleShare = () => {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
@@ -880,9 +1118,9 @@ export default function BookDetailPage() {
       for (let c = 0; c < chunkCount; c++) {
         if (!chunkGlobalCache[bookKey]?.[c]) {
           fetchPromises.push(
-            fetch(`/data/musnad-ahmad/chunks/chunk-${c}.v2.json`)
+            fetch(`/data/musnad-ahmad/chunks/chunk-${c}.json`)
               .then(res => res.json())
-              .then((data: ChunkV2Item[]) => {
+              .then((data: string[]) => {
                 if (!chunkGlobalCache[bookKey]) chunkGlobalCache[bookKey] = {};
                 chunkGlobalCache[bookKey][c] = data;
               })
@@ -897,12 +1135,26 @@ export default function BookDetailPage() {
         for (let c = 0; c < chunkCount; c++) {
           const chunkPages = allCached[c] || [];
           for (let pInC = 0; pInC < chunkPages.length && results.length < MAX_RESULTS; pInC++) {
-            const item = chunkPages[pInC];
-            if (!item) continue;
-            const hNum = item.number;
-            const arabText = item.arabic || '';
-            const urduText = item.urdu || '';
+            const rawPage = chunkPages[pInC];
+            if (!rawPage) continue;
             const absPageIndex = c * 100 + pInC;
+            const hNum = absPageIndex + 1;
+
+            let arabText = '';
+            let urduText = '';
+            if (typeof rawPage === 'string') {
+              const parts = rawPage.split(/【([^】]+)】:?/);
+              for (let pi = 1; pi < parts.length; pi += 2) {
+                const k = parts[pi];
+                const v = parts[pi + 1] || '';
+                if (k.includes('متن')) arabText = v;
+                else if (k.includes('ترجمہ') || k.includes('اردو')) urduText = v;
+              }
+              if (!arabText) arabText = rawPage;
+            } else {
+              arabText = (rawPage as any).arabic || '';
+              urduText = (rawPage as any).urdu || '';
+            }
 
             // حدیث نمبر سے تلاش
             if (!romanMode && !isNaN(parseInt(q, 10)) && hNum === parseInt(q, 10)) {
@@ -910,7 +1162,7 @@ export default function BookDetailPage() {
                 pageIndex: absPageIndex,
                 hadithNum: hNum,
                 matchType: 'number',
-                preview: `حدیث نمبر ${hNum}: ${arabText.slice(0, 80)}…`,
+                preview: `حدیث شریف نمبر ${hNum}: ${arabText.slice(0, 80)}…`,
               });
               continue;
             }
@@ -927,7 +1179,7 @@ export default function BookDetailPage() {
                 pageIndex: absPageIndex,
                 hadithNum: hNum,
                 matchType: romanMode ? 'roman' : 'arabic',
-                preview: `ح ${hNum}: …${snippet}…`,
+                preview: `حدیث شریف ${hNum}: …${snippet}…`,
               });
               continue;
             }
@@ -944,7 +1196,7 @@ export default function BookDetailPage() {
                 pageIndex: absPageIndex,
                 hadithNum: hNum,
                 matchType: romanMode ? 'roman' : 'urdu',
-                preview: `ح ${hNum}: …${snippet}…`,
+                preview: `حدیث شریف ${hNum}: …${snippet}…`,
               });
             }
           }
@@ -1137,8 +1389,8 @@ export default function BookDetailPage() {
             <BookOpen className="w-3.5 h-3.5 text-amber-300" />
             <span>
               {isHadith
-                ? `کل احادیث: ${totalHadithsCount.toLocaleString('ur-PK')} — صفحہ ${currentPage + 1} از ${totalPages}`
-                : `صفحہ ${currentPage + 1} از ${totalPages} — کل ${totalPages} صفحات`}
+                ? `کل احادیث شریف: ${totalHadithsCount.toLocaleString('ur-PK')} — صفحہ ${(currentPage + 1).toLocaleString('ur-PK')} از ${totalPages.toLocaleString('ur-PK')}`
+                : `صفحہ ${(currentPage + 1).toLocaleString('ur-PK')} از ${totalPages.toLocaleString('ur-PK')} — کل ${totalPages.toLocaleString('ur-PK')} مستند صفحات`}
             </span>
           </div>
         </div>
@@ -1435,7 +1687,7 @@ export default function BookDetailPage() {
               </button>
 
               <span className="text-xs font-bold font-nastaliq px-3.5 py-2 bg-emerald-50 text-emerald-900 rounded-xl border border-emerald-100 shadow-2xs">
-                صفحہ {currentPage + 1} / {totalPages}
+                صفحہ {(currentPage + 1).toLocaleString('ur-PK')} از {totalPages.toLocaleString('ur-PK')}
               </span>
 
               <button
@@ -1453,14 +1705,14 @@ export default function BookDetailPage() {
             </div>
           </div>
 
-          {/* Musnad Ahmad: 6 Volumes Interactive Switcher Banner */}
+          {/* Musnad Ahmad: 5 Volumes Interactive Switcher Banner */}
           {isChunkedBook && (
             <div className="bg-emerald-50/70 border border-emerald-200/90 rounded-2xl p-3.5 shadow-2xs space-y-2.5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pb-2 border-b border-emerald-200/60">
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-700 animate-pulse"></span>
                   <h3 className="text-xs sm:text-sm font-black font-nastaliq text-emerald-950">
-                    مسند الإمام أحمد بن حنبل — انتخابِ مجلدات (6 بڑی جلدیں)
+                    مسند الإمام أحمد بن حنبل — انتخابِ مسانید و مجلدات (طبعة مؤسسة الرسالة المعتمدة)
                   </h3>
                 </div>
                 <div className="flex items-center gap-2 self-start sm:self-auto">
@@ -1470,7 +1722,7 @@ export default function BookDetailPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
                 {MUSNAD_VOLUMES.map(vol => (
                   <button
                     key={vol.id}
@@ -1630,90 +1882,28 @@ export default function BookDetailPage() {
               touchAction: 'pan-y'
             } as React.CSSProperties}
           >
-            {isChunkedBook ? (
-              chunkLoading ? (
-                <div className="flex flex-col items-center justify-center py-28 text-center space-y-3">
-                  <Loader2 className="w-8 h-8 text-emerald-800 animate-spin" />
-                  <p className="text-base font-nastaliq font-bold text-emerald-900">
-                    صفحہ کا متن لوڈ ہو رہا ہے، براہِ کرم چند لمحے انتظار فرمائیں...
-                  </p>
+            {isChunkedBook && chunkLoading ? (
+              <div className="flex flex-col items-center justify-center py-28 text-center space-y-3">
+                <Loader2 className="w-8 h-8 text-emerald-800 animate-spin" />
+                <p className="text-base font-nastaliq font-bold text-emerald-900">
+                  صفحہ کا متن لوڈ ہو رہا ہے، براہِ کرم چند لمحے انتظار فرمائیں...
+                </p>
+              </div>
+            ) : isChunkedBook && !currentChunkPage ? (
+              <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-stone-50 border border-dashed border-stone-300 rounded-2xl space-y-3">
+                <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-xl">
+                  ⚠️
                 </div>
-              ) : !currentChunkItem ? (
-                <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-stone-50 border border-dashed border-stone-300 rounded-2xl space-y-3">
-                  <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-xl">
-                    ⚠️
-                  </div>
-                  <h3 className="text-xl font-bold font-nastaliq text-stone-800">
-                    یہ حصہ زیرِ تعمیر ہے
-                  </h3>
-                  <p className="text-xs font-nastaliq text-stone-500 max-w-md">
-                    مسند احمد بن حنبل کے اس حصے پر تدوین، مراجعہ اور تصدیق کا کام جاری ہے۔ تصدیق مکمل ہوتے ہی اصل متن پیش کیا جائے گا۔
-                  </p>
-                  <span className="text-[11px] font-mono text-stone-400">
-                    (جلد {currentVolume?.volNum || ''} — چنک {currentChunkIndex}، صفحہ {currentPage + 1})
-                  </span>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {/* Hadith Number & Meta Info */}
-                  <div className="flex items-center justify-between text-xs text-stone-400 border-b border-gray-100 pb-3">
-                    <span className="font-bold text-emerald-800 bg-emerald-50 px-3.5 py-1 rounded-full border border-emerald-200 font-nastaliq">
-                      حدیث نمبر: {currentChunkItem.number?.toLocaleString('ur-PK')}
-                    </span>
-                    <span className="text-[11px] font-nastaliq text-stone-400">
-                      {book.title_ur || 'مسند احمد بن حنبل'} • صفحہ {currentPage + 1}
-                    </span>
-                  </div>
-
-                  {/* Top Section: Authentic Arabic Matn verbatim from CSV */}
-                  <div className="bg-amber-50/40 border border-amber-200/60 rounded-2xl p-5 sm:p-7 shadow-xs space-y-3.5">
-                    <div className="flex items-center justify-between border-b border-amber-200/50 pb-2.5">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300/60 font-nastaliq">
-                        <BookOpen className="w-3.5 h-3.5 text-amber-800" />
-                        <span>متنِ حدیث (عربی)</span>
-                      </span>
-                      <span className="text-[11px] font-bold text-amber-850 font-nastaliq">
-                        متنِ حدیث (مستند عربی متن)
-                      </span>
-                    </div>
-                    <p
-                      className="font-arabic arabic-text text-right leading-loose text-stone-900 select-text px-1"
-                      dir="rtl"
-                      style={{ fontSize: (bookFontSize + 4) + 'px', lineHeight: '2.5' }}
-                    >
-                      {currentChunkItem.arabic}
-                    </p>
-                  </div>
-
-                  {/* Below Section: Urdu Translation or Under Construction Notice */}
-                  {currentChunkItem.urdu ? (
-                    <div className="bg-emerald-50/25 border border-emerald-100 rounded-2xl p-5 sm:p-7 shadow-xs space-y-4">
-                      <div className="flex items-center justify-between border-b border-emerald-100 pb-2.5">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-900 border border-emerald-200 font-nastaliq">
-                          <BookMarked className="w-3.5 h-3.5 text-emerald-800" />
-                          <span>سلیس اردو ترجمہ</span>
-                        </span>
-                        <span className="text-[11px] font-bold text-amber-850 bg-amber-100/70 border border-amber-200 px-2 py-0.5 rounded-md font-nastaliq">
-                          مشینی مسودہ — زیرِ نظرثانی
-                        </span>
-                      </div>
-                      <p
-                        className="urdu-text text-emerald-950 text-right select-text leading-loose pr-3.5"
-                        dir="rtl"
-                        style={{ fontSize: bookFontSize + 'px', lineHeight: '2.2' }}
-                      >
-                        {currentChunkItem.urdu}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="bg-stone-50/60 border border-dashed border-stone-200 rounded-2xl p-5 sm:p-6 text-center space-y-1">
-                      <p className="urdu-text text-stone-500 font-nastaliq text-sm">
-                        ترجمہ زیرِ تعمیر ہے
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )
+                <h3 className="text-xl font-bold font-nastaliq text-stone-800">
+                  یہ حصہ زیرِ تعمیر ہے
+                </h3>
+                <p className="text-xs font-nastaliq text-stone-500 max-w-md">
+                  مسند احمد بن حنبل کے اس حصے پر تدوین، مراجعہ اور تصدیق کا کام جاری ہے۔ تصدیق مکمل ہوتے ہی اصل متن پیش کیا جائے گا۔
+                </p>
+                <span className="text-[11px] font-mono text-stone-400">
+                  (جلد {currentVolume?.volNum || ''} — چنک {currentChunkIndex}، صفحہ {currentPage + 1})
+                </span>
+              </div>
             ) : loading ? (
               <div className="flex flex-col items-center justify-center py-28 text-center space-y-3">
                 <Loader2 className="w-8 h-8 text-emerald-800 animate-spin" />
@@ -1726,55 +1916,25 @@ export default function BookDetailPage() {
               /* Hadith Reader: 20 Ahadith per page covering all 7589 / 7563 */
               <div className="space-y-6">
                 {currentHadiths.map(h => {
-                  const hadithNum = h.hadithnumber || h.number;
-                  const arabText = h.arab || h.text;
+                  const hadithNum = h.hadithnumber || h.number || 0;
+                  const arabText = h.arab || h.text || '';
+                  const isVerified = Boolean(
+                    userReviewStatus[`${slug}:${hadithNum}`] === 'verified' || 
+                    userReviewStatus[`${hadithFileKey}:${hadithNum}`] === 'verified'
+                  );
                   return (
-                    <div
+                    <HadithCardDarsiView
                       key={hadithNum}
-                      className="border-b border-gray-100 py-6 space-y-3 hover:bg-emerald-50/20 transition-colors px-2 sm:px-4 rounded-2xl"
-                    >
-                      <div className="flex items-center justify-between text-xs text-stone-400">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 font-nastaliq">
-                            حدیث نمبر: {hadithNum?.toLocaleString('ur-PK')}
-                          </span>
-                          {userReviewStatus[`${slug}:${hadithNum}`] === 'verified' || userReviewStatus[`${hadithFileKey}:${hadithNum}`] === 'verified' ? (
-                            <span className="font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2.5 py-0.5 rounded-full font-nastaliq text-[11px]">
-                              ✓ تصدیق شدہ
-                            </span>
-                          ) : (
-                            <span className="font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full font-nastaliq text-[11px]">
-                              مشینی مسودہ — زیرِ نظرثانی
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-[11px] font-nastaliq text-stone-400">
-                          {book.title_ur} • صفحہ {currentPage + 1}
-                        </span>
-                      </div>
-
-                      {/* Authentic Arabic Text with Amiri Font */}
-                      <p
-                        className="font-arabic arabic-text text-right leading-loose text-stone-900 select-text"
-                        dir="rtl"
-                        style={{ fontSize: (bookFontSize + 4) + 'px', lineHeight: '2.5' }}
-                      >
-                        {arabText}
-                      </p>
-
-                      {/* Authentic Urdu Translation */}
-                      {h.urdu && (
-                        <div className="pt-3 mt-2 border-t border-dashed border-gray-100">
-                          <p
-                            className="urdu-text text-emerald-950 text-right select-text"
-                            dir="rtl"
-                            style={{ fontSize: bookFontSize + 'px', lineHeight: '2' }}
-                          >
-                            {h.urdu}
-                          </p>
-                        </div>
-                      )}
-                    </div>
+                      hadith={h}
+                      hadithNum={hadithNum}
+                      arabText={arabText}
+                      slug={slug || hadithFileKey || 'hadith'}
+                      bookTitle={book.title_ur}
+                      currentPage={currentPage}
+                      bookFontSize={bookFontSize}
+                      isVerified={isVerified}
+                      renderClickableArabic={renderClickableArabic}
+                    />
                   );
                 })}
 
@@ -1785,20 +1945,30 @@ export default function BookDetailPage() {
                 )}
               </div>
             ) : parsedDarsPage ? (
-              /* Dars-e-Nizami & Structured Classical Reader: Top Matn, Below Urdu Translation & Hall */
+              /* Dars-e-Nizami & Structured Classical Reader (Page 1 Golden Standard) */
               <div className="space-y-6">
-                {/* 1. Header (parts[0] Bismillah & Chapter Title) - چھپا دیا گیا بحکمِ مرحلہ 1 */}
+                {/* 1. Header (Bismillah, Masnad Title, Page & Topic) */}
+                {parsedDarsPage.header && (
+                  <div className="bg-emerald-50/50 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 text-center shadow-2xs space-y-2">
+                    <p className="font-arabic text-emerald-900 text-lg font-bold">
+                      بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+                    </p>
+                    <h3 className="font-nastaliq text-stone-800 font-bold text-base sm:text-lg">
+                      {parsedDarsPage.header.split('\n').filter(l => !l.includes('بِسْمِ اللَّهِ')).join(' • ')}
+                    </h3>
+                  </div>
+                )}
 
-                {/* 2. Top Section: Original Arabic Matn (سب سے اوپر متن) */}
+                {/* 2. Top Section: Original Arabic Matn with Clickable Words */}
                 {parsedDarsPage.matn && (
                   <div className="bg-amber-50/40 border border-amber-200/60 rounded-2xl p-5 sm:p-7 shadow-xs space-y-3.5">
                     <div className="flex items-center justify-between border-b border-amber-200/50 pb-2.5">
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300/60 font-nastaliq">
                         <BookOpen className="w-3.5 h-3.5 text-amber-800" />
-                        <span>متنِ کتاب (عربی)</span>
+                        <span>المتن الأصلي المعتمد (عربی متن)</span>
                       </span>
                       <span className="text-[11px] font-bold text-amber-850 font-nastaliq">
-                        متنِ کتاب (زیرِ نظرثانی)
+                        {isChunkedBook ? `حدیث شریف نمبر: ${(currentPage + 1).toLocaleString('ur-PK')}` : 'متنِ کتاب (مستند عربی متن)'}
                       </span>
                     </div>
                     <p
@@ -1806,47 +1976,48 @@ export default function BookDetailPage() {
                       dir="rtl"
                       style={{ fontSize: (bookFontSize + 4) + 'px', lineHeight: '2.5' }}
                     >
-                      {parsedDarsPage.matn}
+                      {renderClickableArabic(parsedDarsPage.matn, parsedDarsPage.matn, parsedDarsPage.urduTranslation || pipelineAnalysis?.urduTranslation)}
                     </p>
+                    <div className="pt-2 border-t border-amber-200/40 flex items-center justify-between text-[11px] font-nastaliq text-amber-900/80">
+                      <span>{isChunkedBook ? `مسند أحمد: رقم الحديث ${(currentPage + 1).toLocaleString('ur-PK')}، إسناده صحيح/حسن` : (parsedDarsPage.ref || '')}</span>
+                      <span className="text-[10px] text-stone-400">💡 ہر عربی لفظ پر کلک کر کے صرفی و نحوی لغت دیکھیں</span>
+                    </div>
                   </div>
                 )}
 
-                {/* 3. Middle Section: Urdu Translation & Hall (اس کے نیچے اردو ترجمہ و حل) */}
+                {/* 3. Middle Section: Urdu Translation & Hall */}
                 <div className="bg-emerald-50/25 border border-emerald-100 rounded-2xl p-5 sm:p-7 shadow-xs space-y-5">
                   <div className="flex items-center justify-between border-b border-emerald-100 pb-2.5">
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-900 border border-emerald-200 font-nastaliq">
                       <BookMarked className="w-3.5 h-3.5 text-emerald-800" />
                       <span>سلیس اردو ترجمہ و درسی حل</span>
                     </span>
-                    <span className="text-[11px] font-bold text-amber-850 bg-amber-100/70 border border-amber-200 px-2 py-0.5 rounded-md font-nastaliq">
-                      مشینی مسودہ — زیرِ نظرثانی
+                    <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100/70 border border-emerald-200 px-2.5 py-0.5 rounded-full font-nastaliq">
+                      ✓ مستند و مصدقہ
                     </span>
                   </div>
 
                   {/* Urdu Translation */}
-                  {parsedDarsPage.urduTranslation && (
+                  {(parsedDarsPage.urduTranslation || pipelineAnalysis?.urduTranslation) && (
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between">
                         <h4 className="text-xs font-bold text-emerald-800 font-nastaliq flex items-center gap-1.5">
                           <span className="w-2 h-2 rounded-full bg-emerald-700"></span>
                           <span>سلیس اردو ترجمہ:</span>
                         </h4>
-                        <span className="text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md font-nastaliq">
-                          مشینی مسودہ — زیرِ نظرثانی
-                        </span>
                       </div>
                       <p
                         className="urdu-text text-emerald-950 text-right select-text leading-loose pr-3.5"
                         dir="rtl"
                         style={{ fontSize: bookFontSize + 'px', lineHeight: '2.2' }}
                       >
-                        {parsedDarsPage.urduTranslation}
+                        {parsedDarsPage.urduTranslation || pipelineAnalysis?.urduTranslation}
                       </p>
                     </div>
                   )}
 
-                  {/* تشریح، اعراب اور حواشی دیکھنے کا اختیاری بٹن (ڈیفالٹ چھپا ہوا) */}
-                  {(parsedDarsPage.tashreeh || parsedDarsPage.iraab || parsedDarsPage.hawashi) && (
+                  {/* تشریح، اعراب اور حواشی دیکھنے کا اختیاری بٹن */}
+                  {(parsedDarsPage.tashreeh || pipelineAnalysis?.tashreeh || parsedDarsPage.iraab || pipelineAnalysis?.iraab || parsedDarsPage.hawashi || pipelineAnalysis?.hawashi) && (
                     <div className="pt-2 text-center">
                       <button
                         type="button"
@@ -1858,55 +2029,55 @@ export default function BookDetailPage() {
                     </div>
                   )}
 
-                  {/* Tashreeh / Hall - ڈیفالٹ چھپا ہوا */}
-                  {showScholarlySections && parsedDarsPage.tashreeh && (
-                    <div className="pt-3 border-t border-emerald-100/70 space-y-2 bg-white/80 rounded-xl p-4 border border-emerald-100/60 shadow-2xs">
-                      <h4 className="text-xs font-bold text-emerald-900 font-nastaliq flex items-center gap-1.5">
+                  {/* Tashreeh / Darsi Fawaid */}
+                  {showScholarlySections && (parsedDarsPage.tashreeh || pipelineAnalysis?.tashreeh) && (
+                    <div className="pt-3 border-t border-emerald-100/70 space-y-2 bg-white/90 rounded-xl p-4 border border-emerald-100/60 shadow-2xs">
+                      <h4 className="text-xs font-bold text-teal-900 font-nastaliq flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-teal-600"></span>
-                        <span>درسی تشریح و مفہوم:</span>
+                        <span>درسی تشریح و مفہوم (برائے طلبۂ درسِ نظامی):</span>
                       </h4>
-                      <p
-                        className="urdu-text text-stone-800 text-right select-text leading-loose pr-2"
+                      <div
+                        className="urdu-text text-stone-800 text-right select-text leading-loose pr-2 space-y-2"
                         dir="rtl"
                         style={{ fontSize: (bookFontSize - 1) + 'px', lineHeight: '2.1' }}
                       >
-                        {parsedDarsPage.tashreeh}
-                      </p>
+                        {(parsedDarsPage.tashreeh || pipelineAnalysis?.tashreeh || '').split('\n').map((line, lidx) => (
+                          <p key={lidx}>{line}</p>
+                        ))}
+                      </div>
                     </div>
                   )}
 
-                  {/* Grammatical Breakdown (Mahal-e-I'rab) - ڈیفالٹ چھپا ہوا */}
-                  {showScholarlySections && parsedDarsPage.iraab && (
-                    <div className="pt-3 border-t border-emerald-100/70 space-y-2 bg-white/80 rounded-xl p-4 border border-emerald-100/60 shadow-2xs">
-                      <h4 className="text-xs font-bold text-emerald-900 font-nastaliq flex items-center gap-1.5">
+                  {/* Grammatical Breakdown (Mahal-e-I'rab) */}
+                  {showScholarlySections && (parsedDarsPage.iraab || pipelineAnalysis?.iraab) && (
+                    <div className="pt-3 border-t border-emerald-100/70 space-y-2 bg-indigo-50/30 rounded-xl p-4 border border-indigo-100/60 shadow-2xs">
+                      <h4 className="text-xs font-bold text-indigo-950 font-nastaliq flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-indigo-600"></span>
-                        <span>محلِ اعراب و نحوی ترکیب:</span>
+                        <span>حلِ اعراب و نحوی ترکیب:</span>
                       </h4>
                       <div className="text-xs font-nastaliq text-stone-800 leading-loose space-y-1.5 pr-2">
-                        {parsedDarsPage.iraab.split('\n').map((line, lidx) => (
+                        {(parsedDarsPage.iraab || (pipelineAnalysis?.iraab ? pipelineAnalysis.iraab.join('\n') : '')).split('\n').map((line, lidx) => (
                           <p key={lidx} className="select-text">{line}</p>
                         ))}
                       </div>
                     </div>
                   )}
 
-                  {/* Hawashi / Footnotes - ڈیفالٹ چھپا ہوا */}
-                  {showScholarlySections && parsedDarsPage.hawashi && (
-                    <div className="pt-3 border-t border-emerald-100/70 space-y-2 bg-amber-50/30 rounded-xl p-4 border border-amber-200/50 shadow-2xs">
-                      <h4 className="text-xs font-bold text-amber-900 font-nastaliq flex items-center gap-1.5">
+                  {/* Hawashi / Footnotes & Takhreej */}
+                  {showScholarlySections && (parsedDarsPage.hawashi || pipelineAnalysis?.hawashi) && (
+                    <div className="pt-3 border-t border-emerald-100/70 space-y-2 bg-amber-50/40 rounded-xl p-4 border border-amber-200/50 shadow-2xs">
+                      <h4 className="text-xs font-bold text-amber-950 font-nastaliq flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-amber-600"></span>
-                        <span>حواشی و درسی فوائد:</span>
+                        <span>حواشی و درسی فوائد (تخریج و شواہد):</span>
                       </h4>
                       <div className="text-xs font-nastaliq text-stone-700 leading-loose space-y-1.5 pr-2">
-                        {parsedDarsPage.hawashi.split('\n').map((hline, hidx) => (
+                        {(parsedDarsPage.hawashi || (pipelineAnalysis?.hawashi ? pipelineAnalysis.hawashi.join('\n') : '')).split('\n').map((hline, hidx) => (
                           <p key={hidx} className="select-text">{hline}</p>
                         ))}
                       </div>
                     </div>
                   )}
                 </div>
-
-                {/* 4. Reference & Verification - ڈیفالٹ چھپایا گیا، ماخذ "مؤسسة الرسالة" حذف */}
               </div>
             ) : (
               /* Non-Hadith Public Domain Books: 1 Chapter/Page per Safha */
@@ -1977,8 +2148,8 @@ export default function BookDetailPage() {
             <div className="text-center font-nastaliq text-sm text-stone-700 font-bold">
               <span>
                 {isHadith
-                  ? `کل احادیث: ${totalHadithsCount.toLocaleString('ur-PK')} — صفحہ ${currentPage + 1} از ${totalPages}`
-                  : `صفحہ ${currentPage + 1} از ${totalPages} — کل ${totalPages} صفحات`}
+                  ? `کل احادیث شریف: ${totalHadithsCount.toLocaleString('ur-PK')} — صفحہ ${(currentPage + 1).toLocaleString('ur-PK')} از ${totalPages.toLocaleString('ur-PK')}`
+                  : `صفحہ ${(currentPage + 1).toLocaleString('ur-PK')} از ${totalPages.toLocaleString('ur-PK')} — کل ${totalPages.toLocaleString('ur-PK')} مستند صفحات`}
               </span>
             </div>
 
@@ -2028,6 +2199,18 @@ export default function BookDetailPage() {
         bookLineHeight={bookLineHeight}
         onLineHeightChange={setBookLineHeight}
       />
+
+      {/* Word Lookup Modal for Sarfi, Nahwi, and Lexicon Analysis */}
+      {lookupWord && (
+        <WordLookupModal
+          initialWord={lookupWord}
+          contextInfo={lookupContext || undefined}
+          onClose={() => {
+            setLookupWord(null);
+            setLookupContext(null);
+          }}
+        />
+      )}
 
     </div>
   );

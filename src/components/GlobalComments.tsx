@@ -368,10 +368,10 @@ export const GlobalComments: React.FC<GlobalCommentsProps> = ({
           <button
             type="submit"
             disabled={!authorName.trim() || !commentText.trim()}
-            className="px-4 py-1.5 bg-emerald-700 hover:bg-emerald-800 disabled:bg-stone-300 text-white rounded-xl text-xs font-nastaliq font-bold flex items-center gap-1.5 shadow-sm transition active:scale-95 cursor-pointer disabled:cursor-not-allowed"
+            className="px-5 py-2 bg-emerald-700 hover:bg-emerald-800 disabled:bg-stone-300 dark:disabled:bg-stone-700 text-white disabled:text-stone-500 rounded-xl text-xs font-nastaliq font-bold flex items-center gap-2 shadow-md transition active:scale-95 cursor-pointer disabled:cursor-not-allowed border border-emerald-600 disabled:border-transparent"
           >
-            <Send className="w-3 h-3 rotate-180" />
-            <span>کمنٹ کریں</span>
+            <Send className="w-3.5 h-3.5 rotate-180" />
+            <span>تبصرہ ارسال کریں</span>
           </button>
         </div>
       </form>

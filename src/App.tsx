@@ -19,6 +19,7 @@ import { Book, AppTab } from './types';
 import { TehreekImanLogo } from './components/TehreekImanLogo';
 import { formatTextWithTehreekLogo, formatHtmlWithTehreekLogo } from './utils/clipboardHelper';
 import BookDetailPage from './app/books/[slug]/page';
+import SourcesAndLicensesPage from './app/sources-and-licenses/page';
 
 export function App() {
   const [currentPath, setCurrentPath] = useState<string>(() => typeof window !== 'undefined' ? window.location.pathname : '/');
@@ -303,6 +304,15 @@ export function App() {
           apiKey={apiKey} 
           onSaveToNotes={(content) => handleAddNote(content, 'علمی اتالیق استفسار')}
         />
+      </div>
+    );
+  }
+
+  const isSourcesAndLicenses = currentPath === '/sources-and-licenses' || currentPath.startsWith('/sources-and-licenses');
+  if (isSourcesAndLicenses) {
+    return (
+      <div dir="rtl" className="min-h-screen bg-stone-50">
+        <SourcesAndLicensesPage />
       </div>
     );
   }

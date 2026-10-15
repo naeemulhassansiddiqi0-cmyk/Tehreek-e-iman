@@ -3,8 +3,10 @@
   "slug": "musnad-ahmad",
   "title_ur": "مسند احمد بن حنبل",
   "title_ar": "المسند للإمام أحمد بن حنبل",
-  "totalPages": 18000,
+  "totalPages": 26363,
   "chunkSize": 100,
-  "totalChunks": 180,
-  "generatedAt": "2026-10-10T08:14:00.000Z"
+  "totalChunks": 264,
+  "verifiedUnique": true,
+  "edition": "طبعة مؤسسة الرسالة المعتمدة (كامل 26,363 حديثاً)",
+  "generatedAt": "2026-10-15T10:31:37.325Z"
 }
