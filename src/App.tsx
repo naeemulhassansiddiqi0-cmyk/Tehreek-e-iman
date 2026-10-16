@@ -54,7 +54,8 @@ export function App() {
   }, []);
 
   const handleChatbotSelectBook = (slug: string) => {
-    window.location.href = `/books/${slug}`;
+    window.history.pushState({}, '', `/books/${slug}`);
+    window.dispatchEvent(new PopStateEvent('popstate'));
   };
 
   const handleOpenKharjiBooks = (book?: Book) => {
@@ -138,6 +139,12 @@ export function App() {
   // International Dynamic SEO & Canonical URL State Synchronization
   useEffect(() => {
     try {
+      if (typeof window !== 'undefined') {
+        const path = window.location.pathname;
+        if (path.startsWith('/books/') || path.startsWith('/book/') || path.startsWith('/sources-and-licenses')) {
+          return;
+        }
+      }
       let title = 'تحریکِ ایمان | جامع اسلامی پورٹل، مکتبہ درسِ نظامی و امتحانی مرکز — مولانا محمد نعیم الحسن صدیقی دامت برکاتہم العالیہ';
       let desc = 'تحریکِ ایمان — جامع اسلامی ڈیجیٹل کتب خانہ، اوقاتِ صلوٰۃ و دائمی جنتری، اور تعلیمی پورٹل۔ قرآنِ حکیم، صحاح ستہ، فقہ حنفی اور وفاق المدارس امتحانی مرکز۔';
 
@@ -298,7 +305,7 @@ export function App() {
   if (isBookDetail) {
     return (
       <div dir="rtl" className="min-h-screen bg-white">
-        <BookDetailPage />
+        <BookDetailPage key={currentPath} />
         <Chatbot 
           onSelectBook={handleChatbotSelectBook} 
           apiKey={apiKey} 

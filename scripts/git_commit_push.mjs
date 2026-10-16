@@ -6,7 +6,7 @@ try {
 
   console.log('--- Committing ---');
   try {
-    execSync('git commit -m "feat: robust Arabic fuzzy normalization, mobile RAM virtualization, lazy grid rendering & narrator cross-references"', { stdio: 'inherit' });
+    execSync('git commit -m "fix: dynamic book slug routing, reactive navigation shims, and robust instant pagination sync"', { stdio: 'inherit' });
   } catch (e) {
     console.log('Commit note:', e.message);
   }

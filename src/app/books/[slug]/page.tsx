@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import { publicDomainBooks } from "@/data/publicDomainBooks";
+import { publicDomainBooks, modernBooks, PublicDomainBook, BookCategoryTitle } from "@/data/publicDomainBooks";
+import { booksDatabase } from "@/data/booksData";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { 
@@ -554,13 +555,70 @@ export default function BookDetailPage() {
   const rawSlug = (params?.slug as string) || '';
   const slug = decodeURIComponent(rawSlug).toLowerCase().trim();
 
-  // Find book in publicDomainBooks catalog
-  const book = useMemo(() => {
-    return (
-      publicDomainBooks.find(b => b.slug.toLowerCase() === slug || b.id.toLowerCase() === slug) ||
-      publicDomainBooks.find(b => slug.includes(b.slug.toLowerCase()) || b.slug.toLowerCase().includes(slug)) ||
-      null
+  // Find book in publicDomainBooks catalog with robust fallback across catalogs
+  const book = useMemo((): PublicDomainBook => {
+    const cleanSlug = slug.toLowerCase().trim();
+
+    // 1. Check publicDomainBooks
+    const foundPublic = (
+      publicDomainBooks.find(b => b.slug.toLowerCase() === cleanSlug || b.id.toLowerCase() === cleanSlug) ||
+      publicDomainBooks.find(b => cleanSlug.includes(b.slug.toLowerCase()) || b.slug.toLowerCase().includes(cleanSlug))
     );
+    if (foundPublic) return foundPublic;
+
+    // 2. Check modernBooks
+    const foundModern = modernBooks.find(b => b.slug.toLowerCase() === cleanSlug || b.id.toLowerCase() === cleanSlug);
+    if (foundModern) {
+      return {
+        ...foundModern,
+        pages: [],
+        source_type: 'public' as const,
+      } as PublicDomainBook;
+    }
+
+    // 3. Check booksDatabase
+    const foundDb = booksDatabase.find(b => b.id.toLowerCase() === cleanSlug || b.id.toLowerCase().replace(/_/g, '-') === cleanSlug);
+    if (foundDb) {
+      return {
+        id: foundDb.id,
+        slug: foundDb.id,
+        title_ur: foundDb.subjectNameUrdu || foundDb.title,
+        title_ar: foundDb.title,
+        title: foundDb.title,
+        author: foundDb.author,
+        death_year: '',
+        category: (foundDb.category === 'sittah' ? 'Hadith' : 'Dars-e-Nizami') as BookCategoryTitle,
+        pages: foundDb.chapters ? foundDb.chapters.map(c => {
+          const segs = c.segments || [];
+          const ar = segs.map(s => s.arabicText).join('\n\n');
+          const ur = segs.map(s => s.urduTranslation).join('\n\n');
+          return `【${c.titleArabic || c.titleUrdu}】\n${ar}\n\n【اردو ترجمہ】\n${ur}`;
+        }) : [],
+        volumes: 1,
+        intro_ur: foundDb.description,
+        cover_url: '/covers/default.svg',
+        source_type: 'public' as const,
+      } as PublicDomainBook;
+    }
+
+    // 4. Canonical Hadith fallback if known
+    const canonical = HADITH_TOTALS[cleanSlug] || (HADITH_FILE_MAP[cleanSlug] ? HADITH_TOTALS[HADITH_FILE_MAP[cleanSlug]] : null);
+    const urduTitle = canonical ? canonical.urduName : cleanSlug.replace(/[-_]/g, ' ');
+    return {
+      id: cleanSlug || 'book',
+      slug: cleanSlug || 'book',
+      title_ur: urduTitle,
+      title_ar: urduTitle,
+      title: urduTitle,
+      author: 'امام و محدث',
+      death_year: '',
+      category: 'Hadith' as BookCategoryTitle,
+      pages: [],
+      volumes: 1,
+      intro_ur: `مجموعہ کتبِ اسلامی — ${urduTitle}`,
+      cover_url: '/covers/default.svg',
+      source_type: 'public' as const,
+    } as PublicDomainBook;
   }, [slug]);
 
   // Check if book matches local hadith collection file
@@ -623,6 +681,24 @@ export default function BookDetailPage() {
     return 0;
   });
 
+  // Sync currentPage from URL when slug changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const search = new URLSearchParams(window.location.search);
+        const p = search.get('page') || search.get('p');
+        if (p) {
+          const num = parseInt(p, 10);
+          if (!isNaN(num) && num > 0) {
+            setCurrentPage(num - 1);
+            return;
+          }
+        }
+        setCurrentPage(0);
+      } catch {}
+    }
+  }, [slug]);
+
   // Sync currentPage to URL query parameter (?page=N)
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -646,8 +722,12 @@ export default function BookDetailPage() {
         const p = search.get('page') || search.get('p');
         if (p) {
           const num = parseInt(p, 10);
-          if (!isNaN(num) && num > 0) setCurrentPage(num - 1);
+          if (!isNaN(num) && num > 0) {
+            setCurrentPage(num - 1);
+            return;
+          }
         }
+        setCurrentPage(0);
       } catch {}
     };
     window.addEventListener('popstate', handlePopState);
@@ -665,8 +745,12 @@ export default function BookDetailPage() {
     jumpToTopOfPage();
   };
 
-  const [allHadiths, setAllHadiths] = useState<HadithItem[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [allHadiths, setAllHadiths] = useState<HadithItem[]>(() => {
+    return (hadithFileKey && hadithGlobalCache[hadithFileKey]) || [];
+  });
+  const [loading, setLoading] = useState<boolean>(() => {
+    return Boolean(hadithFileKey && (!hadithGlobalCache[hadithFileKey] || hadithGlobalCache[hadithFileKey].length === 0));
+  });
   const [searchPageQuery, setSearchPageQuery] = useState<string>('');
   const [copied, setCopied] = useState<boolean>(false);
   const [isStylerOpen, setIsStylerOpen] = useState<boolean>(false);
@@ -1126,12 +1210,12 @@ ${urduToCopy}
   // Slicing & Pagination:
   // For Hadith collections: 20 Ahadith per page (No 500 limit! Covers all 7589, 7563, etc.)
   // For other books: 1 page per chapter/safha, totalPages = book.pages.length or chunk totalPages
-  const isHadith = Boolean(hadithFileKey && (allHadiths.length > 0 || loading));
+  const isHadith = Boolean(hadithFileKey || book?.category === 'Hadith');
   const PER_PAGE = 20;
 
   const totalHadithsCount = allHadiths.length > 0
     ? allHadiths.length
-    : (hadithFileKey && HADITH_TOTALS[hadithFileKey]?.total) || 0;
+    : (hadithFileKey && HADITH_TOTALS[hadithFileKey]?.total) || (book?.category === 'Hadith' ? 7500 : 0);
 
   const bookPageCount = typeof book?.pages === 'number' ? book.pages : (Array.isArray(book?.pages) ? book.pages.length : (book?.totalPages || 0));
 
@@ -1635,6 +1719,13 @@ ${urduToCopy}
     const p = Math.max(1, Math.min(totalPages, target));
     setCurrentPage(p - 1);
     setSearchPageQuery('');
+    if (typeof window !== 'undefined') {
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set('page', p.toString());
+        window.history.pushState(null, '', url.pathname + url.search);
+      } catch {}
+    }
     jumpToTopOfPage();
   };
 
@@ -1941,28 +2032,22 @@ ${urduToCopy}
             <button
               type="button"
               disabled={currentPage <= 0}
-              onClick={() => {
-                setCurrentPage(0);
-                jumpToTopOfPage();
-              }}
+              onClick={() => handleJumpToPage(1)}
               className="text-stone-500 hover:text-emerald-800 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
             >
               شروع (ص ۱)
             </button>
             <button
               type="button"
-              onClick={() => handleJumpToPage(Math.floor(totalPages / 2))}
+              onClick={() => handleJumpToPage(Math.max(1, Math.floor(totalPages / 2)))}
               className="text-stone-500 hover:text-emerald-800 cursor-pointer"
             >
-              درمیان (ص {Math.floor(totalPages / 2)})
+              درمیان (ص {Math.max(1, Math.floor(totalPages / 2))})
             </button>
             <button
               type="button"
               disabled={currentPage >= totalPages - 1}
-              onClick={() => {
-                setCurrentPage(totalPages - 1);
-                jumpToTopOfPage();
-              }}
+              onClick={() => handleJumpToPage(totalPages)}
               className="text-stone-500 hover:text-emerald-800 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
             >
               آخر (ص {totalPages})
@@ -2699,10 +2784,7 @@ ${urduToCopy}
             <button
               type="button"
               disabled={currentPage <= 0}
-              onClick={() => {
-                setCurrentPage(prev => Math.max(0, prev - 1));
-                jumpToTopOfPage();
-              }}
+              onClick={() => handleJumpToPage(currentPage)}
               className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-white border border-gray-200 hover:border-emerald-700 hover:bg-emerald-50 text-sm font-bold font-nastaliq text-stone-800 disabled:opacity-30 disabled:cursor-not-allowed transition shadow-xs cursor-pointer"
             >
               <ChevronRight className="w-4 h-4" />
@@ -2721,10 +2803,7 @@ ${urduToCopy}
             <button
               type="button"
               disabled={currentPage >= totalPages - 1}
-              onClick={() => {
-                setCurrentPage(prev => Math.min(totalPages - 1, prev + 1));
-                jumpToTopOfPage();
-              }}
+              onClick={() => handleJumpToPage(currentPage + 2)}
               className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-emerald-800 hover:bg-emerald-900 text-white text-sm font-bold font-nastaliq shadow-md disabled:opacity-30 disabled:cursor-not-allowed transition active:scale-95 cursor-pointer"
             >
               <span>اگلا صفحہ</span>

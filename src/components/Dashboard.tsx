@@ -164,7 +164,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
               {filteredPublicBooks.map(book => (
                 <div
                   key={book.id}
-                  onClick={() => { window.location.href = `/books/${book.slug}`; }}
+                  onClick={() => {
+                    window.history.pushState({}, '', `/books/${book.slug}`);
+                    window.dispatchEvent(new PopStateEvent('popstate'));
+                  }}
                   className="group bg-white rounded-2xl border border-gray-100 hover:border-emerald-700/40 p-3 sm:p-4 flex flex-col justify-between transition-all duration-200 hover:shadow-xl hover:-translate-y-1 cursor-pointer"
                 >
                   <div className="space-y-3">
@@ -218,8 +221,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     <a
                       href={`/books/${book.slug}`}
                       onClick={(e) => {
+                        e.preventDefault();
                         e.stopPropagation();
-                        window.location.href = `/books/${book.slug}`;
+                        window.history.pushState({}, '', `/books/${book.slug}`);
+                        window.dispatchEvent(new PopStateEvent('popstate'));
                       }}
                       className="flex items-center gap-1 hover:underline"
                     >

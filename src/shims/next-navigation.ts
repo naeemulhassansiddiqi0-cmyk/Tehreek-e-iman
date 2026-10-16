@@ -1,4 +1,6 @@
-export function useParams<T = Record<string, string>>(): T {
+import { useState, useEffect } from 'react';
+
+function getParams<T = Record<string, string>>(): T {
   if (typeof window !== 'undefined') {
     const path = window.location.pathname;
     const match = path.match(/\/(?:books|book)\/([^/?#]+)/);
@@ -12,6 +14,18 @@ export function useParams<T = Record<string, string>>(): T {
     }
   }
   return {} as T;
+}
+
+export function useParams<T = Record<string, string>>(): T {
+  const [params, setParams] = useState<T>(getParams);
+
+  useEffect(() => {
+    const onPopState = () => setParams(getParams<T>());
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
+  return params;
 }
 
 export function useRouter() {
@@ -37,9 +51,33 @@ export function useRouter() {
 }
 
 export function usePathname(): string {
-  return typeof window !== 'undefined' ? window.location.pathname : '/';
+  const [pathname, setPathname] = useState<string>(() => {
+    return typeof window !== 'undefined' ? window.location.pathname : '/';
+  });
+
+  useEffect(() => {
+    const onPopState = () => {
+      setPathname(window.location.pathname);
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
+  return pathname;
 }
 
 export function useSearchParams(): URLSearchParams {
-  return typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
+  const [searchParams, setSearchParams] = useState<URLSearchParams>(() => {
+    return typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
+  });
+
+  useEffect(() => {
+    const onPopState = () => {
+      setSearchParams(new URLSearchParams(window.location.search));
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
+  return searchParams;
 }
