@@ -31,7 +31,7 @@ import { WordLookupModal } from "@/components/Reader/WordLookupModal";
 import { NarratorModal } from "@/components/Reader/NarratorModal";
 import { parseSanadNarratorSegments, NarratorInfo } from "@/services/rijalService";
 import { WordLookupContextInfo } from "@/types";
-import { getDarsiAnalysisSync, segmentSanadAndMatn, stripTashkeel } from "@/services/darsiPipelineService";
+import { getDarsiAnalysisSync, segmentSanadAndMatn, stripTashkeel, normalizeArabic } from "@/services/darsiPipelineService";
 
 interface HadithItem {
   hadithnumber?: number;
@@ -138,6 +138,7 @@ function HadithCardDarsiView({
   const [showNotes, setShowNotes] = useState<boolean>(false);
   const [localTashkeel, setLocalTashkeel] = useState<boolean>(globalTashkeel);
   const [copiedRef, setCopiedRef] = useState<boolean>(false);
+  const [wordLimit, setWordLimit] = useState<number>(24);
   // Instant synchronous Darsi Analysis (zero network delay or loading hangs)
   const analysis = useMemo(() => {
     const needsUrdu = !hadith.urdu || hadith.urdu.trim() === '';
@@ -242,7 +243,10 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
   };
 
   return (
-    <div className="border border-gray-100/90 rounded-2xl p-4 sm:p-6 space-y-4 hover:border-emerald-200 transition-all bg-white shadow-2xs">
+    <div 
+      className="border border-gray-100/90 rounded-2xl p-4 sm:p-6 space-y-4 hover:border-emerald-200 transition-all bg-white shadow-2xs"
+      style={{ contentVisibility: 'auto', containIntrinsicSize: '280px' }}
+    >
       {/* 1. Header & Controls Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 pb-3 text-xs">
         <div className="flex items-center gap-2 flex-wrap">
@@ -405,24 +409,39 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
               <span>لفظی تحقیق تیار ہو رہی ہے...</span>
             </div>
           ) : analysis?.wordByWord ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 pt-1" dir="rtl">
-              {analysis.wordByWord.map((wItem, wIdx) => (
-                <div
-                  key={wIdx}
-                  onClick={() => onWordClick(wItem.arabic, arabText, hadith.urdu)}
-                  className="bg-amber-50/50 hover:bg-amber-100/70 border border-amber-200/80 rounded-xl p-2 text-center transition cursor-pointer flex flex-col justify-between shadow-2xs group"
-                >
-                  <span className="font-arabic text-stone-900 font-bold text-base leading-relaxed group-hover:text-amber-950">
-                    {localTashkeel ? wItem.arabic : stripTashkeel(wItem.arabic)}
-                  </span>
-                  <span className="urdu-text text-emerald-950 font-bold text-xs mt-1 border-t border-amber-200/50 pt-1 leading-snug">
-                    {wItem.urdu}
-                  </span>
-                  <span className="text-[9px] text-stone-500 font-arabic mt-0.5 truncate block" title={wItem.sarf}>
-                    {wItem.sarf.split('،')[0]}
-                  </span>
+            <div className="space-y-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 pt-1" dir="rtl">
+                {analysis.wordByWord.slice(0, wordLimit).map((wItem, wIdx) => (
+                  <div
+                    key={wIdx}
+                    onClick={() => onWordClick(wItem.arabic, arabText, hadith.urdu)}
+                    className="bg-amber-50/50 hover:bg-amber-100/70 border border-amber-200/80 rounded-xl p-2 text-center transition cursor-pointer flex flex-col justify-between shadow-2xs group"
+                  >
+                    <span className="font-arabic text-stone-900 font-bold text-base leading-relaxed group-hover:text-amber-950">
+                      {localTashkeel ? wItem.arabic : stripTashkeel(wItem.arabic)}
+                    </span>
+                    <span className="urdu-text text-emerald-950 font-bold text-xs mt-1 border-t border-amber-200/50 pt-1 leading-snug">
+                      {wItem.urdu}
+                    </span>
+                    <span className="text-[9px] text-stone-500 font-arabic mt-0.5 truncate block" title={wItem.sarf}>
+                      {wItem.sarf.split('،')[0]}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              {analysis.wordByWord.length > 24 && (
+                <div className="flex justify-center pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setWordLimit(prev => prev >= analysis.wordByWord.length ? 24 : analysis.wordByWord.length)}
+                    className="px-3.5 py-1 rounded-xl text-xs font-bold font-nastaliq bg-amber-100/80 hover:bg-amber-200 text-amber-900 border border-amber-300/80 transition cursor-pointer shadow-2xs"
+                  >
+                    {wordLimit >= analysis.wordByWord.length
+                      ? 'کم الفاظ دکھائیں (پہلے 24 الفاظ)'
+                      : `مزید الفاظ دیکھیں (+${analysis.wordByWord.length - wordLimit} الفاظ)`}
+                  </button>
                 </div>
-              ))}
+              )}
             </div>
           ) : null}
         </div>
@@ -664,6 +683,7 @@ export default function BookDetailPage() {
   const [globalTashkeel, setGlobalTashkeel] = useState<boolean>(true);
   const [activeNarrator, setActiveNarrator] = useState<NarratorInfo | null>(null);
   const [showPageWordByWord, setShowPageWordByWord] = useState<boolean>(false);
+  const [pageWordLimit, setPageWordLimit] = useState<number>(24);
   const [showPageNotes, setShowPageNotes] = useState<boolean>(false);
   const [pageNotes, setPageNotes] = useState<string>('');
   const [isPageBookmarked, setIsPageBookmarked] = useState<boolean>(false);
@@ -1377,8 +1397,9 @@ ${urduToCopy}
     const romanMode = isRomanUrdu(q);
     const convertedTerms = romanMode ? romanToUrduTerms(q) : [];
 
-    // کسی بھی term (original یا converted) سے match چیک کریں (مع اعراب اور بغیر اعراب)
+    // کسی بھی term (original یا converted) سے match چیک کریں (مع اعراب، بغیر اعراب اور تطبیق شدہ)
     const qStripped = stripTashkeel(q).toLowerCase();
+    const qNormalized = normalizeArabic(q);
     const matchesText = (text: string): boolean => {
       const tLower = text.toLowerCase();
       if (tLower.includes(qLower)) return true;
@@ -1386,8 +1407,14 @@ ${urduToCopy}
         const tStripped = stripTashkeel(text).toLowerCase();
         if (tStripped.includes(qStripped)) return true;
       }
+      if (qNormalized) {
+        const tNormalized = normalizeArabic(text);
+        if (tNormalized.includes(qNormalized)) return true;
+      }
       for (const term of convertedTerms) {
         if (tLower.includes(term.toLowerCase())) return true;
+        const termNorm = normalizeArabic(term);
+        if (termNorm && normalizeArabic(text).includes(termNorm)) return true;
       }
       return false;
     };
@@ -1421,15 +1448,20 @@ ${urduToCopy}
         }
         // عربی متن میں تلاش
         if (matchesText(arabText)) {
-          const idx = arabText.toLowerCase().indexOf(qLower) >= 0
-            ? arabText.toLowerCase().indexOf(qLower)
-            : (() => {
-                for (const t of convertedTerms) {
-                  const found = arabText.toLowerCase().indexOf(t.toLowerCase());
-                  if (found >= 0) return found;
-                }
-                return 0;
-              })();
+          let idx = arabText.toLowerCase().indexOf(qLower);
+          if (idx < 0 && qStripped) {
+            idx = stripTashkeel(arabText).toLowerCase().indexOf(qStripped);
+          }
+          if (idx < 0 && qNormalized) {
+            idx = normalizeArabic(arabText).indexOf(qNormalized);
+          }
+          if (idx < 0) {
+            for (const t of convertedTerms) {
+              const found = arabText.toLowerCase().indexOf(t.toLowerCase());
+              if (found >= 0) { idx = found; break; }
+            }
+          }
+          if (idx < 0) idx = 0;
           const snippet = arabText.slice(Math.max(0, idx - 10), idx + 60);
           results.push({
             pageIndex: pageIdx,
@@ -1441,15 +1473,17 @@ ${urduToCopy}
         }
         // اردو ترجمہ میں تلاش
         if (urduText && matchesText(urduText)) {
-          const idx = urduText.toLowerCase().indexOf(qLower) >= 0
-            ? urduText.toLowerCase().indexOf(qLower)
-            : (() => {
-                for (const t of convertedTerms) {
-                  const found = urduText.toLowerCase().indexOf(t.toLowerCase());
-                  if (found >= 0) return found;
-                }
-                return 0;
-              })();
+          let idx = urduText.toLowerCase().indexOf(qLower);
+          if (idx < 0 && qNormalized) {
+            idx = normalizeArabic(urduText).indexOf(qNormalized);
+          }
+          if (idx < 0) {
+            for (const t of convertedTerms) {
+              const found = urduText.toLowerCase().indexOf(t.toLowerCase());
+              if (found >= 0) { idx = found; break; }
+            }
+          }
+          if (idx < 0) idx = 0;
           const snippet = urduText.slice(Math.max(0, idx - 10), idx + 60);
           results.push({
             pageIndex: pageIdx,
@@ -2476,28 +2510,48 @@ ${urduToCopy}
                   {/* Interlinear Grid for Page */}
                   {showPageWordByWord && pipelineAnalysis?.wordByWord && (
                     <div className="pt-2 border-t border-emerald-100/70 space-y-2">
-                      <span className="text-[11px] font-bold text-amber-900 font-nastaliq flex items-center gap-1">
-                        <span className="w-2 h-2 rounded-full bg-amber-600"></span>
-                        <span>لفظ بہ لفظ لغوی و صرفی تحقیق (انٹرلینیئر گرڈ):</span>
-                      </span>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 pt-1" dir="rtl">
-                        {pipelineAnalysis.wordByWord.map((wItem, wIdx) => (
-                          <div
-                            key={wIdx}
-                            onClick={() => handleWordClick(wItem.arabic, parsedDarsPage.matn, parsedDarsPage.urduTranslation)}
-                            className="bg-amber-50/50 hover:bg-amber-100/70 border border-amber-200/80 rounded-xl p-2 text-center transition cursor-pointer flex flex-col justify-between shadow-2xs group"
-                          >
-                            <span className="font-arabic text-stone-900 font-bold text-base leading-relaxed group-hover:text-amber-950">
-                              {globalTashkeel ? wItem.arabic : stripTashkeel(wItem.arabic)}
-                            </span>
-                            <span className="urdu-text text-emerald-950 font-bold text-xs mt-1 border-t border-amber-200/50 pt-1 leading-snug">
-                              {wItem.urdu}
-                            </span>
-                            <span className="text-[9px] text-stone-500 font-arabic mt-0.5 truncate block" title={wItem.sarf}>
-                              {wItem.sarf.split('،')[0]}
-                            </span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-amber-900 font-nastaliq flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-amber-600"></span>
+                          <span>لفظ بہ لفظ لغوی و صرفی تحقیق (انٹرلینیئر گرڈ):</span>
+                        </span>
+                        <span className="text-[10px] text-stone-400 font-nastaliq">
+                          💡 ہر لفظ پر کلک کر کے مکمل باب و مادہ دیکھیں
+                        </span>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 pt-1" dir="rtl">
+                          {pipelineAnalysis.wordByWord.slice(0, pageWordLimit).map((wItem, wIdx) => (
+                            <div
+                              key={wIdx}
+                              onClick={() => handleWordClick(wItem.arabic, parsedDarsPage.matn, parsedDarsPage.urduTranslation)}
+                              className="bg-amber-50/50 hover:bg-amber-100/70 border border-amber-200/80 rounded-xl p-2 text-center transition cursor-pointer flex flex-col justify-between shadow-2xs group"
+                            >
+                              <span className="font-arabic text-stone-900 font-bold text-base leading-relaxed group-hover:text-amber-950">
+                                {globalTashkeel ? wItem.arabic : stripTashkeel(wItem.arabic)}
+                              </span>
+                              <span className="urdu-text text-emerald-950 font-bold text-xs mt-1 border-t border-amber-200/50 pt-1 leading-snug">
+                                {wItem.urdu}
+                              </span>
+                              <span className="text-[9px] text-stone-500 font-arabic mt-0.5 truncate block" title={wItem.sarf}>
+                                {wItem.sarf.split('،')[0]}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                        {pipelineAnalysis.wordByWord.length > 24 && (
+                          <div className="flex justify-center pt-1">
+                            <button
+                              type="button"
+                              onClick={() => setPageWordLimit(prev => prev >= (pipelineAnalysis?.wordByWord?.length || 0) ? 24 : (pipelineAnalysis?.wordByWord?.length || 0))}
+                              className="px-3.5 py-1 rounded-xl text-xs font-bold font-nastaliq bg-amber-100/80 hover:bg-amber-200 text-amber-900 border border-amber-300/80 transition cursor-pointer shadow-2xs"
+                            >
+                              {pageWordLimit >= (pipelineAnalysis?.wordByWord?.length || 0)
+                                ? 'کم الفاظ دکھائیں (پہلے 24 الفاظ)'
+                                : `مزید الفاظ دیکھیں (+${(pipelineAnalysis?.wordByWord?.length || 0) - pageWordLimit} الفاظ)`}
+                            </button>
                           </div>
-                        ))}
+                        )}
                       </div>
                     </div>
                   )}
@@ -2728,6 +2782,11 @@ ${urduToCopy}
         <NarratorModal
           narrator={activeNarrator}
           onClose={() => setActiveNarrator(null)}
+          onSearchNarrator={(name) => {
+            setActiveNarrator(null);
+            setContentSearch(name);
+            performContentSearch(name);
+          }}
         />
       )}
 

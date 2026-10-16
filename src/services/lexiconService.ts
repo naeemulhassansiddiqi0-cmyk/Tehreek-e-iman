@@ -458,9 +458,9 @@ export const comprehensiveLexicon: Record<string, DictionaryEntry> = {
 export function normalizeArabicWord(word: string): string {
   if (!word) return '';
   return word
-    .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g, '') // Remove Tashkeel & Quranic stops
+    .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED‏]/g, '') // Remove Tashkeel & Quranic stops
     .replace(/[ـ]/g, '')                               // Remove Tatweel
-    .replace(/[ٱإأآ]/g, 'ا')                           // Normalize Alif
+    .replace(/[ٱإأآء]/g, 'ا')                           // Normalize Alif & Hamza
     .replace(/[ةه]/g, 'ه')                             // Standardize Ta Marbuta / Ha
     .replace(/[ىيئ]/g, 'ي')                            // Standardize Ya / Alif Maqsura
     .replace(/[كک]/g, 'ك')                             // Standardize Arabic / Urdu Kaf

@@ -32,6 +32,21 @@ export function stripTashkeel(text: string): string {
   return text.replace(/[\u064B-\u065F\u0670\u06D6-\u06ED‏]/g, '').trim();
 }
 
+// Full Arabic text normalization for fuzzy lookup & search
+export function normalizeArabic(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED‏]/g, '') // Tashkeel / diacritics
+    .replace(/[ـ]/g, '')                               // Tatweel
+    .replace(/[ٱإأآء]/g, 'ا')                           // Standardize Alif & Hamza
+    .replace(/ة/g, 'ه')                                // Ta Marbuta -> Ha
+    .replace(/[ىيئ]/g, 'ي')                            // Alif Maqsura / Ya
+    .replace(/[كک]/g, 'ك')                             // Kaf
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
 // Classical Arabic Grammar & Particle Knowledge Base
 const COMMON_PARTICLES: Record<string, { urdu: string; sarf: string; nahw: string }> = {
   'انما': { urdu: 'صرف / فقط / بے شک', sarf: 'أداة حصر كافّة ومكفوفة (إنّ + ما)', nahw: 'تكفّ إنّ عن العمل وتفيد الحصر' },
@@ -381,27 +396,62 @@ export function getDarsiAnalysisSync(
     iraab.push(`• [${lastWord}]: ختام الجملة النبوية ومحل الشاهد البلاغي وتمامه، ويفيد الإطلاق أو التقييد المقاصدي للنص.`);
   }
 
-  // 7. Context-Aware Darsi Tashreeh & Fiqhi Schools
+  // 7. Context-Aware Darsi Tashreeh & Comparative Fiqhi Schools (المذاهب الأربعة)
   const tashreehPoints: string[] = [];
   const cleanUpper = arabicText;
 
-  if (cleanUpper.includes('صَلَاة') || cleanUpper.includes('صَلِّ') || cleanUpper.includes('رَكْعَتَيْنِ') || cleanUpper.includes('سُجُود')) {
+  if (cleanUpper.includes('صَلَاة') || cleanUpper.includes('صَلِّ') || cleanUpper.includes('رَكْعَتَيْنِ') || cleanUpper.includes('سُجُود') || cleanUpper.includes('رُكُوع') || cleanUpper.includes('إِمَام')) {
     tashreehPoints.push('1. **أحكام الصلاة والعبادة:** الحديث أصل أصيل في مشروعية وهيئات الصلاة وخشوعها، وبيان سننها وآدابها النبوية.');
-    tashreehPoints.push('2. **مذاهب الفقهاء:** اتفق الأئمة الأربعة (أبو حنيفة، مالك، الشافعي، وأحمد) على عظم منزلة الصلاة، واختلفوا في بعض الفروع والسنن بحسب دلالة الألفاظ.');
-  } else if (cleanUpper.includes('وُضُوء') || cleanUpper.includes('طَهُور') || cleanUpper.includes('مَاء') || cleanUpper.includes('طَهَارَة')) {
+    tashreehPoints.push('2. **الفقه المقارن وأقوال المذاهب الأربعة:**');
+    tashreehPoints.push('   • **احناف (الحنفية):** فرضیتِ ارکان، وجوبِ تعدیل ارکان، قراءتِ امام مقتدی کے لیے کافی ہے (من كان له إمام فقراءته له قراءة)، اور قعدۂ اولیٰ واجب ہے۔');
+    tashreehPoints.push('   • **مالکیہ (المالكية):** سدلِ یدین اور عملِ اہل مدینہ کو ترجیح، اور فرض نماز میں اعتدال و طمأنینت رکن ہے۔');
+    tashreehPoints.push('   • **شوافع (الشافعية):** وجوبِ فاتحہ خلف الامام فی کل رکعة، مشروعیتِ رفع یدین عند الرکوع والرفع منه، اور طمأنینت فرض ہے۔');
+    tashreehPoints.push('   • **حنابلہ (الحنابلة):** وضع الیدین علی الصدر، وجوبِ تسبیحات فی الرکوع والسجود، اور تکبیراتِ انتقال واجب ہیں۔');
+  } else if (cleanUpper.includes('وُضُوء') || cleanUpper.includes('طَهُور') || cleanUpper.includes('مَاء') || cleanUpper.includes('طَهَارَة') || cleanUpper.includes('خُفّ') || cleanUpper.includes('جَنَابَة')) {
     tashreehPoints.push('1. **باب الطهارة وإسباغ الوضوء:** يدل الحديث على اشتراط الطهارة لصحة العبادة وفضل المحافظة على النظافة الحسية والمعنوية.');
-    tashreehPoints.push('2. **الفقه المقارن:** مسألة الترتيب والموالاة والنية في الوضوء من المسائل الدقيقة التي اعتنى بها فقهاء الحنفية والجمهور.');
-  } else if (cleanUpper.includes('صَوْم') || cleanUpper.includes('رَمَضَان') || cleanUpper.includes('إِفْطَار')) {
-    tashreehPoints.push('1. **مقاصد الصيام:** الحديث يبرز حقيقة الصوم وتزكية النفس، ومراعاة آداب الإمساك والإفطار.');
-    tashreehPoints.push('2. **الاستنباط الفقهي:** ضبط نية الصوم، وفدية العاجز، وأحكام التطوع عند أئمة المذاهب.');
-  } else if (cleanUpper.includes('زَكَاة') || cleanUpper.includes('صَدَقَة') || cleanUpper.includes('مَال')) {
-    tashreehPoints.push('1. **التكافل وحق المال:** بيان فرائض الصدقات والزكوات وشروط النصاب والحول.');
-    tashreehPoints.push('2. **التوجيه التربوي:** تنقية النفس من الشح والبخل، واعتبار المال وسيلة لا غاية.');
+    tashreehPoints.push('2. **الفقه المقارن وأقوال المذاهب الأربعة:**');
+    tashreehPoints.push('   • **احناف (الحنفية):** فرائضِ وضو چار اعضاء کا دھونا ہیں، نیت اور ترتیب سنتِ مؤکدہ ہیں، اور موزوں پر مسح کی مدت مقیم کے لیے ایک دن رات اور مسافر کے لیے تین دن رات ہے۔');
+    tashreehPoints.push('   • **مالکیہ (المالكية):** نیت، ترتیب، موالات (پے در پے دھونا) اور دلک (عضو کو ملنا) فرض ہیں۔');
+    tashreehPoints.push('   • **شوافع (الشافعية):** فرضیتِ نیت عند غسل اول جزء من الوجه، اور اعضاء میں ترتیب قطعی فرض ہے۔');
+    tashreehPoints.push('   • **حنابلہ (الحنابلة):** وجوبِ تسمیہ عند الوضوء، ترتیب اور موالات فرائض میں شامل ہیں۔');
+  } else if (cleanUpper.includes('صَوْم') || cleanUpper.includes('رَمَضَان') || cleanUpper.includes('إِفْطَار') || cleanUpper.includes('سُحُور') || cleanUpper.includes('اعْتِكَاف')) {
+    tashreehPoints.push('1. **مقاصد الصيام وتزكية النفس:** الحديث يبرز حقيقة الصوم ومراعاة سنن الإمساك والإفطار وتعجيل الخير.');
+    tashreehPoints.push('2. **الفقه المقارن وأقوال المذاهب الأربعة:**');
+    tashreehPoints.push('   • **احناف (الحنفية):** رمضان کے روزے کے لیے رات سے نیت کرنا مستحب ہے اور نصف النہار شرعی سے قبل نیت صحیح ہے؛ عمداً کھانے پر قضا و کفارہ دونوں لازم ہیں۔');
+    tashreehPoints.push('   • **مالکیہ (المالكية):** پورے رمضان المبارک کے لیے ابتدا میں ایک ہی نیت کافی ہے بشرطیکہ تسلسل نہ ٹوٹے۔');
+    tashreehPoints.push('   • **شوافع (الشافعية):** ہر دن کے فرض روزے کے لیے طلوعِ فجر سے قبل تبییتِ نیت (رات سے نیت) شرط ہے۔');
+    tashreehPoints.push('   • **حنابلہ (الحنابلة):** لزومِ نیت قبل الفجر فی الفرض، اور کفارہ صرف جماع پر خاص ہے۔');
+  } else if (cleanUpper.includes('زَكَاة') || cleanUpper.includes('صَدَقَة') || cleanUpper.includes('مَال') || cleanUpper.includes('دِينَار') || cleanUpper.includes('دِرْهَم')) {
+    tashreehPoints.push('1. **التكافل وحق المال:** بيان فرائض الصدقات والزكوات وشروط النصاب والحول في الشريعة.');
+    tashreehPoints.push('2. **الفقه المقارن وأقوال المذاهب الأربعة:**');
+    tashreehPoints.push('   • **احناف (الحنفية):** عروضِ تجارت، سونا چاندی (بشمول مستعمل زیورات) پر حولانِ حول کے بعد 2.5 فیصد زکوٰۃ واجب ہے، اور مالِ صبی میں زکوٰۃ نہیں بجز صدقۂ فطر۔');
+    tashreehPoints.push('   • **مالکیہ (المالكية):** زیورِ مباح میں زکوٰۃ نہیں، اور مالِ نامی میں نصاب کی شرط ہے۔');
+    tashreehPoints.push('   • **شوافع (الشافعية):** مالِ یتیم و مجنون میں ولی پر زکوٰۃ ادا کرنا فرض ہے، اور زیورِ مباح مستثنیٰ ہے۔');
+    tashreehPoints.push('   • **حنابلہ (الحنابلة):** وجوبِ زکوٰۃ فی مال الصغیر والمجنون، اور نصاب کی تکمیل پر فوریت کا حکم۔');
+  } else if (cleanUpper.includes('حَجّ') || cleanUpper.includes('عُمْرَة') || cleanUpper.includes('طَوَاف') || cleanUpper.includes('عَرَفَة') || cleanUpper.includes('إِحْرَام')) {
+    tashreehPoints.push('1. **مناسك الحج وشعائر الله:** بيان هيئات الإحرام والمناسك ومشروعية الطواف والسعي والوقوف بعرفة.');
+    tashreehPoints.push('2. **الفقه المقارن وأقوال المذاهب الأربعة:**');
+    tashreehPoints.push('   • **احناف (الحنفية):** حجِ قِران تمام اقسام میں افضل ہے، طوافِ زیارت فرض اور وقوفِ عرفہ رکنِ اعظم ہے۔');
+    tashreehPoints.push('   • **مالکیہ (المالكية):** افراد افضل ہے، اور طوافِ قدوم واجب ہے۔');
+    tashreehPoints.push('   • **شوافع (الشافعية):** افراد افضل ہے، پھر تمتع، پھر قران؛ اور سعی مستقل رکن ہے۔');
+    tashreehPoints.push('   • **حنابلہ (الحنابلة):** تمتع افضل ہے، اور دمِ تمتع لازم ہے۔');
+  } else if (cleanUpper.includes('نِكَاح') || cleanUpper.includes('زَوْج') || cleanUpper.includes('مَهْر') || cleanUpper.includes('طَلَاق') || cleanUpper.includes('عِدَّة')) {
+    tashreehPoints.push('1. **فقه الأسرة والنكاح:** تنظيم العلاقة الزوجية وصيانة الأعراض والوفاء بالحقوق والمواثيق الغليظة.');
+    tashreehPoints.push('2. **الفقه المقارن وأقوال المذاهب الأربعة:**');
+    tashreehPoints.push('   • **احناف (الحنفية):** عاقلہ بالغہ عورت کا خود نکاح کرنا کفو کی شرط پر صحیح و نافذ ہے؛ شہادتین شرطِ صحت ہیں۔');
+    tashreehPoints.push('   • **جمہور الفقهاء (مالك، الشافعي، أحمد):** لا نكاح إلا بولي وشاهدي عدل؛ ولی کی اجازت شرطِ صحت ہے۔');
+  } else if (cleanUpper.includes('بَيْع') || cleanUpper.includes('تِجَارَة') || cleanUpper.includes('رِبَا') || cleanUpper.includes('شِرَاء') || cleanUpper.includes('دَيْن')) {
+    tashreehPoints.push('1. **المعاملات المالية وأكل الحلال:** صيانة الأموال من الربا والغرر وبيان شروط صحة العقود ولزومها.');
+    tashreehPoints.push('2. **الفقه المقارن وأقوال المذاهب الأربعة:**');
+    tashreehPoints.push('   • **احناف (الحنفية):** انعقادِ بیع باالایجاب والقبول، فرق بین الفاسد والباطل، وعدم ثبوت خیار المجلس بعد العقد إلا بالتراضي.');
+    tashreehPoints.push('   • **شوافع و حنابلہ (الشافعية والحنابلة):** ثبوت خیار المجلس لقوله ﷺ «البيعان بالخيار ما لم يتفرقا».');
+    tashreehPoints.push('   • **مالکیہ (المالكية):** لزوم العقد بمجرد التراضي ومراعاة عمل أهل المدينة في عدم إعمال خيار المجلس.');
   } else {
     tashreehPoints.push('1. **التوجيه النبوي والتربية الإيمانية:** يتضمن النص المصطفوي قاعدة تشريعية جليلة في بناء الشخصية المسلمة وربط الأقوال والأفعال بالمرضاة الإلهية.');
-    tashreehPoints.push('2. **المعنى المقاصدي والدراسي:** على طالب العلم استنباط العلل والوجوه البلاغية من نظم الألفاظ النبوية الشريفة.');
+    tashreehPoints.push('2. **المعنى المقاصدي والدراسي:** على طالب العلم استنباط العلل والوجوه البلاغية والفوائد التربوية من نظم الألفاظ النبوية الشريفة.');
+    tashreehPoints.push('3. **مذاهب أئمة الفقه والحديث:** اتفق الأئمة الأربعة على لزوم اتباع السنة النبوية المطهرة وتقديمها على كل رأي وقياس.');
   }
-  tashreehPoints.push('3. **العمل والاتباع:** لزوم العمل بما صح عن النبي ﷺ وتقديمه على الرأي والقياس المخالف.');
+  tashreehPoints.push('4. **العمل والاتباع:** العمل بالحديث الشريف فلاح الدارين، ومفتاح السعادة والاستقامة على الصراط المستقيم.');
 
   // 8. Hawashi & Takhrij
   const hawashi = [
