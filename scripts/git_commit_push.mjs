@@ -6,7 +6,7 @@ try {
 
   console.log('--- Committing ---');
   try {
-    execSync('git commit -m "fix: dynamic book slug routing, reactive navigation shims, and robust instant pagination sync"', { stdio: 'inherit' });
+    execSync('git commit -m "feat: upgrade AI Chatbot (AI Ustadh) with official branding, 3 academic modes, 147-book RAG citations & one-click citation copy"', { stdio: 'inherit' });
   } catch (e) {
     console.log('Commit note:', e.message);
   }

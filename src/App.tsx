@@ -13,7 +13,7 @@ import { PrayerTimesView } from './components/PrayerTimes/PrayerTimesView';
 import { SacredAudioPlayer } from './components/AudioPlayer/SacredAudioPlayer';
 import { NaatPlayer } from './components/NaatPlayer';
 import { NaatPlayerButton } from './components/NaatPlayerButton';
-import { Chatbot } from './components/Chatbot';
+import { AIChatbot as Chatbot } from './components/AIChatbot';
 import { booksDatabase } from './data/booksData';
 import { Book, AppTab } from './types';
 import { TehreekImanLogo } from './components/TehreekImanLogo';
