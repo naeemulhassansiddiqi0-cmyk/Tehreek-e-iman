@@ -31,7 +31,7 @@ import { WordLookupModal } from "@/components/Reader/WordLookupModal";
 import { NarratorModal } from "@/components/Reader/NarratorModal";
 import { parseSanadNarratorSegments, NarratorInfo } from "@/services/rijalService";
 import { WordLookupContextInfo } from "@/types";
-import { getDarsiAnalysis, getDarsiAnalysisSync, DarsiAnalysis, segmentSanadAndMatn, stripTashkeel } from "@/services/darsiPipelineService";
+import { getDarsiAnalysisSync, segmentSanadAndMatn, stripTashkeel } from "@/services/darsiPipelineService";
 
 interface HadithItem {
   hadithnumber?: number;
@@ -659,7 +659,6 @@ export default function BookDetailPage() {
   const [showScholarlySections, setShowScholarlySections] = useState<boolean>(true);
   const [lookupWord, setLookupWord] = useState<string | null>(null);
   const [lookupContext, setLookupContext] = useState<WordLookupContextInfo | null>(null);
-  const [pipelineAnalysis, setPipelineAnalysis] = useState<DarsiAnalysis | null>(null);
   
   // Madaris Student & Ulama Specialized Tools State
   const [globalTashkeel, setGlobalTashkeel] = useState<boolean>(true);
@@ -1250,28 +1249,18 @@ ${urduToCopy}
     });
   };
 
-  // On-demand AI Darsi Analysis Pipeline for pages missing Tashreeh/I'rab/Hawashi
-  useEffect(() => {
-    if (!parsedDarsPage) {
-      setPipelineAnalysis(null);
-      return;
-    }
+  // Synchronous instant Darsi Analysis Pipeline for pages missing Tashreeh/I'rab/Hawashi (zero loading delay)
+  const pipelineAnalysis = useMemo(() => {
+    if (!parsedDarsPage) return null;
     if (parsedDarsPage.tashreeh && parsedDarsPage.iraab && parsedDarsPage.hawashi) {
-      setPipelineAnalysis(null);
-      return;
+      return null;
     }
-    let isMounted = true;
-    getDarsiAnalysis(
-      slug || 'musnad-ahmad',
+    return getDarsiAnalysisSync(
+      slug || 'book',
       currentPage + 1,
       parsedDarsPage.matn || '',
       parsedDarsPage.urduTranslation || ''
-    ).then(res => {
-      if (isMounted) {
-        setPipelineAnalysis(res);
-      }
-    });
-    return () => { isMounted = false; };
+    );
   }, [slug, currentPage, parsedDarsPage]);
 
   const handleShare = () => {
