@@ -551,6 +551,54 @@ export const RIJAL_DATABASE: Record<string, NarratorInfo> = {
     deathYear: '74ھ',
     rank: 'صحابي جليل — وافد النبي ﷺ وراوي صفة صلاته',
     notes: 'وفد على النبي ﷺ في شببة من قومه فأقاموا عنده عشرين ليلة، فقال لهم: ارجعوا إلى أهليكم فعلموهم وصلوا كما رأيتموني أصلي.'
+  },
+  'عبد الله بن أحمد': {
+    name: 'عبد الله بن أحمد بن حنبل',
+    fullName: 'عبد الله بن أحمد بن محمد بن حنبل الشيباني (أبو عبد الرحمن)',
+    tabaqah: 'الطبقة الحادية عشرة (حافظ المحدثين وجامع المسند)',
+    deathYear: '290ھ',
+    rank: 'إمام ثقة ثبت حافظ جليل — راوي مسند أبيه وزوائده',
+    notes: 'ابن إمام أهل السنة، سمع المسند كله من أبيه، وأضاف إليه زوائد المسند وزوائد الزهد، قال فيه والده: عبد الله رُزق حظاً من علم الحديث.'
+  },
+  'الإمام أحمد بن حنبل': {
+    name: 'الإمام أحمد بن حنبل',
+    fullName: 'أحمد بن محمد بن حنبل بن هلال الشيباني المروزي ثم البغدادي (أبو عبد الله)',
+    tabaqah: 'الطبقة العاشرة (إمام أهل السنة والجماعة)',
+    deathYear: '241ھ',
+    rank: 'إمام أهل السنة والجماعة — حامي حياض الدين وصاحب المسند الكبير',
+    notes: 'صبر في المحنة وثبت كالجبل الأشم، قال فيه الشافعي: خرجت من بغداد فما خلفت بها أحداً أورع ولا أتقى ولا أفقه ولا أحفظ من أحمد بن حنبل.'
+  },
+  'هشيم': {
+    name: 'هشيم بن بشير',
+    fullName: 'هشيم بن بشير بن القاسم بن دينار السلمي الواسطي (أبو معاوية)',
+    tabaqah: 'الطبقة السابعة (كبار شيوخ الإمام أحمد)',
+    deathYear: '183ھ',
+    rank: 'ثقة ثبت كثير الحديث حافظ',
+    notes: 'من أجلّ شيوخ الإمام أحمد، كان من أئمة الحديث وحفاظ العراق.'
+  },
+  'عبد الرحمن بن مهدي': {
+    name: 'عبد الرحمن بن مهدي',
+    fullName: 'عبد الرحمن بن مهدي بن حسان العنبري البصري (أبو سعيد)',
+    tabaqah: 'الطبقة التاسعة (إمام الجرح والتعديل ونقد الرجال)',
+    deathYear: '198ھ',
+    rank: 'إمام ثبت حجة قدوة عمدة في الحديث والعلل',
+    notes: 'قرين يحيى بن سعيد القطان، وإليه أرسل الشافعي كتابه «الرسالة» في أصول الفقه.'
+  },
+  'عبد الله بن نمير': {
+    name: 'عبد الله بن نمير',
+    fullName: 'عبد الله بن نمير الهمداني الخارفي الكوفي (أبو هشام)',
+    tabaqah: 'الطبقة التاسعة (ثقة ثبت كوفي)',
+    deathYear: '199ھ',
+    rank: 'ثقة ثبت مأمون صاحب حديث وسنة',
+    notes: 'روى عن الأعمش وسفيان الثوري وإسماعيل بن أبي خالد، ومن كبار شیوخ الإمام أحمد.'
+  },
+  'محمد بن جعفر': {
+    name: 'غندر (محمد بن جعفر)',
+    fullName: 'محمد بن جعفر الهذلي مولاهم البصري (غندر)',
+    tabaqah: 'الطبقة التاسعة (أثبت الناس في شعبة)',
+    deathYear: '193ھ',
+    rank: 'ثقة صحيح الكتاب متقن عابد',
+    notes: 'صاحب شعبة الأثبت، روى عنه الإمام أحمد وإسحاق بن راهويه وخلق.'
   }
 };
 
@@ -566,6 +614,9 @@ RIJAL_DATABASE['سفيان'] = RIJAL_DATABASE['سفيان بن عيينة'];
 RIJAL_DATABASE['حماد'] = RIJAL_DATABASE['حماد بن زيد'];
 RIJAL_DATABASE['أيوب السختياني'] = RIJAL_DATABASE['أيوب'];
 RIJAL_DATABASE['أبي قلابة'] = RIJAL_DATABASE['أبو قلابة'];
+RIJAL_DATABASE['أحمد بن حنبل'] = RIJAL_DATABASE['الإمام أحمد بن حنبل'];
+RIJAL_DATABASE['هشيم بن بشير'] = RIJAL_DATABASE['هشيم'];
+RIJAL_DATABASE['غندر'] = RIJAL_DATABASE['محمد بن جعفر'];
 
 // Strict Arabic Stop Words (Must NEVER be recognized as standalone narrators)
 export const NARRATOR_STOP_WORDS = new Set([
@@ -661,7 +712,14 @@ export const NARRATOR_PATTERNS = [
   { pattern: /(?:أبو\s+النعمان|أبي\s+النعمان)/, key: 'أبو النعمان' },
   { pattern: /(?:حماد\s+بن\s+زيد|حماد\s+بن\s+سلمة|حماد)/, key: 'حماد بن زيد' },
   { pattern: /(?:أيوب\s+السختياني|أيوب)/, key: 'أيوب' },
-  { pattern: /(?:أبو\s+قلابة|أبي\s+قلابة)/, key: 'أبو قلابة' }
+  { pattern: /(?:أبو\s+قلابة|أبي\s+قلابة)/, key: 'أبو قلابة' },
+  { pattern: /(?:عَبْدُ\s+اللَّهِ\s+بْنُ\s+أَحْمَدَ|عبد\s+الله\s+بن\s+احمد)/, key: 'عبد الله بن أحمد' },
+  { pattern: /(?:أَحْمَدُ\s+بْنُ\s+حَنْبَلٍ|احمد\s+بن\s+حنبل|الإمام\s+أحمد)/, key: 'الإمام أحمد بن حنبل' },
+  { pattern: /(?:هُشَيْمُ\s+بْنُ\s+بَشِيرٍ|هشيم\s+بن\s+بشير|هشيم)/, key: 'هشيم' },
+  { pattern: /(?:عَبْدُ\s+الرَّحْمَنِ\s+بْنُ\s+مَهْدِيٍّ|عبد\s+الرحمن\s+بن\s+مهدي)/, key: 'عبد الرحمن بن مهدي' },
+  { pattern: /(?:عَبْدُ\s+اللَّهِ\s+بْنُ\s+نُمَيْرٍ|عبد\s+الله\s+بن\s+نمير)/, key: 'عبد الله بن نمير' },
+  { pattern: /(?:مُحَمَّدُ\s+بْنُ\s+جَعْفَرٍ|محمد\s+بن\s+جعفر|غندر)/, key: 'محمد بن جعفر' },
+  { pattern: /(?:مِسْعَرُ\s+بْنُ\s+كِدَامٍ|مسعر\s+بن\s+كدام|مسعر)/, key: 'مسعر' }
 ];
 
 export interface SanadSegment {
@@ -693,6 +751,25 @@ export function parseSanadNarratorSegments(sanad: string): SanadSegment[] {
     strippedLength: number;
   }
   const matches: MatchItem[] = [];
+
+  // Layer 0: Signature Musnad Ahmad formula (حدثنا عبد الله حدثني أبي)
+  const musnadSigRegex = /(?:^|[\s،,.:])(حدثنا\s+)?(عبد\s+الله)\s+(حدثني\s+)?(أبي|ابي)(?=$|[\s،,.:])/g;
+  let mm;
+  while ((mm = musnadSigRegex.exec(stripped)) !== null) {
+    const abdMatch = mm[2];
+    const abdOffset = mm.index + (mm[1] ? mm[1].length : 0);
+    const abdStart = indexMap[abdOffset];
+    let abdEnd = indexMap[abdOffset + abdMatch.length - 1] + 1;
+    while (abdEnd < sanad.length && /[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/.test(sanad[abdEnd])) abdEnd++;
+    matches.push({ rawStart: abdStart, rawEnd: abdEnd, key: 'عبد الله بن أحمد', strippedLength: abdMatch.length });
+
+    const abiMatch = mm[4];
+    const abiOffset = mm.index + mm[0].length - abiMatch.length;
+    const abiStart = indexMap[abiOffset];
+    let abiEnd = indexMap[abiOffset + abiMatch.length - 1] + 1;
+    while (abiEnd < sanad.length && /[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/.test(sanad[abiEnd])) abiEnd++;
+    matches.push({ rawStart: abiStart, rawEnd: abiEnd, key: 'الإمام أحمد بن حنبل', strippedLength: abiMatch.length });
+  }
 
   // Layer 1: Static pattern recognition
   for (const item of NARRATOR_PATTERNS) {

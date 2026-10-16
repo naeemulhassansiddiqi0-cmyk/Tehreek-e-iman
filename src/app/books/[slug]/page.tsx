@@ -1213,6 +1213,50 @@ ${urduToCopy}
     };
   }, [isHadith, currentNonHadithPage]);
 
+  // Sanad vs Matn separation for Chunked Dars Books (e.g. Musnad Ahmad)
+  const parsedDarsSplit = useMemo(() => {
+    if (!parsedDarsPage?.matn) return { sanad: '', matn: '' };
+    return segmentSanadAndMatn(parsedDarsPage.matn);
+  }, [parsedDarsPage?.matn]);
+
+  const displayDarsSanad = globalTashkeel ? parsedDarsSplit.sanad : stripTashkeel(parsedDarsSplit.sanad);
+  const displayDarsMatn = globalTashkeel ? (parsedDarsSplit.matn || parsedDarsPage?.matn || '') : stripTashkeel(parsedDarsSplit.matn || parsedDarsPage?.matn || '');
+
+  const renderDarsSanadText = () => {
+    if (!parsedDarsSplit.sanad) return null;
+    const segments = parseSanadNarratorSegments(displayDarsSanad);
+    return segments.map((seg, segIdx) => {
+      if (seg.type === 'narrator' && seg.narrator) {
+        const narrator = seg.narrator;
+        return (
+          <span
+            key={`dars-narrator-${segIdx}`}
+            onClick={() => setActiveNarrator(narrator)}
+            className="inline-flex items-center gap-1 px-2 py-0.5 mx-1 rounded-md bg-emerald-100/95 text-emerald-950 font-bold hover:bg-emerald-200 border border-emerald-300 transition-colors cursor-pointer select-text text-xs shadow-2xs"
+            title={`راوی: ${narrator.name} (${narrator.rank}) — سوانح و توثیق کے لیے کلک کریں`}
+          >
+            <UserCheck className="w-3.5 h-3.5 text-emerald-800" />
+            <span>{seg.text}</span>
+          </span>
+        );
+      }
+
+      const tokens = seg.text.split(/(\s+)/);
+      return tokens.map((tok, tokIdx) => {
+        if (/^\s+$/.test(tok)) return tok;
+        return (
+          <span
+            key={`dars-sanad-word-${segIdx}-${tokIdx}`}
+            onClick={() => handleWordClick(tok, displayDarsSanad, parsedDarsPage?.urduTranslation || pipelineAnalysis?.urduTranslation)}
+            className="cursor-pointer hover:bg-amber-100/60 rounded px-0.5 transition-colors select-text inline-block"
+          >
+            {tok}
+          </span>
+        );
+      });
+    });
+  };
+
   // On-demand AI Darsi Analysis Pipeline for pages missing Tashreeh/I'rab/Hawashi
   useEffect(() => {
     if (!parsedDarsPage) {
@@ -2303,14 +2347,35 @@ ${urduToCopy}
                   </div>
                 )}
 
-                {/* 2. Top Section: Original Arabic Matn with Clickable Words */}
+                {/* 2a. Sanad Section (سندِ حدیث شریف) with Dynamic Narrator Badges */}
+                {parsedDarsSplit.sanad && (
+                  <div className="bg-stone-50/80 border border-stone-200/80 rounded-2xl p-4 sm:p-5 shadow-xs space-y-2">
+                    <div className="flex items-center justify-between border-b border-stone-200/60 pb-2">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-stone-200 text-stone-800 border border-stone-300/70 font-nastaliq">
+                        <span>سندِ حدیث شریف (سلسلۂ اسناد)</span>
+                      </span>
+                      <span className="text-[11px] text-stone-500 font-nastaliq">
+                        💡 راوی کے نام پر کلک کر کے جرح و تعدیل و سوانح دیکھیں
+                      </span>
+                    </div>
+                    <p
+                      className="font-arabic text-stone-800 text-right leading-loose select-text px-1"
+                      dir="rtl"
+                      style={{ fontSize: (bookFontSize + 2) + 'px', lineHeight: '2.4' }}
+                    >
+                      {renderDarsSanadText()}
+                    </p>
+                  </div>
+                )}
+
+                {/* 2b. Matn Section: Original Arabic Matn with Clickable Words */}
                 {parsedDarsPage.matn && (
                   <div className="bg-amber-50/40 border border-amber-200/60 rounded-2xl p-5 sm:p-7 shadow-xs space-y-3.5">
                     <div className="flex flex-wrap items-center justify-between border-b border-amber-200/50 pb-2.5 gap-2">
                       <div className="flex items-center gap-2">
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300/60 font-nastaliq">
                           <BookOpen className="w-3.5 h-3.5 text-amber-800" />
-                          <span>المتن الأصلي المعتمد (عربی متن)</span>
+                          <span>{isChunkedBook ? 'متنِ حدیث مبارک (کلامِ نبوی ﷺ)' : 'المتن الأصلي المعتمد (عربی متن)'}</span>
                         </span>
                         <span className="text-[11px] font-bold text-amber-850 font-nastaliq">
                           {isChunkedBook ? `حدیث شریف نمبر: ${(currentPage + 1).toLocaleString('ur-PK')}` : 'متنِ کتاب (مستند عربی متن)'}
@@ -2381,7 +2446,7 @@ ${urduToCopy}
                       dir="rtl"
                       style={{ fontSize: (bookFontSize + 4) + 'px', lineHeight: '2.5' }}
                     >
-                      {renderClickableArabic(parsedDarsPage.matn, parsedDarsPage.matn, parsedDarsPage.urduTranslation || pipelineAnalysis?.urduTranslation)}
+                      {renderClickableArabic(displayDarsMatn, parsedDarsPage.matn, parsedDarsPage.urduTranslation || pipelineAnalysis?.urduTranslation)}
                     </p>
                     <div className="pt-2 border-t border-amber-200/40 flex items-center justify-between text-[11px] font-nastaliq text-amber-900/80">
                       <span>{isChunkedBook ? `مسند أحمد: رقم الحديث ${(currentPage + 1).toLocaleString('ur-PK')}، إسناده صحيح/حسن` : (parsedDarsPage.ref || '')}</span>
