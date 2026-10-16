@@ -302,13 +302,13 @@ export function analyzeWord(token: string, _prevWord?: string, _nextWord?: strin
   };
 }
 
-// Generate genuine, Matn-specific Darsi analysis
-export async function getDarsiAnalysis(
+// Generate genuine, Matn-specific Darsi analysis synchronously
+export function getDarsiAnalysisSync(
   bookId: string,
   hadithNumber: number,
   arabicText: string,
   existingTranslation?: string | null
-): Promise<DarsiAnalysis> {
+): DarsiAnalysis {
   const cacheKey = `${CACHE_PREFIX}${bookId}_${hadithNumber}`;
 
   // 1. Memory Cache
@@ -429,6 +429,15 @@ export async function getDarsiAnalysis(
   }
 
   return analysis;
+}
+
+export async function getDarsiAnalysis(
+  bookId: string,
+  hadithNumber: number,
+  arabicText: string,
+  existingTranslation?: string | null
+): Promise<DarsiAnalysis> {
+  return getDarsiAnalysisSync(bookId, hadithNumber, arabicText, existingTranslation);
 }
 
 export const generateAuthenticDarsiAnalysis = getDarsiAnalysis;

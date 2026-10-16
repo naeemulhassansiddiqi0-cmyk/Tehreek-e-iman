@@ -31,7 +31,7 @@ import { WordLookupModal } from "@/components/Reader/WordLookupModal";
 import { NarratorModal } from "@/components/Reader/NarratorModal";
 import { parseSanadNarratorSegments, NarratorInfo } from "@/services/rijalService";
 import { WordLookupContextInfo } from "@/types";
-import { getDarsiAnalysis, DarsiAnalysis, segmentSanadAndMatn, stripTashkeel } from "@/services/darsiPipelineService";
+import { getDarsiAnalysis, getDarsiAnalysisSync, DarsiAnalysis, segmentSanadAndMatn, stripTashkeel } from "@/services/darsiPipelineService";
 
 interface HadithItem {
   hadithnumber?: number;
@@ -138,8 +138,15 @@ function HadithCardDarsiView({
   const [showNotes, setShowNotes] = useState<boolean>(false);
   const [localTashkeel, setLocalTashkeel] = useState<boolean>(globalTashkeel);
   const [copiedRef, setCopiedRef] = useState<boolean>(false);
-  const [analysis, setAnalysis] = useState<DarsiAnalysis | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  // Instant synchronous Darsi Analysis (zero network delay or loading hangs)
+  const analysis = useMemo(() => {
+    const needsUrdu = !hadith.urdu || hadith.urdu.trim() === '';
+    if (needsUrdu || isOpen || showWordByWord) {
+      return getDarsiAnalysisSync(slug, hadithNum, arabText, hadith.urdu);
+    }
+    return null;
+  }, [isOpen, showWordByWord, slug, hadithNum, arabText, hadith.urdu]);
+  const loading = false;
   
   // Student Notes & Bookmarking in LocalStorage
   const noteKey = `tehreek_notes_${slug}_${hadithNum}`;
@@ -161,20 +168,6 @@ function HadithCardDarsiView({
       }
     } catch {}
   }, [noteKey, bmKey]);
-
-  useEffect(() => {
-    const needsUrdu = !hadith.urdu || hadith.urdu.trim() === '';
-    if ((needsUrdu || isOpen || showWordByWord) && !analysis && !loading) {
-      setLoading(true);
-      getDarsiAnalysis(slug, hadithNum, arabText, hadith.urdu)
-        .then(res => {
-          setAnalysis(res);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    }
-  }, [isOpen, showWordByWord, analysis, loading, slug, hadithNum, arabText, hadith.urdu]);
 
   const toggleBookmark = () => {
     const next = !isBookmarked;
