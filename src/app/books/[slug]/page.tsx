@@ -24,7 +24,11 @@ import {
   Eye,
   EyeOff,
   UserCheck,
-  Layers
+  Layers,
+  Maximize2,
+  Minimize2,
+  BookOpenCheck,
+  Trash2
 } from "lucide-react";
 import { UrduStyler } from "@/components/UrduStyler";
 import { GlobalComments } from "@/components/GlobalComments";
@@ -168,6 +172,7 @@ function HadithCardDarsiView({
   const bmKey = `tehreek_bm_${slug}_${hadithNum}`;
   const [localNotes, setLocalNotes] = useState<string>('');
   const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
+  const [noteSavedFeedback, setNoteSavedFeedback] = useState<boolean>(false);
 
   useEffect(() => {
     setLocalTashkeel(globalTashkeel);
@@ -192,6 +197,25 @@ function HadithCardDarsiView({
         localStorage.setItem(bmKey, next ? 'true' : 'false');
       }
     } catch {}
+  };
+
+  const handleSaveNote = () => {
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(noteKey, localNotes);
+        setNoteSavedFeedback(true);
+        setTimeout(() => setNoteSavedFeedback(false), 2500);
+      }
+    } catch {}
+  };
+
+  const handleClearNote = () => {
+    if (typeof window !== 'undefined' && window.confirm('کیا آپ واقعی یہ ذاتی نوٹ حذف کرنا چاہتے ہیں؟')) {
+      setLocalNotes('');
+      try {
+        localStorage.removeItem(noteKey);
+      } catch {}
+    }
   };
 
   const handleCopyWithRef = () => {
@@ -288,6 +312,24 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
               نسخۂ معتمد
             </span>
           )}
+          {/* Note Presence Badge */}
+          {localNotes && localNotes.trim().length > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowNotes(true)}
+              className="inline-flex items-center gap-1 font-bold text-indigo-900 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 px-2.5 py-0.5 rounded-full font-nastaliq text-[11px] transition cursor-pointer shadow-2xs"
+              title="ذاتی درسی نوٹ دیکھنے اور ترمیم کے لیے کلک کریں"
+            >
+              <FileEdit className="w-3 h-3 text-indigo-600" />
+              <span>📝 ذاتی درسی نوٹ موجود ہے</span>
+            </button>
+          )}
+          {isBookmarked && (
+            <span className="inline-flex items-center gap-1 font-bold text-amber-900 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full font-nastaliq text-[11px] shadow-2xs">
+              <BookmarkCheck className="w-3 h-3 text-amber-600" />
+              <span>محفوظ شدہ (بک مارک)</span>
+            </span>
+          )}
         </div>
 
         {/* Action Buttons Toolbar for Madaris Students */}
@@ -322,29 +364,32 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
           <button
             type="button"
             onClick={toggleBookmark}
-            className={`p-1.5 rounded-lg border transition cursor-pointer ${
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold font-nastaliq border transition cursor-pointer shadow-2xs ${
               isBookmarked
-                ? 'bg-amber-50 text-amber-600 border-amber-300'
-                : 'bg-stone-50 hover:bg-stone-100 text-stone-400 hover:text-stone-700 border-gray-200'
+                ? 'bg-amber-100 text-amber-950 border-amber-300 font-black'
+                : 'bg-stone-50 hover:bg-amber-50 text-stone-600 hover:text-amber-900 border-gray-200'
             }`}
-            title={isBookmarked ? 'محفوظ شدہ حدیث (بک مارک ہٹائیں)' : 'حدیث کو محفوظ کریں (بک مارک)'}
+            title={isBookmarked ? 'محفوظ شدہ حدیث (بک مارک ہٹائیں)' : 'حدیث کو بک مارک میں محفوظ کریں'}
           >
-            {isBookmarked ? <BookmarkCheck className="w-3.5 h-3.5 fill-amber-500 text-amber-600" /> : <Bookmark className="w-3.5 h-3.5" />}
+            {isBookmarked ? <BookmarkCheck className="w-3.5 h-3.5 fill-amber-500 text-amber-600" /> : <Bookmark className="w-3.5 h-3.5 text-stone-500" />}
+            <span>{isBookmarked ? 'محفوظ ہے' : 'بک مارک'}</span>
           </button>
 
           {/* Student Darsi Notes Button */}
           <button
             type="button"
             onClick={() => setShowNotes(!showNotes)}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold font-nastaliq transition cursor-pointer border ${
-              showNotes || localNotes
-                ? 'bg-indigo-50 text-indigo-900 border-indigo-200 shadow-2xs'
-                : 'bg-stone-50 hover:bg-stone-100 text-stone-600 border-gray-200'
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold font-nastaliq transition cursor-pointer border shadow-2xs ${
+              showNotes
+                ? 'bg-indigo-600 text-white border-indigo-700 font-black'
+                : localNotes
+                  ? 'bg-indigo-50 text-indigo-950 border-indigo-300 font-black'
+                  : 'bg-stone-50 hover:bg-indigo-50 text-stone-600 hover:text-indigo-900 border-gray-200'
             }`}
-            title="اس حدیث شریف پر اپنے علمی نوٹس لکھیں"
+            title="اس حدیث شریف پر اپنے درسی یا تحقیقی نوٹس لکھیں"
           >
-            <FileEdit className="w-3 h-3 text-indigo-700" />
-            <span>{localNotes ? 'علمی نوٹس (1)' : 'نوٹ شامل کریں'}</span>
+            <FileEdit className={`w-3 h-3 ${showNotes ? 'text-white' : 'text-indigo-600'}`} />
+            <span>{showNotes ? 'نوٹس بند کریں' : (localNotes ? 'ذاتی نوٹ (محفوظ)' : '+ درسی نوٹ')}</span>
           </button>
         </div>
       </div>
@@ -501,16 +546,56 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
         </div>
       )}
 
-      {/* 6. ذاتی علمی نوٹس (Student Marginalia) */}
+      {/* 6. ذاتی علمی نوٹس (Personal Study Notes & Marginalia) */}
       {showNotes && (
-        <div className="bg-indigo-50/50 border border-indigo-200 rounded-2xl p-3.5 space-y-2" dir="rtl">
-          <div className="flex items-center justify-between text-xs font-nastaliq text-indigo-950">
-            <span className="font-bold flex items-center gap-1.5">
-              <FileEdit className="w-3.5 h-3.5 text-indigo-700" />
-              <span>ذاتی علمی و درسی نوٹس (برائے طلبۂ درسِ نظامی و اساتذہ):</span>
-            </span>
-            <span className="text-[10px] text-stone-400">خودکار محفوظ (LocalStorage)</span>
+        <div className="bg-gradient-to-b from-indigo-50/80 to-indigo-50/30 border-2 border-indigo-200/90 rounded-2xl p-4 sm:p-5 space-y-3 shadow-xs" dir="rtl">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-indigo-100 pb-2.5">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
+              <h4 className="font-bold font-nastaliq text-xs sm:text-sm text-indigo-950 flex items-center gap-1.5">
+                <FileEdit className="w-4 h-4 text-indigo-700" />
+                <span>ذاتی علمی و درسی نوٹس (برائے طلبۂ درسِ نظامی، اساتذہ و محققین)</span>
+              </h4>
+            </div>
+            <div className="flex items-center gap-2 text-[11px] font-nastaliq">
+              {noteSavedFeedback && (
+                <span className="text-emerald-700 bg-emerald-100/90 border border-emerald-300 px-2 py-0.5 rounded-md font-bold animate-pulse">
+                  ✓ نوٹ کامیابی سے محفوظ ہو گیا!
+                </span>
+              )}
+              <span className="text-stone-400 bg-white/80 px-2 py-0.5 rounded-md border border-indigo-100 text-[10px]">
+                خودکار محفوظ (LocalStorage)
+              </span>
+            </div>
           </div>
+
+          {/* Quick Annotation Helper Chips */}
+          <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-nastaliq">
+            <span className="text-indigo-900 font-bold ml-1">فوری ٹیگز شامل کریں:</span>
+            {[
+              '【امتحانی نکتہ】',
+              '【فقہی مسئلہ】',
+              '【تحقیق سند و رجال】',
+              '【استاد محترم کا نکتہ】',
+              '【لغوی بحث】'
+            ].map((tag, tagIdx) => (
+              <button
+                key={tagIdx}
+                type="button"
+                onClick={() => {
+                  const updated = localNotes ? `${localNotes}\n${tag} ` : `${tag} `;
+                  setLocalNotes(updated);
+                  try {
+                    localStorage.setItem(noteKey, updated);
+                  } catch {}
+                }}
+                className="px-2 py-0.5 rounded-md bg-white hover:bg-indigo-100/80 text-indigo-900 border border-indigo-200 text-[10px] font-bold transition cursor-pointer shadow-2xs"
+              >
+                + {tag}
+              </button>
+            ))}
+          </div>
+
           <textarea
             value={localNotes}
             onChange={(e) => {
@@ -519,10 +604,39 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
                 localStorage.setItem(noteKey, e.target.value);
               } catch {}
             }}
-            placeholder="اس حدیث شریف پر اپنے درسی نوٹس، اساتذہ کے اہم نکات، فقہی جزئیات یا امتحانی فوائد درج فرمائیں..."
-            className="w-full p-3 bg-white border border-indigo-200 rounded-xl text-xs font-nastaliq text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition resize-y min-h-[75px]"
-            rows={3}
+            placeholder="اس حدیث مبارک پر اپنے درسی نوٹس، اساتذہ کے اہم نکات، فقہی جزئیات، اشکال و جواب یا امتحانی فوائد درج فرمائیں..."
+            className="w-full p-3 sm:p-4 bg-white border border-indigo-200/90 rounded-xl text-xs sm:text-sm font-nastaliq text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition resize-y min-h-[90px] leading-relaxed shadow-inner"
+            rows={4}
           />
+
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-indigo-100 text-xs font-nastaliq">
+            <div className="flex items-center gap-2 text-stone-400 text-[11px]">
+              <span>الفاظ: {localNotes.trim() ? localNotes.trim().split(/\s+/).length : 0}</span>
+              <span>•</span>
+              <span>حروف: {localNotes.length}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {localNotes && (
+                <button
+                  type="button"
+                  onClick={handleClearNote}
+                  className="px-3 py-1.5 rounded-xl text-[11px] font-bold text-red-700 hover:bg-red-50 border border-red-200 transition cursor-pointer flex items-center gap-1"
+                  title="نوٹ حذف کریں"
+                >
+                  <Trash2 className="w-3 h-3 text-red-500" />
+                  <span>حذف کریں</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handleSaveNote}
+                className="px-4 py-1.5 rounded-xl text-xs font-bold bg-indigo-700 hover:bg-indigo-800 text-white shadow-xs transition cursor-pointer flex items-center gap-1"
+              >
+                <Check className="w-3.5 h-3.5 text-amber-300" />
+                <span>نوٹ محفوظ کریں (Save Note)</span>
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -920,6 +1034,30 @@ export default function BookDetailPage({ slugProp }: { slugProp?: string } = {})
   const [isTafseerOpen, setIsTafseerOpen] = useState<boolean>(false);
   const [quranViewMode, setQuranViewMode] = useState<'mushaf' | 'interlinear'>('mushaf');
   const [sidebarTab, setSidebarTab] = useState<'pages' | 'chapters'>('pages');
+
+  // Focus / Dars Mode (پر سکون مطالعہ موڈ برائے طلبۂ درسِ نظامی و اساتذہ)
+  const [isDarsMode, setIsDarsMode] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        return localStorage.getItem('tehreek_dars_mode') === 'true';
+      } catch {
+        return false;
+      }
+    }
+    return false;
+  });
+
+  const toggleDarsMode = () => {
+    setIsDarsMode(prev => {
+      const next = !prev;
+      try {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('tehreek_dars_mode', next ? 'true' : 'false');
+        }
+      } catch {}
+      return next;
+    });
+  };
 
   useEffect(() => {
     try {
@@ -2149,6 +2287,21 @@ ${urduToCopy}
             <span>{globalTashkeel ? 'مع اعراب' : 'بغیر اعراب'}</span>
           </button>
 
+          {/* Focus / Dars Mode Toggle Button (پر سکون مطالعہ موڈ) */}
+          <button
+            type="button"
+            onClick={toggleDarsMode}
+            className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl border transition cursor-pointer text-xs flex items-center gap-1 sm:gap-1.5 font-nastaliq font-bold shadow-xs ${
+              isDarsMode
+                ? 'bg-amber-400 text-stone-950 border-amber-500 shadow-sm ring-2 ring-amber-400/50'
+                : 'bg-emerald-900/90 text-amber-200 border-emerald-700 hover:bg-emerald-800'
+            }`}
+            title={isDarsMode ? 'عام موڈ پر واپس جائیں (سائڈبار دکھائیں)' : 'درس موڈ فعال کریں (پر سکون مطالعہ برائے اساتذہ و طلبہ)'}
+          >
+            {isDarsMode ? <Minimize2 className="w-3.5 h-3.5 text-stone-950" /> : <Maximize2 className="w-3.5 h-3.5 text-amber-300" />}
+            <span>{isDarsMode ? 'عام موڈ' : 'درس موڈ (پر سکون)'}</span>
+          </button>
+
           {/* Urdu Styler Button (Desktop Only, Hidden on Mobile < 768px) */}
           <button
             type="button"
@@ -2193,14 +2346,18 @@ ${urduToCopy}
       </header>
 
       {/* 2. Main Full Reader Layout: Left 75% Reader, Right 25% Sticky Fehrist */}
-      <div ref={readerTopRef} className="flex-1 w-full max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8 py-6 flex flex-col lg:flex-row gap-6 overflow-x-hidden">
+      <div 
+        ref={readerTopRef} 
+        className={`flex-1 w-full ${isDarsMode ? 'max-w-5xl' : 'max-w-[1600px]'} mx-auto px-3 sm:px-6 lg:px-8 py-6 flex flex-col ${isDarsMode ? '' : 'lg:flex-row'} gap-6 overflow-x-hidden`}
+      >
         
-        {/* Right 25%: Sticky Fehrist (Index of Pages & Chapters) - order-2 on mobile/tablet, lg:order-1 on desktop */}
-        <aside
-          ref={asideRef}
-          style={{ position: 'sticky', top: '1.5rem', maxHeight: 'calc(100vh - 3rem)' }}
-          className="w-full lg:w-1/4 lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] flex flex-col bg-stone-50/80 border border-gray-200 rounded-2xl p-4 shadow-sm order-2 lg:order-1 overflow-hidden"
-        >
+        {/* Right 25%: Sticky Fehrist (Index of Pages & Chapters) - Hidden in Dars Mode */}
+        {!isDarsMode && (
+          <aside
+            ref={asideRef}
+            style={{ position: 'sticky', top: '1.5rem', maxHeight: 'calc(100vh - 3rem)' }}
+            className="w-full lg:w-1/4 lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] flex flex-col bg-stone-50/80 border border-gray-200 rounded-2xl p-4 shadow-sm order-2 lg:order-1 overflow-hidden"
+          >
           {/* 3D Premium Book Cover Display with Spotlight */}
           <div className="book-spotlight-container mb-2 py-1 hidden lg:flex">
             <div className="premium-book-cover w-32 h-44 mx-auto">
@@ -2447,11 +2604,12 @@ ${urduToCopy}
             </>
           )}
         </aside>
+        )}
 
-        {/* Left 75%: Full Reader Display - order-1 on mobile/tablet, lg:order-2 on desktop */}
+        {/* Main Reader Display */}
         <main
           ref={mainContentRef}
-          className="w-full lg:w-3/4 flex flex-col bg-white border border-gray-100 rounded-2xl p-4 sm:p-8 shadow-xs space-y-6 overflow-x-hidden order-1 lg:order-2"
+          className={`w-full ${isDarsMode ? 'max-w-5xl mx-auto shadow-md ring-1 ring-emerald-900/10' : 'lg:w-3/4'} flex flex-col bg-white border border-gray-100 rounded-2xl p-4 sm:p-8 shadow-xs space-y-6 overflow-x-hidden order-1 lg:order-2`}
           style={{ touchAction: 'pan-y' }}
         >
           
@@ -2575,11 +2733,57 @@ ${urduToCopy}
                 <span>اگلا صفحہ</span>
                 <ChevronLeft className="w-4 h-4" />
               </button>
+
+              {/* Dars Mode Toggle Button inside Reader Top Bar */}
+              <button
+                type="button"
+                onClick={toggleDarsMode}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-bold font-nastaliq transition cursor-pointer shadow-2xs ${
+                  isDarsMode
+                    ? 'bg-amber-400 text-stone-950 border-amber-500 shadow-sm'
+                    : 'bg-emerald-50 hover:bg-emerald-100/80 text-emerald-900 border-emerald-200'
+                }`}
+                title={isDarsMode ? 'عام موڈ پر واپس جائیں' : 'پر سکون درس موڈ فعال کریں (سائڈبارز مخفی)'}
+              >
+                {isDarsMode ? <Minimize2 className="w-3.5 h-3.5 text-stone-950" /> : <Maximize2 className="w-3.5 h-3.5 text-emerald-800" />}
+                <span>{isDarsMode ? 'عام موڈ' : 'درس موڈ'}</span>
+              </button>
             </div>
           </div>
 
+          {/* Active Dars Mode Classroom Banner */}
+          {isDarsMode && (
+            <div className="bg-gradient-to-r from-emerald-950 via-[#0a2f20] to-emerald-950 text-white rounded-2xl p-4 border-2 border-amber-400/90 shadow-md flex flex-wrap items-center justify-between gap-3 animate-fadeIn">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center shrink-0">
+                  <BookOpenCheck className="w-5 h-5 text-amber-300" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+                    <h3 className="font-nastaliq font-bold text-sm sm:text-base text-amber-300">
+                      حالتِ تدریس و پر سکون مطالعہ (Dars / Focus Mode فعال ہے)
+                    </h3>
+                  </div>
+                  <p className="font-nastaliq text-xs text-emerald-200 mt-0.5">
+                    طلبۂ درسِ نظامی، اساتذہ اور محققین کے لیے پر سکون و عریض مطالعہ۔ تمام خلفشار و سائڈبارز مخفی ہیں تاکہ کلامِ نبوی ﷺ اور فقہی فوائد پر کامل یکسوئی حاصل ہو۔
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsDarsMode(false)}
+                className="shrink-0 px-3.5 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 font-nastaliq font-bold text-xs flex items-center gap-1.5 shadow-xs transition cursor-pointer"
+                title="عام موڈ پر واپس جائیں"
+              >
+                <Minimize2 className="w-3.5 h-3.5" />
+                <span>عام موڈ پر جائیں</span>
+              </button>
+            </div>
+          )}
+
           {/* Musnad Ahmad: 5 Volumes Interactive Switcher Banner */}
-          {isChunkedBook && (
+          {isChunkedBook && !isDarsMode && (
             <div className="bg-emerald-50/70 border border-emerald-200/90 rounded-2xl p-3.5 shadow-2xs space-y-2.5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pb-2 border-b border-emerald-200/60">
                 <div className="flex items-center gap-2">
@@ -2620,7 +2824,8 @@ ${urduToCopy}
             </div>
           )}
 
-          {/* ── In-Book Content Search Bar ─────────────────────────────────────── */}
+          {/* ── In-Book Content Search Bar (Hidden in Dars Mode) ── */}
+          {!isDarsMode && (
           <div className="relative">
             <div className="flex gap-2 items-center">
               <div className="relative flex-1">
@@ -2740,6 +2945,7 @@ ${urduToCopy}
               </div>
             )}
           </div>
+          )}
           {/* ─────────────────────────────────────────────────────────────────── */}
 
           {/* Reader Body Content: Direct Page Render without limits */}
@@ -3678,16 +3884,18 @@ ${urduToCopy}
             </button>
           </div>
 
-          {/* Realtime Global Comments for this Book */}
-          <div className="mt-10 pt-8 border-t border-gray-100">
-            <GlobalComments
-              page={`/books/${slug}?page=${currentPage + 1}`}
-              title={`${book?.title_ur || slug} — صفحہ ${(currentPage + 1).toLocaleString('ur-PK')} پر علمی تبصرے و آراء`}
-              bookTitle={book?.title_ur || book?.title || slug}
-              pageNumber={currentPage + 1}
-              bookUrl={`/books/${slug}?page=${currentPage + 1}`}
-            />
-          </div>
+          {/* Realtime Global Comments for this Book (Hidden in Dars Mode) */}
+          {!isDarsMode && (
+            <div className="mt-10 pt-8 border-t border-gray-100">
+              <GlobalComments
+                page={`/books/${slug}?page=${currentPage + 1}`}
+                title={`${book?.title_ur || slug} — صفحہ ${(currentPage + 1).toLocaleString('ur-PK')} پر علمی تبصرے و آراء`}
+                bookTitle={book?.title_ur || book?.title || slug}
+                pageNumber={currentPage + 1}
+                bookUrl={`/books/${slug}?page=${currentPage + 1}`}
+              />
+            </div>
+          )}
         </main>
       </div>
 
