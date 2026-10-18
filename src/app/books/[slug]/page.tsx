@@ -30,9 +30,20 @@ import { UrduStyler } from "@/components/UrduStyler";
 import { GlobalComments } from "@/components/GlobalComments";
 import { WordLookupModal } from "@/components/Reader/WordLookupModal";
 import { NarratorModal } from "@/components/Reader/NarratorModal";
+import { TafseerModal } from "@/components/Reader/TafseerModal";
+import { BukhariTarajimBox } from "@/components/Reader/BukhariTarajimBox";
+import { IraabSectionView } from "@/components/Reader/IraabSectionView";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { parseSanadNarratorSegments, NarratorInfo } from "@/services/rijalService";
+import { getBukhariTarjamahInfo } from "@/services/bukhariTarajimService";
+import { safeName, safeRank } from "@/utils/safeName";
 import { WordLookupContextInfo } from "@/types";
 import { getDarsiAnalysisSync, segmentSanadAndMatn, stripTashkeel, normalizeArabic } from "@/services/darsiPipelineService";
+import { getTafseerForAyah, extractAyahNumbers, TafseerEntry } from "@/services/tafseerService";
+import { quranChapters, QURAN_SURAHS_CANONICAL } from "@/data/quranData";
+import { bukhariChapters } from "@/data/bukhariData";
+import { muslimChapters } from "@/data/muslimData";
+import { abudawoodChapters, tirmidhiChapters, nasaiChapters, ibnmajahChapters } from "@/data/allHadithBooksData";
 
 interface HadithItem {
   hadithnumber?: number;
@@ -120,6 +131,24 @@ interface HadithCardDarsiViewProps {
   onWordClick: (word: string, sentenceText?: string, translation?: string) => void;
 }
 
+function renderMarkdownFormatted(text: string): React.ReactNode {
+  if (!text) return null;
+  const parts = text.split(/(\*\*[^*]+?\*\*)/g);
+  return parts.map((part, idx) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      const inner = part.slice(2, -2).trim();
+      return (
+        <strong key={idx} className="font-bold text-emerald-950 px-0.5">
+          {inner}
+        </strong>
+      );
+    }
+    const cleaned = part.replace(/\*\*/g, '');
+    return cleaned;
+  });
+}
+
+
 function HadithCardDarsiView({
   hadith,
   hadithNum,
@@ -127,7 +156,7 @@ function HadithCardDarsiView({
   slug,
   bookTitle,
   currentPage,
-  bookFontSize,
+  bookFontSize: _bookFontSize,
   isVerified,
   globalTashkeel,
   renderClickableArabic,
@@ -212,28 +241,40 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
     if (!sanad) return null;
     const segments = parseSanadNarratorSegments(displaySanad);
     return segments.map((seg, segIdx) => {
-      if (seg.type === 'narrator' && seg.narrator) {
+      if (seg?.type === 'narrator' && seg?.narrator) {
         const narrator = seg.narrator;
+        const narratorName = safeName(narrator, seg?.text || 'راوی');
+        const narratorRank = safeRank(narrator, 'راوٍ من رواة الإسناد');
         return (
           <span
             key={`narrator-${segIdx}`}
-            onClick={() => onOpenNarrator(narrator)}
-            className="inline-flex items-center gap-1 px-2 py-0.5 mx-1 rounded-md bg-emerald-100/95 text-emerald-950 font-bold hover:bg-emerald-200 border border-emerald-300 transition-colors cursor-pointer select-text text-xs shadow-2xs"
-            title={`راوی: ${narrator.name} (${narrator.rank}) — سوانح و توثیق کے لیے کلک کریں`}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onOpenNarrator) onOpenNarrator(narrator);
+            }}
+            className="inline-flex items-center gap-1.5 mx-1 rounded-lg bg-emerald-100/90 text-emerald-950 font-semibold hover:bg-emerald-200 border border-emerald-300 transition-colors cursor-pointer select-text shadow-2xs font-arabic"
+            style={{ 
+              fontFamily: "'Amiri Quran', 'Amiri', 'Traditional Arabic', serif",
+              fontSize: '1.25rem', 
+              fontWeight: 600,
+              padding: '3px 10px' 
+            }}
+            title={`راوی: ${narratorName} (${narratorRank}) — سوانح و توثیق کے لیے کلک کریں`}
           >
-            <UserCheck className="w-3.5 h-3.5 text-emerald-800" />
-            <span>{seg.text}</span>
+            <UserCheck className="w-4 h-4 text-emerald-800" />
+            <span>{seg?.text || narratorName}</span>
           </span>
         );
       }
 
-      const tokens = seg.text.split(/(\s+)/);
+      const segText = seg?.text || '';
+      const tokens = segText.split(/(\s+)/);
       return tokens.map((tok, tokIdx) => {
         if (/^\s+$/.test(tok)) return tok;
         return (
           <span
             key={`word-${segIdx}-${tokIdx}`}
-            onClick={() => onWordClick(tok, arabText, hadith.urdu)}
+            onClick={() => onWordClick && onWordClick(tok, arabText, hadith?.urdu || '')}
             className="cursor-pointer hover:bg-amber-100/60 rounded px-0.5 transition-colors select-text inline-block"
           >
             {tok}
@@ -326,9 +367,9 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
 
       {/* 2. Sanad Section (سندِ حدیث شریف) */}
       {sanad && (
-        <div className="bg-stone-50/70 border border-stone-200/70 rounded-xl p-3 space-y-1.5">
+        <div className="bg-stone-50/70 border border-stone-200/70 rounded-xl p-3.5 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-stone-700 bg-stone-200/80 px-2 py-0.5 rounded-md font-nastaliq">
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-stone-700 bg-stone-200/80 px-2.5 py-0.5 rounded-md font-nastaliq">
               <span>سندِ حدیث شریف (سلسلۂ اسناد)</span>
             </span>
             <span className="text-[10px] text-stone-400 font-nastaliq">
@@ -336,9 +377,14 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
             </span>
           </div>
           <p
-            className="font-arabic text-stone-700 text-right leading-relaxed select-text"
+            className="font-arabic text-stone-800 text-right select-text leading-relaxed"
             dir="rtl"
-            style={{ fontSize: (bookFontSize + 1) + 'px', lineHeight: '2.2' }}
+            style={{ 
+              fontFamily: "'Amiri Quran', 'Amiri', 'Traditional Arabic', serif",
+              fontSize: '1.25rem', 
+              fontWeight: 600,
+              lineHeight: '2.2' 
+            }}
           >
             {renderSanadText()}
           </p>
@@ -346,27 +392,33 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
       )}
 
       {/* 3. المتن الأصلي (متنِ حدیث شریف) */}
-      <div className="bg-amber-50/20 border border-amber-200/40 rounded-xl p-3.5 sm:p-4 space-y-2">
+      <div className="bg-amber-50/20 border border-amber-200/40 rounded-xl p-4 sm:p-5 space-y-2.5">
         <div className="flex items-center justify-between">
-          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-900 bg-amber-100/80 border border-amber-300/70 px-2.5 py-0.5 rounded-md font-nastaliq">
+          <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-900 bg-amber-100/80 border border-amber-300/70 px-2.5 py-0.5 rounded-md font-nastaliq">
             <BookOpen className="w-3.5 h-3.5 text-amber-800" />
             <span>متنِ حدیث مبارک (کلامِ نبوی ﷺ)</span>
           </span>
-          <span className="text-[10px] text-stone-400 font-nastaliq">
+          <span className="text-[11px] text-stone-400 font-nastaliq">
             💡 ہر عربی لفظ پر کلک کر کے صرف و نحو دیکھیں
           </span>
         </div>
         <p
-          className="font-arabic arabic-text text-right leading-loose text-stone-900 select-text px-1"
+          className="font-arabic arabic-text text-right select-text px-1"
           dir="rtl"
-          style={{ fontSize: (bookFontSize + 4) + 'px', lineHeight: '2.5' }}
+          style={{ 
+            fontFamily: "'Amiri Quran', 'Amiri', 'Traditional Arabic', serif",
+            fontSize: '1.6rem', 
+            lineHeight: '2.3', 
+            fontWeight: 500,
+            color: '#111827' 
+          }}
         >
           {renderClickableArabic(displayMatn, arabText, hadith.urdu)}
         </p>
       </div>
 
       {/* 4. سلیس اور با محاورہ اردو ترجمہ */}
-      <div className="pt-2 border-t border-dashed border-gray-100 space-y-1.5">
+      <div className="pt-2 border-t border-dashed border-gray-100 space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-xs font-bold text-emerald-950 font-nastaliq flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-emerald-700"></span>
@@ -382,13 +434,30 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
             <span>{showWordByWord ? 'لفظی ترجمہ گرڈ چھپائیں' : 'لفظ بہ لفظ انٹرلینیئر ترجمہ'}</span>
           </button>
         </div>
-        <p
-          className="urdu-text text-emerald-950 text-right select-text pr-1 font-nastaliq"
-          dir="rtl"
-          style={{ fontSize: bookFontSize + 'px', lineHeight: '2.1' }}
-        >
-          {hadith.urdu || analysis?.urduTranslation || (loading ? 'ترجمہ کا تجزیہ جاری ہے...' : 'متنِ مبارک کے مطابق سلیس ترجمہ')}
-        </p>
+        {(() => {
+          let urduText = hadith.urdu || analysis?.urduTranslation || '';
+          if (hadithNum === 1 && (slug || '').toLowerCase().includes('bukhari')) {
+            if (urduText.startsWith('ہم سے حمیدی') || urduText.startsWith('کو حمیدی')) {
+              urduText = urduText.replace(/^(?:ہم سے حمیدی نے بیان کیا، کہا ہم سے سفیان نے|کو حمیدی نے یہ حدیث بیان کی|ہم سے حمیدی عبد اللہ بن زبیر نے بیان کیا)/, 'ہم کو حمیدی نے یہ حدیث بیان کی');
+            } else if (!urduText.startsWith('ہم کو حمیدی نے')) {
+              urduText = 'ہم کو حمیدی نے یہ حدیث بیان کی، ' + urduText;
+            }
+          }
+          return (
+            <p
+              className="urdu-text text-right select-text pr-1 font-nastaliq"
+              dir="rtl"
+              style={{ 
+                fontSize: '1.2rem', 
+                lineHeight: '2.4', 
+                fontWeight: 500, 
+                color: '#1f2937' 
+              }}
+            >
+              {urduText || (loading ? 'ترجمہ کا تجزیہ جاری ہے...' : 'متنِ مبارک کے مطابق سلیس ترجمہ')}
+            </p>
+          );
+        })()}
       </div>
 
       {/* 5. لفظ بہ لفظ انٹرلینیئر ترجمہ گرڈ (Word-by-Word Interlinear Grid) */}
@@ -506,25 +575,15 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
                     <span className="w-2 h-2 rounded-full bg-teal-600"></span>
                     <span>درسی تشریح و فقہی مذاہب (احناف، شوافع، مالکیہ، حنابلہ):</span>
                   </h4>
-                  <div className="text-xs font-nastaliq text-stone-800 text-right select-text leading-loose space-y-1 pr-1">
+                  <div className="text-sm font-nastaliq text-stone-800 text-right select-text leading-[2.3] space-y-2 pr-1" dir="rtl">
                     {analysis.tashreeh.split('\n').map((line, lidx) => (
-                      <p key={lidx}>{line}</p>
+                      <p key={lidx}>{renderMarkdownFormatted(line)}</p>
                     ))}
                   </div>
                 </div>
 
                 {/* Mahal-e-I'rab & Nahwi Tarkeeb */}
-                <div className="bg-indigo-50/30 rounded-xl p-3.5 border border-indigo-100/60 shadow-2xs space-y-1.5">
-                  <h4 className="text-xs font-bold text-indigo-950 font-nastaliq flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-indigo-600"></span>
-                    <span>حلِ اعراب و نحوی ترکیب:</span>
-                  </h4>
-                  <div className="text-xs font-nastaliq text-stone-800 leading-loose space-y-1 pr-1">
-                    {analysis.iraab.map((ir, iridx) => (
-                      <p key={iridx}>{ir}</p>
-                    ))}
-                  </div>
-                </div>
+                <IraabSectionView iraabLines={analysis.iraab} />
 
                 {/* Hawashi & Takhrij */}
                 <div className="bg-amber-50/40 rounded-xl p-3.5 border border-amber-200/60 shadow-2xs space-y-1.5">
@@ -532,12 +591,72 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
                     <span className="w-2 h-2 rounded-full bg-amber-600"></span>
                     <span>حواشی، تخریج و درسی فوائد:</span>
                   </h4>
-                  <div className="text-xs font-nastaliq text-stone-700 leading-loose space-y-1 pr-1">
+                  <div className="arabic-naskh text-sm sm:text-base leading-[2.3] text-stone-700 space-y-1.5 pr-1 select-text" dir="rtl">
                     {analysis.hawashi.map((hw, hwidx) => (
                       <p key={hwidx}>{hw}</p>
                     ))}
                   </div>
                 </div>
+
+                {/* New: مستنبط فقہی احکام و مسائل (شرعی رہنمائی) */}
+                {analysis.ahkamShariat && (
+                  <div className="bg-emerald-50/70 border-2 border-emerald-300 rounded-2xl p-4 shadow-xs space-y-2.5" dir="rtl">
+                    <div className="flex items-center justify-between border-b border-emerald-200 pb-2">
+                      <h4 className="text-xs sm:text-sm font-bold text-emerald-950 font-nastaliq flex items-center gap-2">
+                        <span className="px-2 py-0.5 rounded-md bg-emerald-800 text-amber-300 text-[10px] font-bold">فقہ و فتاویٰ</span>
+                        <span>مستنبط فقہی احکام و مسائل (شرعی رہنمائی):</span>
+                      </h4>
+                      <span className="text-[10px] text-emerald-800 font-nastaliq font-bold bg-white px-2 py-0.5 rounded-lg border border-emerald-200">
+                        مذہبِ حنفی و تقابل
+                      </span>
+                    </div>
+
+                    <div className="space-y-2 text-xs font-nastaliq text-stone-800 leading-relaxed pr-1">
+                      <div className="bg-white/80 p-2.5 rounded-xl border border-emerald-100 space-y-1">
+                        <strong className="text-emerald-900 block font-bold">۱. مذہبِ حنفی کے مطابق شرعی حکم:</strong>
+                        <p className="text-stone-700 leading-loose">{analysis.ahkamShariat.hanafiRuling}</p>
+                      </div>
+
+                      <div className="bg-white/80 p-2.5 rounded-xl border border-emerald-100 space-y-1">
+                        <strong className="text-indigo-900 block font-bold">۲. تقابلی فقہی نکتہ (دیگر ائمہ رحمہم اللہ):</strong>
+                        <p className="text-stone-700 leading-loose">{analysis.ahkamShariat.comparativeNote}</p>
+                      </div>
+
+                      <div className="bg-emerald-100/60 p-2.5 rounded-xl border border-emerald-200/80 space-y-1">
+                        <strong className="text-emerald-950 block font-bold">💡 عام قاری کے لیے خلاصۂ عمل:</strong>
+                        <p className="text-emerald-900 leading-loose font-bold">{analysis.ahkamShariat.awamSummary}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* New: تربیتی و اصلاحی پہلو (عملی سبق) */}
+                {analysis.islahAamal && (
+                  <div className="bg-amber-50/70 border-2 border-amber-300 rounded-2xl p-4 shadow-xs space-y-2.5" dir="rtl">
+                    <div className="flex items-center justify-between border-b border-amber-200 pb-2">
+                      <h4 className="text-xs sm:text-sm font-bold text-amber-950 font-nastaliq flex items-center gap-2">
+                        <span className="px-2 py-0.5 rounded-md bg-amber-800 text-amber-100 text-[10px] font-bold">اصلاحِ نفس</span>
+                        <span>تربیتی و اصلاحی پہلو (عملی سبق برائے باطن):</span>
+                      </h4>
+                      <span className="text-[10px] text-amber-800 font-nastaliq font-bold bg-white px-2 py-0.5 rounded-lg border border-amber-200">
+                        تزکیۂ اخلاق
+                      </span>
+                    </div>
+
+                    <div className="space-y-2 text-xs font-nastaliq text-stone-800 leading-relaxed pr-1">
+                      <ul className="space-y-1.5 list-disc list-inside text-stone-700 leading-loose bg-white/80 p-3 rounded-xl border border-amber-100">
+                        {analysis.islahAamal.lessonPoints.map((pt, ptIdx) => (
+                          <li key={ptIdx} className="font-nastaliq font-medium">{pt}</li>
+                        ))}
+                      </ul>
+
+                      <div className="bg-amber-100/70 p-2.5 rounded-xl border border-amber-200/80">
+                        <strong className="text-amber-950 block font-bold mb-0.5">🌱 روزمرہ عملی نسخہ (مجرب عمل):</strong>
+                        <p className="text-amber-900 leading-loose font-bold">{analysis.islahAamal.amalNuskha}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : null}
           </div>
@@ -550,9 +669,19 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
 // Global in-memory cache for dynamically chunked books (e.g. musnad-ahmad)
 const chunkGlobalCache: Record<string, Record<number, string[]>> = {};
 
-export default function BookDetailPage() {
+export default function BookDetailPage({ slugProp }: { slugProp?: string } = {}) {
   const params = useParams();
-  const rawSlug = (params?.slug as string) || '';
+  const getSlugFromLocation = () => {
+    if (typeof window !== 'undefined') {
+      const match = window.location.pathname.match(/\/(?:books|book)\/([^/?#]+)/i);
+      if (match && match[1]) return decodeURIComponent(match[1]);
+      const search = new URLSearchParams(window.location.search);
+      const b = search.get('book') || search.get('slug') || search.get('id');
+      if (b) return decodeURIComponent(b);
+    }
+    return '';
+  };
+  const rawSlug = slugProp || (params?.slug as string) || getSlugFromLocation();
   const slug = decodeURIComponent(rawSlug).toLowerCase().trim();
 
   // Find book in publicDomainBooks catalog with robust fallback across catalogs
@@ -646,6 +775,14 @@ export default function BookDetailPage() {
     return s === 'musnad-ahmad' || s === 'musnad_ahmad' || bSlug === 'musnad-ahmad' || bId === 'musnad-ahmad';
   }, [slug, book]);
 
+  // Check if current book is the Noble Quran (114 Surahs)
+  const isQuran = useMemo(() => {
+    const s = slug.toLowerCase();
+    const bSlug = (book?.slug || '').toLowerCase();
+    const bId = (book?.id || '').toLowerCase();
+    return s === 'quran' || s === 'al-quran' || bSlug === 'quran' || bId === 'quran';
+  }, [slug, book]);
+
   const [chunkCache, setChunkCache] = useState<Record<number, string[]>>(() => {
     return chunkGlobalCache['musnad-ahmad'] || {};
   });
@@ -731,7 +868,11 @@ export default function BookDetailPage() {
       } catch {}
     };
     window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    window.addEventListener('tehreek:navigate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('tehreek:navigate', handlePopState);
+    };
   }, []);
 
   const currentVolume = useMemo(() => {
@@ -739,6 +880,16 @@ export default function BookDetailPage() {
     const p = currentPage + 1;
     return MUSNAD_VOLUMES.find(v => p >= v.startPage && p <= v.endPage) || MUSNAD_VOLUMES[0];
   }, [isChunkedBook, currentPage]);
+
+  const quranSurah = useMemo(() => {
+    if (!isQuran) return null;
+    return quranChapters[currentPage] || quranChapters[0] || null;
+  }, [isQuran, currentPage]);
+
+  const quranMeta = useMemo(() => {
+    if (!isQuran) return null;
+    return QURAN_SURAHS_CANONICAL[currentPage] || QURAN_SURAHS_CANONICAL[0] || null;
+  }, [isQuran, currentPage]);
 
   const handleSelectVolume = (vol: MusnadVolume) => {
     setCurrentPage(vol.startPage - 1);
@@ -772,6 +923,10 @@ export default function BookDetailPage() {
   const [pageNotes, setPageNotes] = useState<string>('');
   const [isPageBookmarked, setIsPageBookmarked] = useState<boolean>(false);
   const [copiedPageRef, setCopiedPageRef] = useState<boolean>(false);
+  const [activeTafseer, setActiveTafseer] = useState<TafseerEntry | null>(null);
+  const [isTafseerOpen, setIsTafseerOpen] = useState<boolean>(false);
+  const [quranViewMode, setQuranViewMode] = useState<'mushaf' | 'interlinear'>('mushaf');
+  const [sidebarTab, setSidebarTab] = useState<'pages' | 'chapters'>('pages');
 
   useEffect(() => {
     try {
@@ -1209,8 +1364,8 @@ ${urduToCopy}
 
   // Slicing & Pagination:
   // For Hadith collections: 20 Ahadith per page (No 500 limit! Covers all 7589, 7563, etc.)
-  // For other books: 1 page per chapter/safha, totalPages = book.pages.length or chunk totalPages
-  const isHadith = Boolean(hadithFileKey || book?.category === 'Hadith');
+  // Note: Chunked books like Musnad Ahmad (26,363 entries across 264 chunks) use Darsi chunked reader, NOT 20-hadith local array.
+  const isHadith = Boolean((hadithFileKey || (book?.category === 'Hadith' && !isChunkedBook)) && !isChunkedBook);
   const PER_PAGE = 20;
 
   const totalHadithsCount = allHadiths.length > 0
@@ -1223,7 +1378,137 @@ ${urduToCopy}
     ? Math.max(1, Math.ceil(totalHadithsCount / PER_PAGE))
     : isChunkedBook
       ? (chunkMetaTotalPages || bookPageCount || 26363)
-      : Math.max(1, bookPageCount || 50);
+      : isQuran
+        ? 114
+        : Math.max(1, bookPageCount || 50);
+
+  const bookChaptersList = useMemo(() => {
+    if (isQuran) {
+      return QURAN_SURAHS_CANONICAL.map((s) => ({
+        id: `quran_${s.number}`,
+        titleAr: s.nameArabic,
+        titleUr: s.nameUrdu,
+        startPage: s.number,
+        detail: `پارہ ${s.juz} • آیات ${s.ayahCount} • ${s.revelationType}`
+      }));
+    }
+    if (isChunkedBook) {
+      return MUSNAD_VOLUMES.map((v) => ({
+        id: `musnad_${v.id}`,
+        titleAr: v.title,
+        titleUr: `${v.volNum} — ${v.title}`,
+        startPage: v.startPage,
+        detail: `${v.subtitle} • ${v.hadithRange}`
+      }));
+    }
+    // Check specific Hadith collections
+    const slugLower = (slug || '').toLowerCase();
+    let rawChapters: any[] = [];
+    if (slugLower.includes('bukhari')) {
+      rawChapters = bukhariChapters;
+    } else if (slugLower.includes('muslim')) {
+      rawChapters = muslimChapters;
+    } else if (slugLower.includes('abu-dawood') || slugLower.includes('abu-daud')) {
+      rawChapters = abudawoodChapters;
+    } else if (slugLower.includes('tirmidhi') || slugLower.includes('tirmizi')) {
+      rawChapters = tirmidhiChapters;
+    } else if (slugLower.includes('nasai')) {
+      rawChapters = nasaiChapters;
+    } else if (slugLower.includes('ibn-majah')) {
+      rawChapters = ibnmajahChapters;
+    } else if (book?.pages && book.pages.length > 0) {
+      return book.pages.map((p, idx) => {
+        const firstLine = p.split('\n')[0].replace(/【|】/g, '').trim() || `باب ${idx + 1}`;
+        return {
+          id: `page_${idx + 1}`,
+          titleAr: firstLine,
+          titleUr: `صفحہ ${(idx + 1).toLocaleString('ur-PK')}`,
+          startPage: idx + 1,
+          detail: `صفحہ ${idx + 1}`
+        };
+      });
+    }
+
+    if (rawChapters && rawChapters.length > 0) {
+      return rawChapters.map((ch, idx) => {
+        const match = ch.titleArabic?.match(/رقم:\s*(\d+)/) || ch.titleArabic?.match(/حَدِيث:\s*(\d+)/);
+        const hadithNum = match ? parseInt(match[1], 10) : (idx * 20 + 1);
+        const startPage = Math.max(1, Math.min(totalPages, Math.floor((hadithNum - 1) / PER_PAGE) + 1));
+        return {
+          id: ch.id || `ch_${idx}`,
+          titleAr: ch.titleArabic || `باب ${idx + 1}`,
+          titleUr: ch.titleUrdu || `باب ${idx + 1}`,
+          startPage,
+          hadithNum,
+          detail: `حدیث ${hadithNum} (ص ${startPage})`
+        };
+      });
+    }
+
+    const count = Math.ceil(totalPages / 25);
+    return Array.from({ length: Math.max(1, count) }, (_, idx) => {
+      const p = idx * 25 + 1;
+      return {
+        id: `section_${idx + 1}`,
+        titleAr: `${book?.title_ar || book?.title || 'باب'} — الجزء ${idx + 1}`,
+        titleUr: `حصہ ${idx + 1} (صفحات ${p} تا ${Math.min(totalPages, (idx + 1) * 25)})`,
+        startPage: p,
+        detail: `صفحہ ${p}`
+      };
+    });
+  }, [isQuran, isChunkedBook, slug, book, totalPages]);
+
+  const currentChapter = useMemo(() => {
+    if (!bookChaptersList || bookChaptersList.length === 0) return null;
+    const currentP = currentPage + 1;
+    const firstHadithOnPage = (currentP - 1) * PER_PAGE + 1;
+
+    // For Page 1, always return the very first chapter
+    if (currentPage === 0) {
+      return bookChaptersList[0];
+    }
+
+    // For Hadith collections that have hadithNum on chapters
+    if (isHadith) {
+      let found = bookChaptersList[0];
+      for (const ch of bookChaptersList) {
+        const hNum = (ch as any).hadithNum ?? ((ch.startPage - 1) * PER_PAGE + 1);
+        if (hNum <= firstHadithOnPage) {
+          found = ch;
+        } else {
+          break;
+        }
+      }
+      return found;
+    }
+
+    let found = bookChaptersList[0];
+    for (const ch of bookChaptersList) {
+      if (ch.startPage <= currentP) {
+        found = ch;
+      } else {
+        break;
+      }
+    }
+    return found;
+  }, [bookChaptersList, currentPage, isHadith]);
+
+  const isBukhari = (slug || '').toLowerCase().includes('bukhari') || 
+                    (book?.id || '').toLowerCase().includes('bukhari') || 
+                    (book?.slug || '').toLowerCase().includes('bukhari');
+  const isBukhariP1 = isBukhari && currentPage === 0;
+  const bannerAr = isBukhariP1
+    ? 'كِتَابُ بَدْءِ الْوَحْيِ - بَابُ كَيْفَ كَانَ بَدْءُ الْوَحْيِ إِلَى رَسُولِ اللَّهِ ﷺ'
+    : (currentChapter?.titleAr || book?.title_ar || book?.title || 'كتاب الحديث الشريف');
+  const bannerUr = isBukhariP1
+    ? 'کتاب بدء الوحی - وحی کی ابتدا کا بیان'
+    : (currentChapter?.titleUr || book?.title_ur || book?.title || 'کتاب');
+
+  const bukhariTarjamah = useMemo(() => {
+    if (!isBukhari) return null;
+    const startHadith = currentPage * PER_PAGE + 1;
+    return getBukhariTarjamahInfo(bannerAr, bannerUr, startHadith, currentPage);
+  }, [isBukhari, bannerAr, bannerUr, currentPage, PER_PAGE]);
 
   const currentHadiths = useMemo(() => {
     if (!isHadith) return [];
@@ -1322,22 +1607,34 @@ ${urduToCopy}
     if (!parsedDarsSplit.sanad) return null;
     const segments = parseSanadNarratorSegments(displayDarsSanad);
     return segments.map((seg, segIdx) => {
-      if (seg.type === 'narrator' && seg.narrator) {
+      if (seg?.type === 'narrator' && seg?.narrator) {
         const narrator = seg.narrator;
+        const narratorName = safeName(narrator, seg?.text || 'راوی');
+        const narratorRank = safeRank(narrator, 'راوٍ من رواة الإسناد');
         return (
           <span
             key={`dars-narrator-${segIdx}`}
-            onClick={() => setActiveNarrator(narrator)}
-            className="inline-flex items-center gap-1 px-2 py-0.5 mx-1 rounded-md bg-emerald-100/95 text-emerald-950 font-bold hover:bg-emerald-200 border border-emerald-300 transition-colors cursor-pointer select-text text-xs shadow-2xs"
-            title={`راوی: ${narrator.name} (${narrator.rank}) — سوانح و توثیق کے لیے کلک کریں`}
+            onClick={(e) => {
+              e.stopPropagation();
+              setActiveNarrator(narrator);
+            }}
+            className="inline-flex items-center gap-1.5 mx-1 rounded-lg bg-emerald-100/90 text-emerald-950 font-semibold hover:bg-emerald-200 border border-emerald-300 transition-colors cursor-pointer select-text shadow-2xs font-arabic"
+            style={{ 
+              fontFamily: "'Amiri Quran', 'Amiri', 'Traditional Arabic', serif",
+              fontSize: '1.25rem', 
+              fontWeight: 600,
+              padding: '3px 10px' 
+            }}
+            title={`راوی: ${narratorName} (${narratorRank}) — سوانح و توثیق کے لیے کلک کریں`}
           >
-            <UserCheck className="w-3.5 h-3.5 text-emerald-800" />
-            <span>{seg.text}</span>
+            <UserCheck className="w-4 h-4 text-emerald-800" />
+            <span>{seg?.text || narratorName}</span>
           </span>
         );
       }
 
-      const tokens = seg.text.split(/(\s+)/);
+      const segText = seg?.text || '';
+      const tokens = segText.split(/(\s+)/);
       return tokens.map((tok, tokIdx) => {
         if (/^\s+$/.test(tok)) return tok;
         return (
@@ -1353,9 +1650,10 @@ ${urduToCopy}
     });
   };
 
+
   // Synchronous instant Darsi Analysis Pipeline for pages missing Tashreeh/I'rab/Hawashi (zero loading delay)
   const pipelineAnalysis = useMemo(() => {
-    if (!parsedDarsPage) return null;
+    if (!parsedDarsPage || isQuran) return null;
     if (parsedDarsPage.tashreeh && parsedDarsPage.iraab && parsedDarsPage.hawashi) {
       return null;
     }
@@ -1365,7 +1663,7 @@ ${urduToCopy}
       parsedDarsPage.matn || '',
       parsedDarsPage.urduTranslation || ''
     );
-  }, [slug, currentPage, parsedDarsPage]);
+  }, [slug, currentPage, parsedDarsPage, isQuran]);
 
   const handleShare = () => {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
@@ -1714,20 +2012,29 @@ ${urduToCopy}
   };
   // ──────────────────────────────────────────────────────────────────────────
 
-  // Jump to specific page
-  const handleJumpToPage = (target: number) => {
-    const p = Math.max(1, Math.min(totalPages, target));
-    setCurrentPage(p - 1);
+  // Unified 1-based page navigation: Instant state update (0ms), URL query sync, top-of-page scroll
+  const goToPage = (target1Based: number) => {
+    const valid1Based = Math.max(1, Math.min(totalPages, target1Based));
+    const new0Index = valid1Based - 1;
+
+    // 1. Direct synchronous React state change (0ms)
+    setCurrentPage(new0Index);
     setSearchPageQuery('');
+
+    // 2. Sync URL query without page reload
     if (typeof window !== 'undefined') {
       try {
         const url = new URL(window.location.href);
-        url.searchParams.set('page', p.toString());
+        url.searchParams.set('page', valid1Based.toString());
         window.history.pushState(null, '', url.pathname + url.search);
+        window.dispatchEvent(new CustomEvent('tehreek:navigate', { detail: { url: url.pathname + url.search } }));
       } catch {}
     }
+
+    // 3. Instant scroll to top
     jumpToTopOfPage();
   };
+  const handleJumpToPage = goToPage;
 
   // Filtered page list for quick jump Fehrist
   const filteredPageNumbers = useMemo(() => {
@@ -1763,44 +2070,45 @@ ${urduToCopy}
   }, [totalPages, currentPage, searchPageQuery]);
 
   return (
-    <div dir="rtl" className="min-h-screen bg-white text-stone-900 flex flex-col selection:bg-emerald-100 selection:text-emerald-900 overflow-x-hidden w-full relative">
-      
-      {/* Subtle Toast for Mobile Pinch-to-Zoom and Desktop Font Zoom */}
-      {toastMessage && (
-        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-stone-900/90 text-emerald-400 border border-emerald-500/30 px-4 py-1.5 rounded-full text-xs font-bold font-mono shadow-2xl backdrop-blur-md pointer-events-none transition-all animate-fadeIn">
-          {toastMessage}
-        </div>
-      )}
-
-      {/* 1. Header (Clean White, same branding as homepage) */}
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-100 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-xs">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/"
-            className="flex items-center gap-2.5 text-emerald-800 hover:text-emerald-900 font-nastaliq font-bold text-sm sm:text-base transition hover:-translate-x-0.5"
-            title="ہوم پیج پر واپس جائیں — تحریکِ ایمان"
-          >
-            <ArrowRight className="w-4 h-4 text-emerald-800" />
-            <img
-              src="/tehreek-iman-logo.jpg"
-              alt="تحریکِ ایمان"
-              className="w-8 h-8 rounded-full object-cover border border-amber-500 shadow-xs hidden sm:inline-block"
-            />
-            <span className="hidden sm:inline">تحریکِ ایمان</span>
-            <span className="sm:hidden">واپس</span>
-          </Link>
-          <span className="text-gray-300">|</span>
-          <div className="flex items-center gap-2">
-            <h1 className="font-bold font-nastaliq text-stone-900 text-sm sm:text-lg truncate max-w-[200px] sm:max-w-md">
-              {book.title_ur || book.title}
-            </h1>
-            <span className="hidden md:inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-100 font-nastaliq">
-              {book.category === 'Hadith' || isHadith ? 'حدیث شریف' : book.category}
-            </span>
+    <ErrorBoundary fallbackTitle={`کتاب «${book?.title_ur || book?.title || slug || 'مطالعہ'}» لوڈ کرنے میں دشواری`}>
+      <div dir="rtl" className="min-h-screen bg-white text-stone-900 flex flex-col selection:bg-emerald-100 selection:text-emerald-900 overflow-x-hidden w-full relative">
+        
+        {/* Subtle Toast for Mobile Pinch-to-Zoom and Desktop Font Zoom */}
+        {toastMessage && (
+          <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-stone-900/90 text-emerald-400 border border-emerald-500/30 px-4 py-1.5 rounded-full text-xs font-bold font-mono shadow-2xl backdrop-blur-md pointer-events-none transition-all animate-fadeIn">
+            {toastMessage}
           </div>
-        </div>
+        )}
 
-        <div className="flex items-center gap-2">
+        {/* 1. Header (Clean White, same branding as homepage) */}
+        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-100 px-3 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between shadow-xs">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link
+              href="/"
+              className="flex items-center gap-2 text-emerald-800 hover:text-emerald-900 font-nastaliq font-bold text-xs sm:text-base transition hover:-translate-x-0.5"
+              title="ہوم پیج پر واپس جائیں — تحریکِ ایمان"
+            >
+              <ArrowRight className="w-4 h-4 text-emerald-800" />
+              <img
+                src="/tehreek-iman-logo.jpg"
+                alt="تحریکِ ایمان"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-amber-500 shadow-xs hidden sm:inline-block"
+              />
+              <span className="hidden sm:inline">تحریکِ ایمان</span>
+              <span className="sm:hidden">واپس</span>
+            </Link>
+            <span className="text-gray-300">|</span>
+            <div className="flex items-center gap-2">
+              <h1 className="font-bold font-nastaliq text-stone-900 text-xs sm:text-lg truncate max-w-[140px] sm:max-w-md">
+                {book?.title_ur || book?.title || slug}
+              </h1>
+              <span className="hidden md:inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-100 font-nastaliq">
+                {book?.category === 'Hadith' || isHadith ? 'حدیث شریف' : (book?.category || 'کتاب')}
+              </span>
+            </div>
+          </div>
+
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Zoom In / Out Buttons (Desktop Only, Hidden on Mobile < 768px) */}
           <div className="hidden md:flex items-center bg-stone-50 border border-gray-200 rounded-xl p-0.5 shadow-2xs">
             <button
@@ -1837,7 +2145,7 @@ ${urduToCopy}
           <button
             type="button"
             onClick={() => setGlobalTashkeel(prev => !prev)}
-            className={`px-3 py-1.5 rounded-xl border transition cursor-pointer text-xs flex items-center gap-1.5 font-nastaliq font-bold ${
+            className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl border transition cursor-pointer text-xs flex items-center gap-1 sm:gap-1.5 font-nastaliq font-bold ${
               globalTashkeel
                 ? 'bg-emerald-50 text-emerald-900 border-emerald-300 hover:bg-emerald-100'
                 : 'bg-amber-100 text-amber-950 border-amber-300 font-black shadow-xs'
@@ -1845,7 +2153,7 @@ ${urduToCopy}
             title="پورے صفحے پر اعراب ہٹائیں / دکھائیں (طلبۂ درسِ نظامی کے لیے عبارت خوانی کی مشق)"
           >
             {globalTashkeel ? <Eye className="w-3.5 h-3.5 text-emerald-700" /> : <EyeOff className="w-3.5 h-3.5 text-amber-800" />}
-            <span>{globalTashkeel ? 'مع اعراب' : 'بغیر اعراب (مشق)'}</span>
+            <span>{globalTashkeel ? 'مع اعراب' : 'بغیر اعراب'}</span>
           </button>
 
           {/* Urdu Styler Button (Desktop Only, Hidden on Mobile < 768px) */}
@@ -1867,7 +2175,7 @@ ${urduToCopy}
           <button
             type="button"
             onClick={handleShare}
-            className="p-2 rounded-xl border border-gray-200 hover:border-emerald-700 text-stone-600 hover:text-emerald-800 transition cursor-pointer text-xs flex items-center gap-1.5"
+            className="p-1.5 sm:p-2 rounded-xl border border-gray-200 hover:border-emerald-700 text-stone-600 hover:text-emerald-800 transition cursor-pointer text-xs flex items-center gap-1"
             title="صفحہ کا لنک کاپی کریں"
           >
             {copied ? <Check className="w-3.5 h-3.5 text-emerald-700" /> : <Share2 className="w-3.5 h-3.5" />}
@@ -1875,12 +2183,17 @@ ${urduToCopy}
           </button>
 
           {/* Current Page Badge */}
-          <div className="px-3 py-1.5 bg-emerald-800 text-white rounded-xl text-xs font-bold font-nastaliq shadow-xs flex items-center gap-1.5">
+          <div className="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-emerald-800 text-white rounded-xl text-xs font-bold font-nastaliq shadow-xs flex items-center gap-1.5">
             <BookOpen className="w-3.5 h-3.5 text-amber-300" />
             <span>
-              {isHadith
-                ? `کل احادیث شریف: ${totalHadithsCount.toLocaleString('ur-PK')} — صفحہ ${(currentPage + 1).toLocaleString('ur-PK')} از ${totalPages.toLocaleString('ur-PK')}`
-                : `صفحہ ${(currentPage + 1).toLocaleString('ur-PK')} از ${totalPages.toLocaleString('ur-PK')} — کل ${totalPages.toLocaleString('ur-PK')} مستند صفحات`}
+              <span className="hidden sm:inline">
+                {isHadith
+                  ? `کل احادیث شریف: ${totalHadithsCount.toLocaleString('ur-PK')} — صفحہ ${(currentPage + 1).toLocaleString('ur-PK')} از ${totalPages.toLocaleString('ur-PK')}`
+                  : `صفحہ ${(currentPage + 1).toLocaleString('ur-PK')} از ${totalPages.toLocaleString('ur-PK')} — کل ${totalPages.toLocaleString('ur-PK')} مستند صفحات`}
+              </span>
+              <span className="sm:hidden">
+                {`صفحہ ${(currentPage + 1).toLocaleString('ur-PK')} / ${totalPages.toLocaleString('ur-PK')}`}
+              </span>
             </span>
           </div>
         </div>
@@ -1889,14 +2202,15 @@ ${urduToCopy}
       {/* 2. Main Full Reader Layout: Left 75% Reader, Right 25% Sticky Fehrist */}
       <div ref={readerTopRef} className="flex-1 w-full max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8 py-6 flex flex-col lg:flex-row gap-6 overflow-x-hidden">
         
-        {/* Right 25%: Sticky Fehrist (Index of Pages) - order-2 on mobile/tablet, lg:order-1 on desktop */}
+        {/* Right 25%: Sticky Fehrist (Index of Pages & Chapters) - order-2 on mobile/tablet, lg:order-1 on desktop */}
         <aside
           ref={asideRef}
-          className="w-full lg:w-1/4 lg:sticky lg:top-20 lg:h-[calc(100vh-6rem)] flex flex-col bg-stone-50/60 border border-gray-100 rounded-2xl p-4 shadow-xs order-2 lg:order-1"
+          style={{ position: 'sticky', top: '1.5rem', maxHeight: 'calc(100vh - 3rem)' }}
+          className="w-full lg:w-1/4 lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] flex flex-col bg-stone-50/80 border border-gray-200 rounded-2xl p-4 shadow-sm order-2 lg:order-1 overflow-hidden"
         >
           {/* 3D Premium Book Cover Display with Spotlight */}
-          <div className="book-spotlight-container mb-3 py-2 hidden lg:flex">
-            <div className="premium-book-cover w-36 h-52 mx-auto">
+          <div className="book-spotlight-container mb-2 py-1 hidden lg:flex">
+            <div className="premium-book-cover w-32 h-44 mx-auto">
               <img
                 src={book.cover_url || `/images/books/${book.slug}.svg`}
                 alt={book.title_ur || book.title}
@@ -1912,147 +2226,233 @@ ${urduToCopy}
             </div>
           </div>
 
-          <div className="space-y-3 pb-3 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <BookMarked className="w-4 h-4 text-emerald-800" />
-                <h2 className="font-bold font-nastaliq text-base text-stone-900">فہرستِ صفحات</h2>
-              </div>
-              <span className="text-[11px] font-bold text-emerald-800 font-nastaliq">
-                کل: {totalPages} صفحات
-              </span>
-            </div>
-
-            {/* Musnad Ahmad Volume Selector in Aside */}
-            {isChunkedBook && (
-              <div className="bg-emerald-50/80 border border-emerald-200/90 rounded-xl p-2.5 space-y-1.5 shadow-2xs">
-                <div className="flex items-center justify-between text-[11px] font-bold font-nastaliq text-emerald-950">
-                  <span>انتخابِ جلد (6 مجلدات):</span>
-                  <span className="text-[10px] bg-emerald-800 text-white px-2 py-0.5 rounded-md font-mono">
-                    {currentVolume?.volNum}
-                  </span>
-                </div>
-                <div className="grid grid-cols-3 gap-1">
-                  {MUSNAD_VOLUMES.map(v => (
-                    <button
-                      key={v.id}
-                      type="button"
-                      onClick={() => handleSelectVolume(v)}
-                      className={`px-1.5 py-1 rounded-lg text-[10px] font-bold font-nastaliq transition cursor-pointer border text-center ${
-                        currentVolume?.id === v.id
-                          ? 'bg-emerald-800 text-white border-emerald-900 shadow-2xs'
-                          : 'bg-white hover:bg-emerald-100 text-stone-700 border-gray-200'
-                      }`}
-                      title={`${v.title} (${v.hadithRange})`}
-                    >
-                      {v.volNum}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Quick Page Jump Input */}
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Search className="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="number"
-                  min={1}
-                  max={totalPages}
-                  value={searchPageQuery}
-                  onChange={e => setSearchPageQuery(e.target.value)}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') {
-                      handleJumpToPage(parseInt(searchPageQuery, 10));
-                    }
-                  }}
-                  placeholder={`صفحہ (1 تا ${totalPages})...`}
-                  className="w-full pr-8 pl-2 py-1.5 bg-white border border-gray-200 rounded-xl text-xs font-nastaliq focus:outline-none focus:ring-2 focus:ring-emerald-700/20 text-stone-800"
-                />
-              </div>
-              <button
-                type="button"
-                onClick={() => handleJumpToPage(parseInt(searchPageQuery, 10))}
-                className="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold font-nastaliq transition cursor-pointer"
-              >
-                جائیں
-              </button>
-            </div>
-
-            {/* Urdu Styler Trigger in Sidebar (Desktop Only, Hidden on Mobile < 768px) */}
+          {/* Sidebar Tab Switcher: Pages vs Chapters */}
+          <div className="flex items-center gap-1 bg-stone-200/90 p-1 rounded-xl mb-2.5 shrink-0">
             <button
               type="button"
-              onClick={() => setIsStylerOpen(true)}
-              className="w-full hidden md:flex items-center justify-between px-3 py-2 bg-emerald-50 hover:bg-emerald-100/70 border border-emerald-200 rounded-xl text-xs font-bold text-emerald-900 font-nastaliq transition cursor-pointer shadow-2xs"
-              title="فونٹ سائز و سطر کشادگی تبدیل کریں"
+              onClick={() => setSidebarTab('pages')}
+              className={`flex-1 py-1.5 text-xs font-bold font-nastaliq rounded-lg transition-all cursor-pointer text-center ${
+                sidebarTab === 'pages'
+                  ? 'bg-emerald-800 text-white shadow-xs'
+                  : 'text-stone-700 hover:text-emerald-900'
+              }`}
             >
-              <span className="flex items-center gap-1.5">
-                <Sliders className="w-3.5 h-3.5 text-emerald-800" />
-                <span>اردو فونٹ سائز و کشادگی</span>
-              </span>
-              <span className="text-[10px] px-1.5 py-0.5 bg-white text-emerald-800 rounded-md border border-emerald-200 font-mono font-bold">
-                اسٹائلر
-              </span>
+              📄 صفحات ({totalPages})
+            </button>
+            <button
+              type="button"
+              onClick={() => setSidebarTab('chapters')}
+              className={`flex-1 py-1.5 text-xs font-bold font-nastaliq rounded-lg transition-all cursor-pointer text-center ${
+                sidebarTab === 'chapters'
+                  ? 'bg-emerald-800 text-white shadow-xs'
+                  : 'text-stone-700 hover:text-emerald-900'
+              }`}
+            >
+              📑 فہرستِ ابواب ({bookChaptersList.length})
             </button>
           </div>
 
-          {/* Fehrist Page Grid / List */}
-          <div className="flex-1 overflow-y-auto mt-3 pr-1 space-y-1 custom-scrollbar">
-            <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-3 gap-1.5">
-              {filteredPageNumbers.map((p, idx) => {
-                if (p < 0) {
-                  return (
-                    <div key={`ellipsis_${idx}`} className="flex items-center justify-center text-xs text-stone-400 font-bold">
-                      •••
-                    </div>
-                  );
-                }
-                const isActive = p === currentPage + 1;
+          {sidebarTab === 'chapters' ? (
+            /* Chapters Tab */
+            <div className="flex-1 overflow-y-auto pr-1 space-y-2 custom-scrollbar">
+              <div className="text-[11px] font-nastaliq font-bold text-stone-500 pb-1 border-b border-gray-200 flex items-center justify-between">
+                <span>انتخابِ باب / عنوان:</span>
+                <span className="text-emerald-800 font-mono">کل: {bookChaptersList.length}</span>
+              </div>
+              {bookChaptersList.map((ch, idx) => {
+                const isActive = currentChapter?.id === ch.id;
                 return (
                   <button
-                    key={p}
+                    key={ch.id || idx}
                     type="button"
-                    onClick={() => handleJumpToPage(p)}
-                    className={`py-2 px-1 text-xs font-bold rounded-xl transition-all cursor-pointer text-center font-nastaliq ${
+                    onClick={() => {
+                      handleJumpToPage(ch.startPage);
+                      jumpToTopOfPage();
+                    }}
+                    className={`w-full text-right p-2.5 rounded-xl transition-all cursor-pointer border flex flex-col gap-1 ${
                       isActive
-                        ? 'bg-emerald-800 text-white shadow-md ring-2 ring-emerald-700/30'
-                        : 'bg-white text-stone-700 border border-gray-200 hover:border-emerald-600 hover:bg-emerald-50/50'
+                        ? 'bg-emerald-800 text-white border-emerald-900 shadow-md ring-2 ring-emerald-600/30'
+                        : 'bg-white hover:bg-emerald-50/70 text-stone-800 border-gray-200 hover:border-emerald-300'
                     }`}
                   >
-                    ص {p}
+                    <div className="flex items-center justify-between gap-1">
+                      <span className={`text-[10px] font-bold font-nastaliq px-2 py-0.5 rounded-md ${
+                        isActive ? 'bg-white/20 text-amber-200' : 'bg-emerald-100 text-emerald-900'
+                      }`}>
+                        ص {ch.startPage}
+                      </span>
+                      <span className={`text-[10px] font-mono ${isActive ? 'text-emerald-200' : 'text-stone-400'}`}>
+                        #{idx + 1}
+                      </span>
+                    </div>
+                    <h4 className={`text-xs sm:text-sm font-bold font-arabic leading-snug line-clamp-2 ${
+                      isActive ? 'text-amber-200' : 'text-emerald-950'
+                    }`} dir="rtl">
+                      {ch.titleAr}
+                    </h4>
+                    {ch.titleUr && (
+                      <p className={`text-[11px] font-nastaliq leading-tight line-clamp-1 ${
+                        isActive ? 'text-stone-200' : 'text-stone-600'
+                      }`} dir="rtl">
+                        {ch.titleUr}
+                      </p>
+                    )}
+                    {ch.detail && (
+                      <span className={`text-[9px] font-nastaliq ${isActive ? 'text-emerald-300' : 'text-stone-400'}`}>
+                        {ch.detail}
+                      </span>
+                    )}
                   </button>
                 );
               })}
             </div>
-          </div>
+          ) : (
+            /* Pages Tab */
+            <>
+              <div className="space-y-2.5 pb-2.5 border-b border-gray-200 shrink-0">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <BookMarked className="w-4 h-4 text-emerald-800" />
+                    <h2 className="font-bold font-nastaliq text-sm sm:text-base text-stone-900">فہرستِ صفحات</h2>
+                  </div>
+                  <span className="text-[11px] font-bold text-emerald-800 font-nastaliq">
+                    کل: {totalPages} صفحات
+                  </span>
+                </div>
 
-          {/* Quick Jump Bar (Start, Mid, End) */}
-          <div className="pt-3 mt-2 border-t border-gray-200 flex items-center justify-between text-xs font-nastaliq">
-            <button
-              type="button"
-              disabled={currentPage <= 0}
-              onClick={() => handleJumpToPage(1)}
-              className="text-stone-500 hover:text-emerald-800 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
-            >
-              شروع (ص ۱)
-            </button>
-            <button
-              type="button"
-              onClick={() => handleJumpToPage(Math.max(1, Math.floor(totalPages / 2)))}
-              className="text-stone-500 hover:text-emerald-800 cursor-pointer"
-            >
-              درمیان (ص {Math.max(1, Math.floor(totalPages / 2))})
-            </button>
-            <button
-              type="button"
-              disabled={currentPage >= totalPages - 1}
-              onClick={() => handleJumpToPage(totalPages)}
-              className="text-stone-500 hover:text-emerald-800 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
-            >
-              آخر (ص {totalPages})
-            </button>
-          </div>
+                {/* Musnad Ahmad Volume Selector in Aside */}
+                {isChunkedBook && (
+                  <div className="bg-emerald-50/80 border border-emerald-200/90 rounded-xl p-2.5 space-y-1.5 shadow-2xs">
+                    <div className="flex items-center justify-between text-[11px] font-bold font-nastaliq text-emerald-950">
+                      <span>انتخابِ جلد (6 مجلدات):</span>
+                      <span className="text-[10px] bg-emerald-800 text-white px-2 py-0.5 rounded-md font-mono">
+                        {currentVolume?.volNum}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-1">
+                      {MUSNAD_VOLUMES.map(v => (
+                        <button
+                          key={v.id}
+                          type="button"
+                          onClick={() => handleSelectVolume(v)}
+                          className={`px-1.5 py-1 rounded-lg text-[10px] font-bold font-nastaliq transition cursor-pointer border text-center ${
+                            currentVolume?.id === v.id
+                              ? 'bg-emerald-800 text-white border-emerald-900 shadow-2xs'
+                              : 'bg-white hover:bg-emerald-100 text-stone-700 border-gray-200'
+                          }`}
+                          title={`${v.title} (${v.hadithRange})`}
+                        >
+                          {v.volNum}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Quick Page Jump Input */}
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Search className="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="number"
+                      min={1}
+                      max={totalPages}
+                      value={searchPageQuery}
+                      onChange={e => setSearchPageQuery(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          handleJumpToPage(parseInt(searchPageQuery, 10));
+                        }
+                      }}
+                      placeholder={`صفحہ (1 تا ${totalPages})...`}
+                      className="w-full pr-8 pl-2 py-1.5 bg-white border border-gray-200 rounded-xl text-xs font-nastaliq focus:outline-none focus:ring-2 focus:ring-emerald-700/20 text-stone-800"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleJumpToPage(parseInt(searchPageQuery, 10))}
+                    className="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold font-nastaliq transition cursor-pointer"
+                  >
+                    جائیں
+                  </button>
+                </div>
+
+                {/* Urdu Styler Trigger in Sidebar (Desktop Only, Hidden on Mobile < 768px) */}
+                <button
+                  type="button"
+                  onClick={() => setIsStylerOpen(true)}
+                  className="w-full hidden md:flex items-center justify-between px-3 py-2 bg-emerald-50 hover:bg-emerald-100/70 border border-emerald-200 rounded-xl text-xs font-bold text-emerald-900 font-nastaliq transition cursor-pointer shadow-2xs"
+                  title="فونٹ سائز و سطر کشادگی تبدیل کریں"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <Sliders className="w-3.5 h-3.5 text-emerald-800" />
+                    <span>اردو فونٹ سائز و کشادگی</span>
+                  </span>
+                  <span className="text-[10px] px-1.5 py-0.5 bg-white text-emerald-800 rounded-md border border-emerald-200 font-mono font-bold">
+                    اسٹائلر
+                  </span>
+                </button>
+              </div>
+
+              {/* Fehrist Page Grid / List */}
+              <div className="flex-1 overflow-y-auto mt-2 pr-1 space-y-1 custom-scrollbar">
+                <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-3 gap-1.5">
+                  {filteredPageNumbers.map((p, idx) => {
+                    if (p < 0) {
+                      return (
+                        <div key={`ellipsis_${idx}`} className="flex items-center justify-center text-xs text-stone-400 font-bold">
+                          •••
+                        </div>
+                      );
+                    }
+                    const isActive = p === currentPage + 1;
+                    return (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => handleJumpToPage(p)}
+                        className={`py-2 px-1 text-xs font-bold rounded-xl transition-all cursor-pointer text-center font-nastaliq ${
+                          isActive
+                            ? 'bg-emerald-800 text-white shadow-md ring-2 ring-emerald-700/30'
+                            : 'bg-white text-stone-700 border border-gray-200 hover:border-emerald-600 hover:bg-emerald-50/50'
+                        }`}
+                        title={isQuran ? `${QURAN_SURAHS_CANONICAL[p - 1]?.nameUrdu || ''} (${QURAN_SURAHS_CANONICAL[p - 1]?.nameArabic || ''})` : `صفحہ ${p}`}
+                      >
+                        {isQuran ? (QURAN_SURAHS_CANONICAL[p - 1]?.nameArabic || `سورة ${p}`) : `ص ${p}`}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Quick Jump Bar (Start, Mid, End) */}
+              <div className="pt-2.5 mt-2 border-t border-gray-200 flex items-center justify-between text-xs font-nastaliq shrink-0">
+                <button
+                  type="button"
+                  disabled={currentPage <= 0}
+                  onClick={() => handleJumpToPage(1)}
+                  className="text-stone-500 hover:text-emerald-800 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                >
+                  شروع (ص ۱)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleJumpToPage(Math.max(1, Math.floor(totalPages / 2)))}
+                  className="text-stone-500 hover:text-emerald-800 cursor-pointer"
+                >
+                  درمیان (ص {Math.max(1, Math.floor(totalPages / 2))})
+                </button>
+                <button
+                  type="button"
+                  disabled={currentPage >= totalPages - 1}
+                  onClick={() => handleJumpToPage(totalPages)}
+                  className="text-stone-500 hover:text-emerald-800 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                >
+                  آخر (ص {totalPages})
+                </button>
+              </div>
+            </>
+          )}
         </aside>
 
         {/* Left 75%: Full Reader Display - order-1 on mobile/tablet, lg:order-2 on desktop */}
@@ -2067,14 +2467,14 @@ ${urduToCopy}
             <div className="flex items-center gap-3.5">
               <div className="premium-book-cover w-11 h-16 shrink-0 hidden sm:block">
                 <img
-                  src={book.cover_url || `/images/books/${book.slug}.svg`}
-                  alt={book.title_ur || book.title}
+                  src={book?.cover_url || `/images/books/${book?.slug || slug}.svg`}
+                  alt={book?.title_ur || book?.title || slug}
                   loading="lazy"
                   decoding="async"
                   onError={(e) => {
                     const target = e.currentTarget;
                     if (target.src.endsWith('.svg')) {
-                      target.src = (book.cover_url || `/images/books/${book.slug}.svg`).replace(/\.svg$/, '.jpg');
+                      target.src = (book?.cover_url || `/images/books/${book?.slug || slug}.svg`).replace(/\.svg$/, '.jpg');
                     }
                   }}
                 />
@@ -2083,19 +2483,19 @@ ${urduToCopy}
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-6 rounded-full bg-emerald-800"></span>
                   <h2 className="text-xl sm:text-2xl font-black font-nastaliq text-emerald-950">
-                    {book.title_ur || book.title}
+                    {book?.title_ur || book?.title || slug}
                   </h2>
                 </div>
                 <p className="text-xs text-stone-500 font-nastaliq mt-1">
-                  مصنف: {book.author} {book.death_year ? `(${book.death_year}ھ)` : ''} • {book.category === 'Hadith' || isHadith ? 'حدیث شریف' : book.category}
+                  مصنف: {book?.author || 'امام و محدث'} {book?.death_year ? `(${book.death_year}ھ)` : ''} • {book?.category === 'Hadith' || isHadith ? 'حدیث شریف' : (book?.category || 'کتاب')}
                   {isHadith && ` • کل احادیث: ${totalHadithsCount.toLocaleString('ur-PK')}`}
                 </p>
                 {/* باقاعدہ ریکارڈ: ماخذ، لنک، لائسنس اور مترجم */}
                 <div className="mt-2.5 flex flex-wrap items-center gap-2 text-[11px] font-nastaliq bg-stone-50 border border-gray-200/80 rounded-xl px-3 py-1.5 text-stone-600">
                   <span className="font-bold text-emerald-900">
-                    {isHadith ? 'ماخذ: مستند عالمی ذخیرۂ حدیث (تصدیق شدہ نسخہ)' : `ماخذ: ${book.source_name || "اوپن پبلک کارپس"}`}
+                    {isHadith ? 'ماخذ: مستند عالمی ذخیرۂ حدیث (تصدیق شدہ نسخہ)' : `ماخذ: ${book?.source_name || "اوپن پبلک کارپس"}`}
                   </span>
-                  {book.source_link && (
+                  {book?.source_link && (
                     <a
                       href={book.source_link}
                       target="_blank"
@@ -2105,8 +2505,8 @@ ${urduToCopy}
                       <span dir="ltr">(ماخذ لنک ↗)</span>
                     </a>
                   )}
-                  <span>• لائسنس: <span dir="ltr">{book.source_license || "Public Domain"}</span></span>
-                  {book.translator && <span>• مترجم: {book.translator}</span>}
+                  <span>• لائسنس: <span dir="ltr">{book?.source_license || "Public Domain"}</span></span>
+                  {book?.translator && <span>• مترجم: {book.translator}</span>}
                 </div>
               </div>
             </div>
@@ -2162,10 +2562,7 @@ ${urduToCopy}
               <button
                 type="button"
                 disabled={currentPage <= 0}
-                onClick={() => {
-                  setCurrentPage(prev => Math.max(0, prev - 1));
-                  jumpToTopOfPage();
-                }}
+                onClick={() => goToPage(currentPage)}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 hover:border-emerald-700 hover:bg-emerald-50/50 text-xs font-bold font-nastaliq text-stone-800 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer"
               >
                 <ChevronRight className="w-4 h-4" />
@@ -2179,10 +2576,7 @@ ${urduToCopy}
               <button
                 type="button"
                 disabled={currentPage >= totalPages - 1}
-                onClick={() => {
-                  setCurrentPage(prev => Math.min(totalPages - 1, prev + 1));
-                  jumpToTopOfPage();
-                }}
+                onClick={() => goToPage(currentPage + 2)}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-xs font-bold font-nastaliq text-white shadow-xs disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer"
               >
                 <span>اگلا صفحہ</span>
@@ -2394,36 +2788,67 @@ ${urduToCopy}
               <div className="flex flex-col items-center justify-center py-28 text-center space-y-3">
                 <Loader2 className="w-8 h-8 text-emerald-800 animate-spin" />
                 <p className="text-base font-nastaliq font-bold text-emerald-900">
-                  «{book.title_ur}» کا مکمل ذخیرہ ({totalHadithsCount.toLocaleString('ur-PK')} احادیث) لوڈ کیا جا رہا ہے...
+                  «{book?.title_ur || slug || 'کتاب'}» کا مکمل ذخیرہ ({totalHadithsCount.toLocaleString('ur-PK')} احادیث) لوڈ کیا جا رہا ہے...
                 </p>
                 <p className="text-xs text-stone-400 font-nastaliq">برائے مہربانی چند لمحے انتظار فرمائیں۔</p>
               </div>
             ) : isHadith ? (
               /* Hadith Reader: 20 Ahadith per page covering all 7589 / 7563 */
               <div className="space-y-6">
-                {currentHadiths.map(h => {
-                  const hadithNum = h.hadithnumber || h.number || 0;
+                {/* Prominent Book & Chapter Title Banner (ترجمۃ الباب) */}
+                <div className="bg-gradient-to-r from-emerald-950 via-[#0a2f20] to-emerald-950 text-white rounded-2xl p-4 sm:p-5 border-2 border-amber-400/80 shadow-md space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-emerald-800/80 pb-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+                      <span className="font-nastaliq font-bold text-xs sm:text-sm text-amber-300">
+                        {book?.title_ur || book?.title || 'کتاب شریف'} • صفحہ {(currentPage + 1).toLocaleString('ur-PK')} از {totalPages.toLocaleString('ur-PK')}
+                      </span>
+                    </div>
+                    <span className="text-[11px] font-nastaliq text-emerald-200 bg-emerald-900/90 px-2.5 py-0.5 rounded-lg border border-emerald-700/60">
+                      احادیث {currentPage * PER_PAGE + 1} تا {Math.min((currentPage + 1) * PER_PAGE, totalHadithsCount)}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1">
+                    <h2 className="arabic-naskh text-xl sm:text-2xl font-bold text-amber-200 leading-relaxed" dir="rtl">
+                      {bannerAr}
+                    </h2>
+                    <p className="font-nastaliq text-sm sm:text-base text-stone-100 font-bold" dir="rtl">
+                      {bannerUr}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Dedicated Box: ترجمۃ الباب کا فقہی خلاصہ (فقه البخاری) */}
+                {isBukhari && bukhariTarjamah && (
+                  <BukhariTarajimBox tarjamah={bukhariTarjamah} />
+                )}
+
+                {currentHadiths.map((h, hIdx) => {
+                  if (!h) return null;
+                  const hadithNum = h.hadithnumber || h.number || (currentPage * PER_PAGE + hIdx + 1);
                   const arabText = h.arab || h.text || '';
                   const isVerified = Boolean(
                     userReviewStatus[`${slug}:${hadithNum}`] === 'verified' || 
                     userReviewStatus[`${hadithFileKey}:${hadithNum}`] === 'verified'
                   );
                   return (
-                    <HadithCardDarsiView
-                      key={hadithNum}
-                      hadith={h}
-                      hadithNum={hadithNum}
-                      arabText={arabText}
-                      slug={slug || hadithFileKey || 'hadith'}
-                      bookTitle={book.title_ur}
-                      currentPage={currentPage}
-                      bookFontSize={bookFontSize}
-                      isVerified={isVerified}
-                      globalTashkeel={globalTashkeel}
-                      renderClickableArabic={renderClickableArabic}
-                      onOpenNarrator={setActiveNarrator}
-                      onWordClick={handleWordClick}
-                    />
+                    <ErrorBoundary key={hadithNum || hIdx} fallbackTitle={`حدیث شریف نمبر ${hadithNum} لوڈ کرنے میں خرابی`}>
+                      <HadithCardDarsiView
+                        hadith={h}
+                        hadithNum={hadithNum}
+                        arabText={arabText}
+                        slug={slug || hadithFileKey || 'hadith'}
+                        bookTitle={book?.title_ur || 'حدیث شریف'}
+                        currentPage={currentPage}
+                        bookFontSize={bookFontSize}
+                        isVerified={isVerified}
+                        globalTashkeel={globalTashkeel}
+                        renderClickableArabic={renderClickableArabic}
+                        onOpenNarrator={setActiveNarrator}
+                        onWordClick={handleWordClick}
+                      />
+                    </ErrorBoundary>
                   );
                 })}
 
@@ -2433,10 +2858,411 @@ ${urduToCopy}
                   </div>
                 )}
               </div>
+            ) : isQuran ? (
+              /* Dedicated Noble Quran Surah View with Guaranteed High-Contrast Tafseer Pop-up Buttons */
+              <div className="space-y-6" dir="rtl">
+                {/* 1. Surah Royal Header Banner */}
+                <div className="bg-gradient-to-r from-emerald-900 via-teal-900 to-emerald-950 text-white p-5 sm:p-7 rounded-3xl border-2 border-amber-400 shadow-xl space-y-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-emerald-800/80 pb-4">
+                    <div className="space-y-1.5">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="px-3 py-1 rounded-full text-xs font-black font-nastaliq bg-amber-400 text-stone-950 shadow-xs">
+                          القرآن الکریم
+                        </span>
+                        <span className="px-2.5 py-0.5 rounded-lg text-xs font-bold font-nastaliq bg-emerald-800 text-emerald-200 border border-emerald-700">
+                          {quranMeta?.revelationType || 'مکية'} • سورة رقم {currentPage + 1}
+                        </span>
+                        <span className="text-xs font-nastaliq text-emerald-200">
+                          پارہ {quranMeta?.juz || 1} • کل آیات: {quranMeta?.ayahCount || 7} • کل رکوعات: {quranMeta?.rukus || 1}
+                        </span>
+                      </div>
+                      <h2 className="text-2xl sm:text-4xl font-black font-amiri text-amber-200 drop-shadow-md">
+                        {quranSurah?.titleArabic || `سُورَةُ ${currentPage + 1}`}
+                      </h2>
+                      <p className="text-xs sm:text-sm text-emerald-100 font-nastaliq">
+                        {quranSurah?.titleUrdu || `سورۃ نمبر ${currentPage + 1}`}
+                      </p>
+                    </div>
+
+                    {/* Master Tafseer Button for Entire Surah */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const tEntry = getTafseerForAyah(currentPage + 1);
+                        setActiveTafseer(tEntry);
+                        setIsTafseerOpen(true);
+                      }}
+                      className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-stone-950 font-black font-nastaliq text-sm sm:text-base transition-all cursor-pointer shadow-lg hover:shadow-xl active:scale-95 border-2 border-amber-500 ring-2 ring-amber-400/40"
+                      title="اس سورت کی تمام تفاسیر (ابن کثیر، جلالین، بیضاوی، عثمانی) دیکھیں"
+                    >
+                      <BookOpen className="w-5 h-5 text-stone-950" />
+                      <span>📖 پوری سورت کی تفاسیر دیکھیں</span>
+                    </button>
+                  </div>
+
+                  {/* Quran View Switcher Pills */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 bg-emerald-950/60 p-2.5 rounded-2xl border border-emerald-800">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-nastaliq text-emerald-200 font-bold px-1">اندازِ مطالعہ (View Mode):</span>
+                      <button
+                        type="button"
+                        onClick={() => setQuranViewMode('mushaf')}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-nastaliq font-bold transition cursor-pointer border ${
+                          quranViewMode === 'mushaf'
+                            ? 'bg-amber-400 text-stone-950 border-amber-500 shadow-sm'
+                            : 'bg-emerald-900/80 text-emerald-100 hover:bg-emerald-800 border-emerald-700'
+                        }`}
+                      >
+                        📖 مصحف ویو (رکوع وار)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setQuranViewMode('interlinear')}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-nastaliq font-bold transition cursor-pointer border ${
+                          quranViewMode === 'interlinear'
+                            ? 'bg-amber-400 text-stone-950 border-amber-500 shadow-sm'
+                            : 'bg-emerald-900/80 text-emerald-100 hover:bg-emerald-800 border-emerald-700'
+                        }`}
+                      >
+                        🔍 درسی و لفظی ویو (آیت بہ آیت)
+                      </button>
+                    </div>
+
+                    <span className="text-[11px] font-nastaliq text-amber-200 bg-emerald-900/80 px-2.5 py-1 rounded-lg border border-emerald-700/80">
+                      {quranViewMode === 'mushaf' ? 'پیوستہ عربی متن مع ترجمہ' : 'ہر آیت کا انفرادی بریک ڈاؤن و ترجمہ'}
+                    </span>
+                  </div>
+
+                  {currentPage !== 8 /* Surah At-Tawbah (index 8) does not have Bismillah */ && (
+                    <p className="font-arabic text-center text-xl sm:text-2xl text-amber-100 font-bold pt-1 tracking-wide">
+                      بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+                    </p>
+                  )}
+                </div>
+
+                {/* 2. Quran Content: Mode Switcher Rendering */}
+                {quranViewMode === 'mushaf' ? (
+                  /* ─── Mode A: مصحف ویو (رکوع وار پیوستہ تلاوت) ─── */
+                  (quranSurah?.segments && quranSurah.segments.length > 0 ? quranSurah.segments : [{
+                    id: `quran_fallback_${currentPage}`,
+                    arabicText: currentNonHadithPage,
+                    urduTranslation: ''
+                  }]).map((seg, sIdx) => {
+                    const ayahs = extractAyahNumbers(seg.arabicText);
+                    const rukuNum = sIdx + 1;
+                    const totalRukus = quranSurah?.segments?.length || 1;
+                    const ayahRangeLabel = ayahs.length >= 2 
+                      ? `آیات ${ayahs[0]} تا ${ayahs[ayahs.length - 1]}`
+                      : ayahs.length === 1 
+                      ? `آیت ${ayahs[0]}`
+                      : `حصہ ${rukuNum}`;
+
+                    return (
+                      <div 
+                        key={seg.id || sIdx}
+                        className="bg-white rounded-3xl border-2 border-emerald-100/90 shadow-md p-5 sm:p-7 space-y-4 hover:border-emerald-300/80 transition-colors"
+                      >
+                        {/* Ruku Top Bar with Badges and Tafseer Action */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-emerald-100 pb-3">
+                          <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black font-nastaliq bg-emerald-100 text-emerald-950 border border-emerald-200">
+                              <span>رکوع {rukuNum} از {totalRukus}</span>
+                            </span>
+                            <span className="text-xs font-nastaliq text-stone-500">
+                              • {ayahRangeLabel}
+                            </span>
+                          </div>
+
+                          {/* High-Contrast Tafseer Action Button */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const tEntry = getTafseerForAyah(currentPage + 1, ayahs[0] || undefined, rukuNum);
+                              setActiveTafseer(tEntry);
+                              setIsTafseerOpen(true);
+                            }}
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 font-bold font-nastaliq text-xs sm:text-sm transition-all cursor-pointer shadow-sm hover:shadow-md active:scale-95 border border-amber-500"
+                            title="اس رکوع و آیات کی 4 معتمد تفاسیر (ابن کثیر، جلالین، بیضاوی، عثمانی) دیکھیں"
+                          >
+                            <BookOpen className="w-4 h-4 text-stone-950" />
+                            <span>📖 تفاسیر دیکھیں (ابن کثیر، جلالین، بیضاوی، عثمانی)</span>
+                          </button>
+                        </div>
+
+                        {/* Arabic Matn Box */}
+                        <div className="bg-amber-50/40 rounded-2xl p-4 sm:p-6 border border-amber-200/60 space-y-2">
+                          <div className="flex items-center justify-between text-xs font-nastaliq text-amber-900 border-b border-amber-200/50 pb-2">
+                            <span className="font-bold">المتن الشريف (مصحف عثمانی مدنی):</span>
+                            <span className="text-[10px] text-stone-400">💡 ہر عربی لفظ پر کلک کر کے صرفی و نحوی لغت دیکھیں</span>
+                          </div>
+                          <p
+                            className="font-arabic arabic-text text-right select-text"
+                            dir="rtl"
+                            style={{ 
+                              fontFamily: "'Amiri Quran', 'Amiri', 'Traditional Arabic', serif",
+                              fontSize: '1.75rem', 
+                              lineHeight: '2.3', 
+                              fontWeight: 500,
+                              color: '#111827' 
+                            }}
+                          >
+                            {renderClickableArabic(seg.arabicText, seg.arabicText, seg.urduTranslation)}
+                          </p>
+                        </div>
+
+                        {/* Urdu Translation Box */}
+                        {seg.urduTranslation && (
+                          <div className="bg-emerald-50/30 rounded-2xl p-4 sm:p-5 border border-emerald-100 space-y-1.5">
+                            <div className="flex items-center justify-between text-xs font-bold text-emerald-900 font-nastaliq border-b border-emerald-100 pb-1.5">
+                              <span>سلیس اردو ترجمہ (مولانا فتح محمد جالندھری):</span>
+                            </div>
+                            <p
+                              className="urdu-text text-right select-text leading-loose font-nastaliq"
+                              dir="rtl"
+                              style={{ 
+                                fontSize: '1.2rem', 
+                                lineHeight: '2.4', 
+                                fontWeight: 500, 
+                                color: '#1f2937' 
+                              }}
+                            >
+                              {seg.urduTranslation}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Individual Ayah Tafseer Badges (If multiple ayahs present) */}
+                        {ayahs.length > 0 && (
+                          <div className="pt-2 border-t border-gray-100 flex flex-wrap items-center gap-1.5">
+                            <span className="text-xs font-bold text-amber-950 font-nastaliq pl-1">
+                              انفرادی آیات کی تفسیر:
+                            </span>
+                            {ayahs.map(ayahNum => (
+                              <button
+                                key={ayahNum}
+                                type="button"
+                                onClick={() => {
+                                  const tEntry = getTafseerForAyah(currentPage + 1, ayahNum, rukuNum);
+                                  setActiveTafseer(tEntry);
+                                  setIsTafseerOpen(true);
+                                }}
+                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-amber-100 text-stone-800 hover:text-amber-950 font-bold font-nastaliq text-xs transition cursor-pointer border border-gray-200 hover:border-amber-300 active:scale-95 shadow-2xs"
+                                title={`آیت نمبر ${ayahNum} کی 4 معتمد تفاسیر دیکھیں`}
+                              >
+                                <BookOpen className="w-3 h-3 text-amber-700" />
+                                <span>آیت {ayahNum} 📖</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                ) : (
+                  /* ─── Mode B: درسی و لفظی ویو (آیت بہ آیت سطر وار مع لفظی لغت و تفاسیر) ─── */
+                  <div className="space-y-4">
+                    {(quranSurah?.segments && quranSurah.segments.length > 0 ? quranSurah.segments : [{
+                      id: `quran_fallback_${currentPage}`,
+                      arabicText: currentNonHadithPage,
+                      urduTranslation: ''
+                    }]).map((seg, sIdx) => {
+                      const ayahs = extractAyahNumbers(seg.arabicText);
+                      const rukuNum = sIdx + 1;
+                      // Split verses by ayah markers e.g. ﴿۱﴾ or numbers
+                      const verseParts = seg.arabicText.split(/(?=[(（\uFD3F]?\d+[\uFD3E)）]?)/g).filter(v => v.trim().length > 0);
+                      const verseTranslations = seg.urduTranslation ? seg.urduTranslation.split(/(?:\r?\n|۔)/).filter(t => t.trim().length > 0) : [];
+
+                      return (
+                        <div key={seg.id || sIdx} className="space-y-4">
+                          <div className="bg-emerald-900 text-amber-200 px-4 py-2 rounded-2xl flex items-center justify-between text-xs font-nastaliq font-bold">
+                            <span>رکوع نمبر {rukuNum} • آیات کا درسی و لفظی تفصیلی جائزہ</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const tEntry = getTafseerForAyah(currentPage + 1, ayahs[0] || undefined, rukuNum);
+                                setActiveTafseer(tEntry);
+                                setIsTafseerOpen(true);
+                              }}
+                              className="px-3 py-1 rounded-xl bg-amber-400 text-stone-950 hover:bg-amber-300 transition cursor-pointer flex items-center gap-1 shadow-2xs"
+                            >
+                              <BookOpen className="w-3.5 h-3.5" />
+                              <span>اس رکوع کی تفاسیر</span>
+                            </button>
+                          </div>
+
+                          {(verseParts.length > 0 ? verseParts : [seg.arabicText]).map((verseText, vIdx) => {
+                            const matchedAyahNum = ayahs[vIdx] || (vIdx + 1);
+                            const verseUrdu = verseTranslations[vIdx] || seg.urduTranslation;
+                            const wordTokens = verseText.trim().split(/\s+/).filter(w => w.length > 0 && !/^[،۔؛:؟!]+$/.test(w));
+
+                            return (
+                              <div
+                                key={vIdx}
+                                className="bg-white rounded-2xl border-2 border-emerald-100 p-4 sm:p-5 space-y-3.5 shadow-sm hover:border-emerald-300 transition"
+                              >
+                                {/* Verse Header */}
+                                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 pb-2.5">
+                                  <div className="flex items-center gap-2">
+                                    <span className="w-7 h-7 rounded-full bg-emerald-800 text-amber-300 font-bold font-mono text-xs flex items-center justify-center border border-amber-400">
+                                      {matchedAyahNum}
+                                    </span>
+                                    <span className="font-nastaliq font-bold text-xs text-emerald-950">
+                                      {quranSurah?.titleUrdu || 'سورۃ'} • آیت نمبر {matchedAyahNum}
+                                    </span>
+                                  </div>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const tEntry = getTafseerForAyah(currentPage + 1, matchedAyahNum, rukuNum);
+                                      setActiveTafseer(tEntry);
+                                      setIsTafseerOpen(true);
+                                    }}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 font-bold font-nastaliq text-xs transition cursor-pointer border border-amber-500 shadow-2xs active:scale-95"
+                                  >
+                                    <BookOpen className="w-3.5 h-3.5" />
+                                    <span>📖 آیت {matchedAyahNum} کی تفاسیر</span>
+                                  </button>
+                                </div>
+
+                                {/* Arabic Verse */}
+                                <div className="bg-amber-50/50 p-4 rounded-xl border border-amber-200/70">
+                                  <p
+                                    className="font-arabic arabic-text text-right select-text"
+                                    dir="rtl"
+                                    style={{ 
+                                      fontFamily: "'Amiri Quran', 'Amiri', 'Scheherazade New', 'Traditional Arabic', serif",
+                                      fontSize: '1.65rem', 
+                                      lineHeight: '2.35', 
+                                      color: '#111827' 
+                                    }}
+                                  >
+                                    {renderClickableArabic(verseText, verseText, verseUrdu)}
+                                  </p>
+                                </div>
+
+                                {/* Urdu Translation */}
+                                {verseUrdu && (
+                                  <div className="bg-emerald-50/40 p-3 rounded-xl border border-emerald-100 font-nastaliq text-emerald-950">
+                                    <span className="font-bold text-emerald-800 block mb-0.5 text-xs">ترجمہ:</span>
+                                    <p 
+                                      className="leading-loose"
+                                      style={{ 
+                                        fontFamily: "'Jameel Noori Nastaleeq', 'Urdu Nastaleeq', 'Nafees', serif",
+                                        fontSize: '1.3rem', 
+                                        lineHeight: '2.4', 
+                                        fontWeight: 500, 
+                                        color: '#1f2937' 
+                                      }}
+                                    >
+                                      {verseUrdu}
+                                    </p>
+                                  </div>
+                                )}
+
+                                {/* Word-by-Word Interlinear Chips */}
+                                <div className="pt-2 border-t border-gray-100 space-y-1.5">
+                                  <div className="flex items-center justify-between text-[11px] font-nastaliq text-stone-500">
+                                    <span className="font-bold text-emerald-900">لفظی تجزیہ (کلک کرنے پر مفصل لغت):</span>
+                                    <span>کل کلمات: {wordTokens.length}</span>
+                                  </div>
+                                  <div className="flex flex-wrap gap-1.5" dir="rtl">
+                                    {wordTokens.map((w, wIdx) => (
+                                      <button
+                                        key={wIdx}
+                                        type="button"
+                                        onClick={() => handleWordClick(w, verseText, verseUrdu)}
+                                        className="px-2.5 py-1 rounded-lg bg-stone-50 hover:bg-amber-100 text-stone-800 hover:text-amber-950 border border-stone-200 hover:border-amber-300 text-xs font-arabic transition cursor-pointer shadow-2xs"
+                                        title={`${w} کا درسی حل و اعراب دیکھیں`}
+                                      >
+                                        {w}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             ) : parsedDarsPage ? (
               /* Dars-e-Nizami & Structured Classical Reader (Page 1 Golden Standard) */
               <div className="space-y-6">
-                {/* 1. Header (Bismillah, Masnad Title, Page & Topic) */}
+                {/* 1. Standardized Unified Header for Card: Hadith/Page Number & Grade on Right, Action Toolbar on Left */}
+                <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-3.5 sm:p-4 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-emerald-950 font-nastaliq text-xs sm:text-sm bg-white px-3 py-1 rounded-xl border border-emerald-200 shadow-2xs">
+                      {isChunkedBook ? `حدیث شریف نمبر: ${(currentPage + 1).toLocaleString('ur-PK')}` : `صفحہ نمبر: ${(currentPage + 1).toLocaleString('ur-PK')}`}
+                    </span>
+                    <span className="font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-full font-nastaliq text-[11px]">
+                      {isChunkedBook ? 'إسناده صحيح / حسن' : 'نسخۂ معتمد'}
+                    </span>
+                  </div>
+
+                  {/* Unified Action Toolbar */}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {/* Tashkeel Toggle */}
+                    <button
+                      type="button"
+                      onClick={() => setGlobalTashkeel(!globalTashkeel)}
+                      className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold font-nastaliq transition cursor-pointer border ${
+                        globalTashkeel
+                          ? 'bg-emerald-50 text-emerald-900 border-emerald-200 hover:bg-emerald-100'
+                          : 'bg-amber-100 text-amber-900 border-amber-300 font-black'
+                      }`}
+                      title="اعراب ہٹائیں / دکھائیں (طلبۂ درسِ نظامی کے لیے عبارت خوانی کی مشق)"
+                    >
+                      {globalTashkeel ? <Eye className="w-3 h-3 text-emerald-700" /> : <EyeOff className="w-3 h-3 text-amber-800" />}
+                      <span>{globalTashkeel ? 'مع اعراب' : 'بغیر اعراب (مشق)'}</span>
+                    </button>
+
+                    {/* Copy with Reference */}
+                    <button
+                      type="button"
+                      onClick={handleCopyPageWithRef}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold font-nastaliq bg-white hover:bg-emerald-50 text-stone-700 hover:text-emerald-900 border border-gray-200 transition cursor-pointer"
+                      title="عربی متن، اردو ترجمہ اور مکمل حوالہ کاپی کریں"
+                    >
+                      {copiedPageRef ? <Check className="w-3 h-3 text-emerald-700" /> : <Copy className="w-3 h-3 text-stone-500" />}
+                      <span>{copiedPageRef ? 'کاپی ہو گیا' : 'حوالے کے ساتھ نقل کریں'}</span>
+                    </button>
+
+                    {/* Bookmark Button */}
+                    <button
+                      type="button"
+                      onClick={togglePageBookmark}
+                      className={`p-1.5 rounded-lg border transition cursor-pointer ${
+                        isPageBookmarked
+                          ? 'bg-amber-50 text-amber-600 border-amber-300'
+                          : 'bg-white hover:bg-stone-100 text-stone-400 hover:text-stone-700 border-gray-200'
+                      }`}
+                      title={isPageBookmarked ? 'محفوظ شدہ صفحہ (بک مارک ہٹائیں)' : 'صفحہ کو محفوظ کریں (بک مارک)'}
+                    >
+                      {isPageBookmarked ? <BookmarkCheck className="w-3.5 h-3.5 fill-amber-500 text-amber-600" /> : <Bookmark className="w-3.5 h-3.5" />}
+                    </button>
+
+                    {/* Student Notes Button */}
+                    <button
+                      type="button"
+                      onClick={() => setShowPageNotes(!showPageNotes)}
+                      className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold font-nastaliq transition cursor-pointer border ${
+                        showPageNotes || pageNotes
+                          ? 'bg-indigo-50 text-indigo-900 border-indigo-200 shadow-2xs'
+                          : 'bg-white hover:bg-stone-100 text-stone-600 border-gray-200'
+                      }`}
+                      title="اس صفحہ پر اپنے علمی نوٹس لکھیں"
+                    >
+                      <FileEdit className="w-3 h-3 text-indigo-700" />
+                      <span>{pageNotes ? 'علمی نوٹس (1)' : 'نوٹ شامل کریں'}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* 1b. Header Banner (Bismillah, Page & Topic) */}
                 {parsedDarsPage.header && (
                   <div className="bg-emerald-50/50 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 text-center shadow-2xs space-y-2">
                     <p className="font-arabic text-emerald-900 text-lg font-bold">
@@ -2460,9 +3286,14 @@ ${urduToCopy}
                       </span>
                     </div>
                     <p
-                      className="font-arabic text-stone-800 text-right leading-loose select-text px-1"
+                      className="font-arabic text-stone-800 text-right select-text px-1 leading-relaxed"
                       dir="rtl"
-                      style={{ fontSize: (bookFontSize + 2) + 'px', lineHeight: '2.4' }}
+                      style={{ 
+                        fontFamily: "'Amiri Quran', 'Amiri', 'Traditional Arabic', serif",
+                        fontSize: '1.25rem', 
+                        fontWeight: 600,
+                        lineHeight: '2.2' 
+                      }}
                     >
                       {renderDarsSanadText()}
                     </p>
@@ -2482,73 +3313,76 @@ ${urduToCopy}
                           {isChunkedBook ? `حدیث شریف نمبر: ${(currentPage + 1).toLocaleString('ur-PK')}` : 'متنِ کتاب (مستند عربی متن)'}
                         </span>
                       </div>
-
-                      {/* Action Toolbar for Page */}
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        {/* Tashkeel Toggle */}
-                        <button
-                          type="button"
-                          onClick={() => setGlobalTashkeel(!globalTashkeel)}
-                          className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold font-nastaliq transition cursor-pointer border ${
-                            globalTashkeel
-                              ? 'bg-emerald-50 text-emerald-900 border-emerald-200'
-                              : 'bg-amber-100 text-amber-900 border-amber-300 font-black'
-                          }`}
-                          title="اعراب ہٹائیں / دکھائیں (طلبۂ درسِ نظامی کے لیے عبارت خوانی کی مشق)"
-                        >
-                          {globalTashkeel ? <Eye className="w-3 h-3 text-emerald-700" /> : <EyeOff className="w-3 h-3 text-amber-800" />}
-                          <span>{globalTashkeel ? 'مع اعراب' : 'بغیر اعراب (مشق)'}</span>
-                        </button>
-
-                        {/* Copy with Reference */}
-                        <button
-                          type="button"
-                          onClick={handleCopyPageWithRef}
-                          className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold font-nastaliq bg-white hover:bg-emerald-50 text-stone-700 hover:text-emerald-900 border border-gray-200 transition cursor-pointer"
-                          title="عربی متن، اردو ترجمہ اور مکمل حوالہ کاپی کریں"
-                        >
-                          {copiedPageRef ? <Check className="w-3 h-3 text-emerald-700" /> : <Copy className="w-3 h-3 text-stone-500" />}
-                          <span>{copiedPageRef ? 'کاپی ہو گیا' : 'حوالے کے ساتھ نقل کریں'}</span>
-                        </button>
-
-                        {/* Bookmark Button */}
-                        <button
-                          type="button"
-                          onClick={togglePageBookmark}
-                          className={`p-1.5 rounded-lg border transition cursor-pointer ${
-                            isPageBookmarked
-                              ? 'bg-amber-50 text-amber-600 border-amber-300'
-                              : 'bg-white hover:bg-stone-100 text-stone-400 hover:text-stone-700 border-gray-200'
-                          }`}
-                          title={isPageBookmarked ? 'محفوظ شدہ صفحہ (بک مارک ہٹائیں)' : 'صفحہ کو محفوظ کریں (بک مارک)'}
-                        >
-                          {isPageBookmarked ? <BookmarkCheck className="w-3.5 h-3.5 fill-amber-500 text-amber-600" /> : <Bookmark className="w-3.5 h-3.5" />}
-                        </button>
-
-                        {/* Student Notes Button */}
-                        <button
-                          type="button"
-                          onClick={() => setShowPageNotes(!showPageNotes)}
-                          className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold font-nastaliq transition cursor-pointer border ${
-                            showPageNotes || pageNotes
-                              ? 'bg-indigo-50 text-indigo-900 border-indigo-200 shadow-2xs'
-                              : 'bg-white hover:bg-stone-100 text-stone-600 border-gray-200'
-                          }`}
-                          title="اس صفحہ پر اپنے علمی نوٹس لکھیں"
-                        >
-                          <FileEdit className="w-3 h-3 text-indigo-700" />
-                          <span>{pageNotes ? 'علمی نوٹس (1)' : 'نوٹ شامل کریں'}</span>
-                        </button>
-                      </div>
                     </div>
 
-                    <p
-                      className="font-arabic arabic-text text-right leading-loose text-stone-900 select-text px-1"
-                      dir="rtl"
-                      style={{ fontSize: (bookFontSize + 4) + 'px', lineHeight: '2.5' }}
-                    >
-                      {renderClickableArabic(displayDarsMatn, parsedDarsPage.matn, parsedDarsPage.urduTranslation || pipelineAnalysis?.urduTranslation)}
-                    </p>
+                    {isQuran ? (
+                      <div className="space-y-4" dir="rtl">
+                        {/* Quran Tafseer Quick Access Header Banner */}
+                        <div className="bg-emerald-800 text-white p-3 sm:p-3.5 rounded-2xl flex flex-wrap items-center justify-between gap-2 shadow-xs">
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                            <span className="font-bold font-nastaliq text-xs sm:text-sm text-amber-100">
+                              تفسیر القرآن الکریم (ابن کثیر، جلالین، بیضاوی، عثمانی/معارف القرآن)
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const tEntry = getTafseerForAyah(currentPage + 1);
+                              setActiveTafseer(tEntry);
+                              setIsTafseerOpen(true);
+                            }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 font-bold font-nastaliq text-xs transition cursor-pointer shadow-xs active:scale-95"
+                            title="اس سورت و آیات کی تمام مستند تفاسیر دیکھیں"
+                          >
+                            <BookOpen className="w-3.5 h-3.5 text-stone-950" />
+                            <span>📖 تفاسیر دیکھیں (ابن کثیر، جلالین، بیضاوی، عثمانی)</span>
+                          </button>
+                        </div>
+
+                        <div
+                          className="font-arabic arabic-text text-right leading-loose text-stone-900 select-text px-1 space-y-4"
+                          style={{ fontSize: (bookFontSize + 4) + 'px', lineHeight: '2.5' }}
+                        >
+                          {displayDarsMatn.split('\n\n').map((para, pIdx) => (
+                            <div key={pIdx} className="p-3.5 rounded-2xl bg-amber-50/40 border border-amber-200/50 space-y-2">
+                              <p className="leading-loose">
+                                {renderClickableArabic(para, para, parsedDarsPage.urduTranslation || pipelineAnalysis?.urduTranslation)}
+                              </p>
+                              <div className="flex justify-end pt-1 border-t border-amber-200/40">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const tEntry = getTafseerForAyah(currentPage + 1, undefined, pIdx + 1);
+                                    setActiveTafseer(tEntry);
+                                    setIsTafseerOpen(true);
+                                  }}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300/80 font-bold font-nastaliq text-xs transition cursor-pointer shadow-2xs hover:shadow-xs active:scale-95"
+                                  title="اس رکوع / آیات کی 4 معتمد تفاسیر دیکھیں"
+                                >
+                                  <BookOpen className="w-3.5 h-3.5 text-emerald-700" />
+                                  <span>📖 تفاسیر دیکھیں</span>
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <p
+                        className="font-arabic arabic-text text-right select-text px-1"
+                        dir="rtl"
+                        style={{ 
+                          fontFamily: "'Amiri Quran', 'Amiri', 'Traditional Arabic', serif",
+                          fontSize: '1.6rem', 
+                          lineHeight: '2.3', 
+                          fontWeight: 500, 
+                          color: '#111827' 
+                        }}
+                      >
+                        {renderClickableArabic(displayDarsMatn, parsedDarsPage.matn, parsedDarsPage.urduTranslation || pipelineAnalysis?.urduTranslation)}
+                      </p>
+                    )}
                     <div className="pt-2 border-t border-amber-200/40 flex items-center justify-between text-[11px] font-nastaliq text-amber-900/80">
                       <span>{isChunkedBook ? `مسند أحمد: رقم الحديث ${(currentPage + 1).toLocaleString('ur-PK')}، إسناده صحيح/حسن` : (parsedDarsPage.ref || '')}</span>
                       <span className="text-[10px] text-stone-400">💡 ہر عربی لفظ پر کلک کر کے صرفی و نحوی لغت دیکھیں</span>
@@ -2583,9 +3417,15 @@ ${urduToCopy}
                         </h4>
                       </div>
                       <p
-                        className="urdu-text text-emerald-950 text-right select-text leading-loose pr-3.5 font-nastaliq"
+                        className="urdu-text text-right select-text leading-loose pr-3.5 font-nastaliq"
                         dir="rtl"
-                        style={{ fontSize: bookFontSize + 'px', lineHeight: '2.2' }}
+                        style={{ 
+                          fontFamily: "'Jameel Noori Nastaleeq', 'Urdu Nastaleeq', 'Nafees', serif",
+                          fontSize: '1.2rem', 
+                          lineHeight: '2.4', 
+                          fontWeight: 500, 
+                          color: '#1f2937' 
+                        }}
                       >
                         {parsedDarsPage.urduTranslation || pipelineAnalysis?.urduTranslation}
                       </p>
@@ -2687,29 +3527,22 @@ ${urduToCopy}
                         <span>درسی تشریح و مفہوم (برائے طلبۂ درسِ نظامی):</span>
                       </h4>
                       <div
-                        className="urdu-text text-stone-800 text-right select-text leading-loose pr-2 space-y-2"
+                        className="urdu-text text-stone-800 text-right select-text pr-2 space-y-2 font-nastaliq"
                         dir="rtl"
-                        style={{ fontSize: (bookFontSize - 1) + 'px', lineHeight: '2.1' }}
+                        style={{ fontSize: '1rem', lineHeight: '2.3' }}
                       >
                         {(parsedDarsPage.tashreeh || pipelineAnalysis?.tashreeh || '').split('\n').map((line, lidx) => (
-                          <p key={lidx}>{line}</p>
+                          <p key={lidx}>{renderMarkdownFormatted(line)}</p>
                         ))}
                       </div>
                     </div>
                   )}
 
                   {/* Grammatical Breakdown (Mahal-e-I'rab) */}
+                  {/* Grammatical Breakdown (Mahal-e-I'rab) */}
                   {showScholarlySections && (parsedDarsPage.iraab || pipelineAnalysis?.iraab) && (
-                    <div className="pt-3 border-t border-emerald-100/70 space-y-2 bg-indigo-50/30 rounded-xl p-4 border border-indigo-100/60 shadow-2xs">
-                      <h4 className="text-xs font-bold text-indigo-950 font-nastaliq flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-indigo-600"></span>
-                        <span>حلِ اعراب و نحوی ترکیب:</span>
-                      </h4>
-                      <div className="text-xs font-nastaliq text-stone-800 leading-loose space-y-1.5 pr-2">
-                        {(parsedDarsPage.iraab || (pipelineAnalysis?.iraab ? pipelineAnalysis.iraab.join('\n') : '')).split('\n').map((line, lidx) => (
-                          <p key={lidx} className="select-text">{line}</p>
-                        ))}
-                      </div>
+                    <div className="pt-3 border-t border-emerald-100/70">
+                      <IraabSectionView iraabLines={parsedDarsPage.iraab || pipelineAnalysis?.iraab || []} />
                     </div>
                   )}
 
@@ -2720,10 +3553,65 @@ ${urduToCopy}
                         <span className="w-2 h-2 rounded-full bg-amber-600"></span>
                         <span>حواشی و درسی فوائد (تخریج و شواہد):</span>
                       </h4>
-                      <div className="text-xs font-nastaliq text-stone-700 leading-loose space-y-1.5 pr-2">
+                      <div className="arabic-naskh text-sm sm:text-base leading-[2.3] text-stone-700 space-y-1.5 pr-2 select-text" dir="rtl">
                         {(parsedDarsPage.hawashi || (pipelineAnalysis?.hawashi ? pipelineAnalysis.hawashi.join('\n') : '')).split('\n').map((hline, hidx) => (
-                          <p key={hidx} className="select-text">{hline}</p>
+                          <p key={hidx}>{hline}</p>
                         ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* New: مستنبط فقہی احکام و مسائل (شرعی رہنمائی) */}
+                  {showScholarlySections && pipelineAnalysis?.ahkamShariat && (
+                    <div className="pt-3 border-t border-emerald-100/70 bg-emerald-50/80 border-2 border-emerald-300 rounded-2xl p-4 shadow-xs space-y-2.5" dir="rtl">
+                      <div className="flex items-center justify-between border-b border-emerald-200 pb-2">
+                        <h4 className="text-xs sm:text-sm font-bold text-emerald-950 font-nastaliq flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded-md bg-emerald-800 text-amber-300 text-[10px] font-bold">فقہ و فتاویٰ</span>
+                          <span>مستنبط فقہی احکام و مسائل (شرعی رہنمائی):</span>
+                        </h4>
+                        <span className="text-[10px] text-emerald-800 font-nastaliq font-bold bg-white px-2 py-0.5 rounded-lg border border-emerald-200">
+                          مذہبِ حنفی و تقابل
+                        </span>
+                      </div>
+                      <div className="space-y-2 text-xs font-nastaliq text-stone-800 leading-relaxed pr-1">
+                        <div className="bg-white/90 p-2.5 rounded-xl border border-emerald-100 space-y-1">
+                          <strong className="text-emerald-900 block font-bold">۱. مذہبِ حنفی کے مطابق شرعی حکم:</strong>
+                          <p className="text-stone-700 leading-loose">{pipelineAnalysis.ahkamShariat.hanafiRuling}</p>
+                        </div>
+                        <div className="bg-white/90 p-2.5 rounded-xl border border-emerald-100 space-y-1">
+                          <strong className="text-indigo-900 block font-bold">۲. تقابلی فقہی نکتہ (دیگر ائمہ رحمہم اللہ):</strong>
+                          <p className="text-stone-700 leading-loose">{pipelineAnalysis.ahkamShariat.comparativeNote}</p>
+                        </div>
+                        <div className="bg-emerald-100/70 p-2.5 rounded-xl border border-emerald-200/80 space-y-1">
+                          <strong className="text-emerald-950 block font-bold">💡 عام قاری کے لیے خلاصۂ عمل:</strong>
+                          <p className="text-emerald-900 leading-loose font-bold">{pipelineAnalysis.ahkamShariat.awamSummary}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* New: تربیتی و اصلاحی پہلو (عملی سبق) */}
+                  {showScholarlySections && pipelineAnalysis?.islahAamal && (
+                    <div className="pt-3 border-t border-emerald-100/70 bg-amber-50/80 border-2 border-amber-300 rounded-2xl p-4 shadow-xs space-y-2.5" dir="rtl">
+                      <div className="flex items-center justify-between border-b border-amber-200 pb-2">
+                        <h4 className="text-xs sm:text-sm font-bold text-amber-950 font-nastaliq flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded-md bg-amber-800 text-amber-100 text-[10px] font-bold">اصلاحِ نفس</span>
+                          <span>تربیتی و اصلاحی پہلو (عملی سبق برائے باطن):</span>
+                        </h4>
+                        <span className="text-[10px] text-amber-800 font-nastaliq font-bold bg-white px-2 py-0.5 rounded-lg border border-amber-200">
+                          تزکیۂ اخلاق
+                        </span>
+                      </div>
+                      <div className="space-y-2 text-xs font-nastaliq text-stone-800 leading-relaxed pr-1">
+                        <ul className="space-y-1.5 list-disc list-inside text-stone-700 leading-loose bg-white/90 p-3 rounded-xl border border-amber-100">
+                          {pipelineAnalysis.islahAamal.lessonPoints.map((pt, ptIdx) => (
+                            <li key={ptIdx} className="font-nastaliq font-medium">{pt}</li>
+                          ))}
+                        </ul>
+                        <div className="bg-amber-100/70 p-2.5 rounded-xl border border-amber-200/80">
+                          <strong className="text-amber-950 block font-bold mb-0.5">🌱 روزمرہ عملی نسخہ (مجرب عمل):</strong>
+                          <p className="text-amber-900 leading-loose font-bold">{pipelineAnalysis.islahAamal.amalNuskha}</p>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -2814,8 +3702,11 @@ ${urduToCopy}
           {/* Realtime Global Comments for this Book */}
           <div className="mt-10 pt-8 border-t border-gray-100">
             <GlobalComments
-              page={`/books/${slug}`}
-              title={`${book?.title_ur || slug} پر علمی تبصرے و آراء`}
+              page={`/books/${slug}?page=${currentPage + 1}`}
+              title={`${book?.title_ur || slug} — صفحہ ${(currentPage + 1).toLocaleString('ur-PK')} پر علمی تبصرے و آراء`}
+              bookTitle={book?.title_ur || book?.title || slug}
+              pageNumber={currentPage + 1}
+              bookUrl={`/books/${slug}?page=${currentPage + 1}`}
             />
           </div>
         </main>
@@ -2869,6 +3760,16 @@ ${urduToCopy}
         />
       )}
 
-    </div>
+      {/* Tafseer Classical Modal */}
+      {isTafseerOpen && (
+        <TafseerModal
+          isOpen={isTafseerOpen}
+          onClose={() => setIsTafseerOpen(false)}
+          entry={activeTafseer}
+        />
+      )}
+
+      </div>
+    </ErrorBoundary>
   );
 }

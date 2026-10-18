@@ -32,7 +32,7 @@ export interface DarsiAnalysis {
   };
 }
 
-const CACHE_PREFIX = 'tehreek_darsi_v5_';
+const CACHE_PREFIX = 'tehreek_darsi_v6_';
 const memoryCache: Record<string, DarsiAnalysis> = {};
 
 // Clean Arabic diacritics
@@ -335,12 +335,12 @@ export function getDarsiAnalysisSync(
 ): DarsiAnalysis {
   const cacheKey = `${CACHE_PREFIX}${bookId}_${hadithNumber}`;
 
-  // Evict legacy cache keys (v1, v2, v3, v4)
+  // Evict legacy cache keys (v1, v2, v3, v4, v5)
   if (typeof window !== 'undefined') {
     try {
       for (let i = localStorage.length - 1; i >= 0; i--) {
         const k = localStorage.key(i);
-        if (k && (k.startsWith('tehreek_darsi_v1_') || k.startsWith('tehreek_darsi_v2_') || k.startsWith('tehreek_darsi_v3_') || k.startsWith('tehreek_darsi_v4_'))) {
+        if (k && (k.startsWith('tehreek_darsi_v1_') || k.startsWith('tehreek_darsi_v2_') || k.startsWith('tehreek_darsi_v3_') || k.startsWith('tehreek_darsi_v4_') || k.startsWith('tehreek_darsi_v5_'))) {
           localStorage.removeItem(k);
         }
       }
@@ -393,39 +393,7 @@ export function getDarsiAnalysisSync(
     if (!urduTranslation.endsWith('۔')) urduTranslation += '۔';
   }
 
-  // 6. Construct Genuine Sentence-level Nahwi Tarkeeb
-  const iraab: string[] = [];
-  const cleanTokens = coreMatn.split(/\s+/);
-  
-  // Clause 1: Inna / Anna
-  if (coreMatn.includes('إِنَّمَا') || coreMatn.includes('انما')) {
-    iraab.push('• [إِنَّمَا]: أداة حصر كافّة ومكفوفة؛ «إنّ» حرف توكيد ملغى عن العمل لاتصاله بـ «ما» الزائدة الكافة، وما بعدها مبتدأ وخبر.');
-  } else if (coreMatn.includes('إِنَّ') || coreMatn.includes('أَنَّ')) {
-    iraab.push('• [إِنَّ / أَنَّ]: حرف توكيد ونصب مشبه بالفعل، يدخل على الجملة الاسمية فينصب المبتدأ اسماً له ويرفع الخبر.');
-  }
-
-  // Clause 2: Verbs & Subjects
-  const firstWord = cleanTokens[0] || '';
-  const secondWord = cleanTokens[1] || '';
-
-  if (firstWord.startsWith('مَا') || firstWord.startsWith('لَا') || firstWord.startsWith('لَمْ')) {
-    iraab.push(`• [${firstWord}]: أداة نفي/نهي مبنية على السكون لا محل لها من الإعراب، دخلت على الجملة لتفيد نفي الحكم الشرعي المذكور.`);
-  }
-
-  if (cleanTokens.length >= 3) {
-    iraab.push(`• [${firstWord} ${secondWord}]: مبنى الجملة ومطلع الإسناد اللفظي في الحديث، ومحله الإعرابي بحسب العوامل الأصلية (فعل وفاعل أو مبتدأ وخبر).`);
-  }
-  if (cleanTokens.length >= 5) {
-    const midIdx = Math.floor(cleanTokens.length / 2);
-    iraab.push(`• [${cleanTokens[midIdx]}]: موقع الإعراب مفعول به أو جار ومجرور متعلق بالفعل، وفيه إيضاح متعلقات الحكم والبيان النبوي الشريف.`);
-  }
-  if (cleanTokens.length >= 2) {
-    const lastWord = cleanTokens[cleanTokens.length - 1];
-    iraab.push(`• [${lastWord}]: ختام الجملة النبوية ومحل الشاهد البلاغي وتمامه، ويفيد الإطلاق أو التقييد المقاصدي للنص.`);
-  }
-
-  // 7. Context-Aware Darsi Tashreeh & Comparative Fiqhi Schools (المذاهب الأربعة)
-  const tashreehPoints: string[] = [];
+  // 6. Context-Aware Darsi Nahwi Tarkeeb & Comparative Fiqhi Schools (المذاهب الأربعة)
   const cleanUpper = arabicText;
   const strippedText = stripTashkeel(arabicText);
   const normalizedText = normalizeArabic(arabicText);
@@ -441,6 +409,48 @@ export function getDarsiAnalysisSync(
     cleanUpper.includes('نِيَّ') || cleanUpper.includes('نِيَّة') || cleanUpper.includes('نِيَّات') || 
     cleanUpper.includes('بِالنِّيَّاتِ') || cleanUpper.includes('بِالنِّيَّاتِ') || 
     (cleanUpper.includes('الأَعْمَالُ') && (cleanUpper.includes('بِالنِّيَّاتِ') || cleanUpper.includes('بِالنِّيَّاتِ') || cleanUpper.includes('نَوَى')));
+
+  // 6b. Construct Genuine Sentence-level Nahwi Tarkeeb with both Arabic and Urdu
+  const iraab: string[] = [];
+  const cleanTokens = coreMatn.split(/\s+/);
+
+  if (isNiyyahHadith) {
+    iraab.push('• [إِنَّمَا]: أداة حصر كافّة ومكفوفة؛ «إنّ» حرف توكيد ملغى عن العمل لاتصاله بـ «ما» الزائدة الكافة، وما بعدها مبتدأ وخبر.\n❖ اردو وضاحت: کلمۂ \'إنما\' حصر و قصر کے لیے ہے یعنی اس کے معانی صرف اور فقط کے آتے ہیں۔ \'إنّ\' مشبہ بالفعل کو \'ما\' زائدہ کافہ نے عمل (اسم کو نصب دینے) سے روک دیا ہے، لہٰذا اس کے بعد مبتدا اور خبر آتے ہیں۔');
+    iraab.push('• [الْأَعْمَالُ]: مبتدأ مرفوع وعلامة رفعه الضمة الظاهرة على آخره، وهو جمع تكسير مفرده «عَمَل».\n❖ اردو وضاحت: لفظ \'الْأَعْمَالُ\' مبتدا ہے اور اس پر رفع کی علامت آخری حرف پر ظاہر پیش (ضمہ) ہے۔ یہ \'عمل\' کی جمع مکسر ہے جس میں تمام قلبی، لسانی اور بدنی اعمال داخل ہیں۔');
+    iraab.push('• [بِالنِّيَّاتِ]: الباء حرف جر للمصاحبة أو السببية، «النيات» اسم مجرور بالكسرة، والجار والمجرور شبه جملة متعلق بمحذوف خبر المبتدأ تقديره (صحيحةٌ عند الشافعية، أو معتبرةٌ/كاملةٌ عند الحنفية).\n❖ اردو وضاحت: \'بِ\' حرفِ جر ہے جو سببیت یا مصاحبت کے لیے ہے، اور \'النیات\' مجرور بالکسرہ ہے۔ یہ جار و مجرور شبہ جملہ بن کر مبتدا کی محذوف خبر کے متعلق ہے؛ احناف کے ہاں تقدیر \'کاملةٌ یا معتبرةٌ\' ہے اور شوافع کے ہاں \'صحیحةٌ\' ہے۔');
+    iraab.push('• [وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى]: الواو عاطفة، «إنما» أداة حصر، «لكل» جار ومجرور متعلق بمحذوف خبر مقدم، «امرئ» مضاف إليه مجرور، «ما» اسم موصول مبني في محل رفع مبتدأ مؤخر، «نوى» فعل ماض مبني على الفتح المقدر والفاعل ضمير مستتر صلة الموصول.\n❖ اردو وضاحت: \'و\' حرفِ عطف ہے، \'إنما\' کلمۂ حصر ہے، \'لكل امرئ\' جار و مجرور مع مضاف الیہ مل کر خبرِ مقدم ہے، \'ما\' اسمِ موصول مبتدائے مؤخر ہے، اور \'نویٰ\' فعل مع فاعل مل کر صلہ ہے؛ یعنی ہر انسان کے لیے وہی جزا ہے جس کی اس نے نیت کی۔');
+    iraab.push('• [فَمَنْ كَانَتْ هِجْرَتُهُ إِلَى دُنْيَا...]: الفاء فصيحة تفريعية، «مَنْ» اسم شرط جازم مبني في محل رفع مبتدأ، «كانت» فعل ماض ناقص في محل جزم فعل الشرط، والتاء للتأنيث، «هجرته» اسمها مرفوع، وجملة «فهجرته إلى ما هاجر إليه» في محل جزم جواب الشرط وجزاؤه، وجملتا الشرط والجزاء خبر المبتدأ.\n❖ اردو وضاحت: \'فَ\' فصیحہ تفریعیہ ہے، \'مَنْ\' اسمِ شرط جازم مبتدا ہے، \'کانت\' فعلِ ناقص فعلِ شرط ہے، \'ہجرتہ\' اس کا اسم ہے، اور اگلا جملہ \'فہجرتہ...\' جملۂ اسمیہ ہو کر جوابِ شرط اور جزا ہے، شرط و جزا مل کر مبتدا کی خبر بنتے ہیں۔');
+  } else {
+    // Clause 1: Inna / Anna
+    if (coreMatn.includes('إِنَّمَا') || coreMatn.includes('انما')) {
+      iraab.push('• [إِنَّمَا]: أداة حصر كافّة ومكفوفة؛ «إنّ» حرف توكيد ملغى عن العمل لاتصاله بـ «ما» الزائدة الكافة، وما بعدها مبتدأ وخبر.\n❖ اردو وضاحت: کلمۂ \'إنما\' حصر کے لیے ہے یعنی اس کے معانی صرف اور فقط کے آتے ہیں۔ \'ما\' کافہ نے \'إنّ\' کو عمل سے روک دیا ہے، اس لیے بعد کا اسم مبتدا اور خبر بنتا ہے۔');
+    } else if (coreMatn.includes('إِنَّ') || coreMatn.includes('أَنَّ')) {
+      iraab.push('• [إِنَّ / أَنَّ]: حرف توكيد ونصب مشبه بالفعل، يدخل على الجملة الاسمية فينصب المبتدأ اسماً له ويرفع الخبر.\n❖ اردو وضاحت: یہ حرفِ مشبہ بالفعل ہے جو تاکید کا فائدہ دیتا ہے؛ یہ جملہ اسمیہ پر داخل ہو کر مبتدا کو اپنا اسم بنا کر نصب اور خبر کو رفع دیتا ہے۔');
+    }
+
+    // Clause 2: Verbs & Subjects
+    const firstWord = cleanTokens[0] || '';
+    const secondWord = cleanTokens[1] || '';
+
+    if (firstWord.startsWith('مَا') || firstWord.startsWith('لَا') || firstWord.startsWith('لَمْ')) {
+      iraab.push(`• [${firstWord}]: أداة نفي/نهي مبنية على السكون لا محل لها من الإعراب، دخلت على الجملة لتفيد نفي الحكم الشرعي المذكور.\n❖ اردو وضاحت: یہ حرفِ نفی یا نہی ہے جو سکون پر مبنی ہے اور اس کا کوئی اعرابی محل نہیں؛ یہ جملے پر داخل ہو کر مذکورہ شرعی حکم کی نفی یا ممانعت ظاہر کرتا ہے۔`);
+    }
+
+    if (cleanTokens.length >= 3) {
+      iraab.push(`• [${firstWord} ${secondWord}]: مبنى الجملة ومطلع الإسناد اللفظي في الحديث، ومحله الإعرابي بحسب العوامل الأصلية (فعل وفاعل أو مبتدأ وخبر).\n❖ اردو وضاحت: یہ کلام کا مطلع اور جملے کا بنیادی ڈھانچہ ہے؛ اس کا اعرابی محل جملے کے اصل عوامل (فعل و فاعل یا مبتدا و خبر) کے مطابق ہوتا ہے۔`);
+    }
+    if (cleanTokens.length >= 5) {
+      const midIdx = Math.floor(cleanTokens.length / 2);
+      iraab.push(`• [${cleanTokens[midIdx]}]: موقع الإعراب مفعول به أو جار ومجرور متعلق بالفعل، وفيه إيضاح متعلقات الحكم والبيان النبوي الشريف.\n❖ اردو وضاحت: اعرابی ترکیب کے لحاظ سے یہ مفعول بہ یا فعل کے متعلق جار و مجرور ہے، جس سے نبوی بیان اور شرعی حکم کی تفصیل واضح ہوتی ہے۔`);
+    }
+    if (cleanTokens.length >= 2) {
+      const lastWord = cleanTokens[cleanTokens.length - 1];
+      iraab.push(`• [${lastWord}]: ختام الجملة النبوية ومحل الشاهد البلاغي وتمامه، ويفيد الإطلاق أو التقييد المقاصدي للنص.\n❖ اردو وضاحت: یہ کلامِ نبوی ﷺ کا اختتام اور بلاغی شاہد کا مقام ہے، جو نص کے مقصود میں حکم کے عام یا خاص ہونے کو پورا کرتا ہے۔`);
+    }
+  }
+
+  // 7. Context-Aware Darsi Tashreeh & Comparative Fiqhi Schools (المذاهب الأربعة)
+  const tashreehPoints: string[] = [];
 
   if (isNiyyahHadith) {
     tashreehPoints.push('1. أصل النيات والإخلاص في الشريعة: هذا الحديث الشريف أصل عظيم من أصول الإسلام وقاعدة كبرى تدور عليها أحكام الشريعة كلها؛ قال الإمام الشافعي والإمام أحمد رحمهما الله: «يدخل هذا الحديث في سبعين باباً من أبواب الفقه»، وهو ثلث العلم لأن كسب العبد وأفعاله تكون بقلبه ولسانه وجوارحه، ونية القلب هي الأصل والأساس.');
