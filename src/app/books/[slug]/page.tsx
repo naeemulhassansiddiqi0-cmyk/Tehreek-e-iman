@@ -33,6 +33,7 @@ import { NarratorModal } from "@/components/Reader/NarratorModal";
 import { TafseerModal } from "@/components/Reader/TafseerModal";
 import { BukhariTarajimBox } from "@/components/Reader/BukhariTarajimBox";
 import { IraabSectionView } from "@/components/Reader/IraabSectionView";
+import { DarsiTashreehSectionView } from "@/components/Reader/DarsiTashreehSectionView";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { parseSanadNarratorSegments, NarratorInfo } from "@/services/rijalService";
 import { getBukhariTarjamahInfo } from "@/services/bukhariTarajimService";
@@ -131,22 +132,6 @@ interface HadithCardDarsiViewProps {
   onWordClick: (word: string, sentenceText?: string, translation?: string) => void;
 }
 
-function renderMarkdownFormatted(text: string): React.ReactNode {
-  if (!text) return null;
-  const parts = text.split(/(\*\*[^*]+?\*\*)/g);
-  return parts.map((part, idx) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      const inner = part.slice(2, -2).trim();
-      return (
-        <strong key={idx} className="font-bold text-emerald-950 px-0.5">
-          {inner}
-        </strong>
-      );
-    }
-    const cleaned = part.replace(/\*\*/g, '');
-    return cleaned;
-  });
-}
 
 
 function HadithCardDarsiView({
@@ -570,17 +555,7 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
             ) : analysis ? (
               <div className="space-y-3">
                 {/* Tashreeh & Fiqhi Schools */}
-                <div className="bg-emerald-50/30 rounded-xl p-3.5 border border-emerald-100/70 shadow-2xs space-y-1.5">
-                  <h4 className="text-xs font-bold text-teal-900 font-nastaliq flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-teal-600"></span>
-                    <span>درسی تشریح و فقہی مذاہب (احناف، شوافع، مالکیہ، حنابلہ):</span>
-                  </h4>
-                  <div className="text-sm font-nastaliq text-stone-800 text-right select-text leading-[2.3] space-y-2 pr-1" dir="rtl">
-                    {analysis.tashreeh.split('\n').map((line, lidx) => (
-                      <p key={lidx}>{renderMarkdownFormatted(line)}</p>
-                    ))}
-                  </div>
-                </div>
+                <DarsiTashreehSectionView tashreehText={analysis.tashreeh} />
 
                 {/* Mahal-e-I'rab & Nahwi Tarkeeb */}
                 <IraabSectionView iraabLines={analysis.iraab} />
@@ -3521,24 +3496,11 @@ ${urduToCopy}
 
                   {/* Tashreeh / Darsi Fawaid */}
                   {showScholarlySections && (parsedDarsPage.tashreeh || pipelineAnalysis?.tashreeh) && (
-                    <div className="pt-3 border-t border-emerald-100/70 space-y-2 bg-white/90 rounded-xl p-4 border border-emerald-100/60 shadow-2xs">
-                      <h4 className="text-xs font-bold text-teal-900 font-nastaliq flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-teal-600"></span>
-                        <span>درسی تشریح و مفہوم (برائے طلبۂ درسِ نظامی):</span>
-                      </h4>
-                      <div
-                        className="urdu-text text-stone-800 text-right select-text pr-2 space-y-2 font-nastaliq"
-                        dir="rtl"
-                        style={{ fontSize: '1rem', lineHeight: '2.3' }}
-                      >
-                        {(parsedDarsPage.tashreeh || pipelineAnalysis?.tashreeh || '').split('\n').map((line, lidx) => (
-                          <p key={lidx}>{renderMarkdownFormatted(line)}</p>
-                        ))}
-                      </div>
+                    <div className="pt-3 border-t border-emerald-100/70">
+                      <DarsiTashreehSectionView tashreehText={parsedDarsPage.tashreeh || pipelineAnalysis?.tashreeh || ''} />
                     </div>
                   )}
 
-                  {/* Grammatical Breakdown (Mahal-e-I'rab) */}
                   {/* Grammatical Breakdown (Mahal-e-I'rab) */}
                   {showScholarlySections && (parsedDarsPage.iraab || pipelineAnalysis?.iraab) && (
                     <div className="pt-3 border-t border-emerald-100/70">
