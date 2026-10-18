@@ -35,6 +35,8 @@ import { BukhariTarajimBox } from "@/components/Reader/BukhariTarajimBox";
 import { IraabSectionView } from "@/components/Reader/IraabSectionView";
 import { DarsiTashreehSectionView } from "@/components/Reader/DarsiTashreehSectionView";
 import { ComparativeFiqhBox } from "@/components/Reader/ComparativeFiqhBox";
+import { DailyLifeTakeawayBox } from "@/components/Reader/DailyLifeTakeawayBox";
+import { AdvancedTakhreejBox } from "@/components/Reader/AdvancedTakhreejBox";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { parseSanadNarratorSegments, NarratorInfo } from "@/services/rijalService";
 import { getBukhariTarjamahInfo } from "@/services/bukhariTarajimService";
@@ -157,12 +159,8 @@ function HadithCardDarsiView({
   const [wordLimit, setWordLimit] = useState<number>(24);
   // Instant synchronous Darsi Analysis (zero network delay or loading hangs)
   const analysis = useMemo(() => {
-    const needsUrdu = !hadith.urdu || hadith.urdu.trim() === '';
-    if (needsUrdu || isOpen || showWordByWord) {
-      return getDarsiAnalysisSync(slug, hadithNum, arabText, hadith.urdu);
-    }
-    return null;
-  }, [isOpen, showWordByWord, slug, hadithNum, arabText, hadith.urdu]);
+    return getDarsiAnalysisSync(slug, hadithNum, arabText, hadith.urdu);
+  }, [slug, hadithNum, arabText, hadith.urdu]);
   const loading = false;
   
   // Student Notes & Bookmarking in LocalStorage
@@ -528,7 +526,16 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
         </div>
       )}
 
-      {/* 7. درسی تجزیہ، اعراب، تشریح اور تخریج (Interactive Toggle) */}
+      {/* 7. روزمرہ زندگی کا سبق (عملی تربیت) — Dedicated Takeaway Box for Awam-un-Naas */}
+      {analysis?.islahAamal && (
+        <DailyLifeTakeawayBox
+          lessonPoints={analysis.islahAamal.lessonPoints}
+          amalNuskha={analysis.islahAamal.amalNuskha}
+          hadithNumber={hadithNum}
+        />
+      )}
+
+      {/* 8. درسی تجزیہ، اعراب، تشریح اور تخریج (Interactive Toggle) */}
       <div className="pt-2">
         <button
           type="button"
@@ -564,6 +571,11 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
                 {/* Comparative Fiqh across the 4 Madhahib (مقارنہ بین المذاہب) */}
                 {analysis.comparativeFiqh && (
                   <ComparativeFiqhBox data={analysis.comparativeFiqh} />
+                )}
+
+                {/* تخریج و حوالہ جات (Cross-References & Takhreej) */}
+                {analysis.takhreejData && (
+                  <AdvancedTakhreejBox data={analysis.takhreejData} />
                 )}
 
                 {/* Hawashi & Takhrij */}
@@ -3521,6 +3533,13 @@ ${urduToCopy}
                     </div>
                   )}
 
+                  {/* تخریج و حوالہ جات (Cross-References & Takhreej) */}
+                  {showScholarlySections && pipelineAnalysis?.takhreejData && (
+                    <div className="pt-3 border-t border-emerald-100/70">
+                      <AdvancedTakhreejBox data={pipelineAnalysis.takhreejData} />
+                    </div>
+                  )}
+
                   {/* Hawashi / Footnotes & Takhreej */}
                   {showScholarlySections && (parsedDarsPage.hawashi || pipelineAnalysis?.hawashi) && (
                     <div className="pt-3 border-t border-emerald-100/70 space-y-2 bg-amber-50/40 rounded-xl p-4 border border-amber-200/50 shadow-2xs">
@@ -3565,29 +3584,14 @@ ${urduToCopy}
                     </div>
                   )}
 
-                  {/* New: تربیتی و اصلاحی پہلو (عملی سبق) */}
+                  {/* روزمرہ زندگی کا سبق (عملی تربیت) */}
                   {showScholarlySections && pipelineAnalysis?.islahAamal && (
-                    <div className="pt-3 border-t border-emerald-100/70 bg-amber-50/80 border-2 border-amber-300 rounded-2xl p-4 shadow-xs space-y-2.5" dir="rtl">
-                      <div className="flex items-center justify-between border-b border-amber-200 pb-2">
-                        <h4 className="text-xs sm:text-sm font-bold text-amber-950 font-nastaliq flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded-md bg-amber-800 text-amber-100 text-[10px] font-bold">اصلاحِ نفس</span>
-                          <span>تربیتی و اصلاحی پہلو (عملی سبق برائے باطن):</span>
-                        </h4>
-                        <span className="text-[10px] text-amber-800 font-nastaliq font-bold bg-white px-2 py-0.5 rounded-lg border border-amber-200">
-                          تزکیۂ اخلاق
-                        </span>
-                      </div>
-                      <div className="space-y-2 text-xs font-nastaliq text-stone-800 leading-relaxed pr-1">
-                        <ul className="space-y-1.5 list-disc list-inside text-stone-700 leading-loose bg-white/90 p-3 rounded-xl border border-amber-100">
-                          {pipelineAnalysis.islahAamal.lessonPoints.map((pt, ptIdx) => (
-                            <li key={ptIdx} className="font-nastaliq font-medium">{pt}</li>
-                          ))}
-                        </ul>
-                        <div className="bg-amber-100/70 p-2.5 rounded-xl border border-amber-200/80">
-                          <strong className="text-amber-950 block font-bold mb-0.5">🌱 روزمرہ عملی نسخہ (مجرب عمل):</strong>
-                          <p className="text-amber-900 leading-loose font-bold">{pipelineAnalysis.islahAamal.amalNuskha}</p>
-                        </div>
-                      </div>
+                    <div className="pt-3 border-t border-emerald-100/70">
+                      <DailyLifeTakeawayBox
+                        lessonPoints={pipelineAnalysis.islahAamal.lessonPoints}
+                        amalNuskha={pipelineAnalysis.islahAamal.amalNuskha}
+                        hadithNumber={currentPage + 1}
+                      />
                     </div>
                   )}
                 </div>
