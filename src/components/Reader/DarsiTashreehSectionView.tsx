@@ -107,17 +107,23 @@ export function translateArabicFiqhToUrdu(arabicText: string): string {
   if (cleaned.includes('فقه الأسرة والنكاح')) {
     return 'نظامِ معاشرت اور عائلی احکام: نکاح، مہر اور گھریلو حقوق و فرائض کی شرعی حدود و آداب کا بیان۔';
   }
-  if (cleaned.includes('التوجيه النبوي والتربية الإيمانية')) {
-    return 'نبوی راہنمائی اور ایمانی تربیت: یہ مبارک نص اسلامی کردار کی تعمیر اور تمام اقوال و افعال کو رضائے الٰہی کے ساتھ وابستہ کرنے کا درس دیتی ہے۔';
+  if (cleaned.includes('كيفيات نزول الوحي') || cleaned.includes('صلصلة الجرس')) {
+    return 'کیفیاتِ نزولِ وحی: وحی کی دو بنیادی صورتیں تھیں؛ صلصلۃ الجرس جو سب سے شدید تھی اور تمثلِ ملک بر صورتِ انسانی۔';
   }
-  if (cleaned.includes('المعنى المقاصدي والدراسي')) {
-    return 'مقاصدی و درسی مفہوم: طالبِ علم کے لیے ضروری ہے کہ وہ الفاظِ نبوی کی بلاغت، احکام کی علت اور پوشیدہ علمی فوائد پر غور و فکر کرے۔';
+  if (cleaned.includes('بدء النبوة') || cleaned.includes('الرؤيا الصالحة')) {
+    return 'آغازِ نبوت اور روءیائے صالحہ: نبوت کی ابتدا سچے خوابوں اور غارِ حراء میں عبادت و تحنث سے ہوئی۔';
   }
-  if (cleaned.includes('مذاهب أئمة الفقه والحديث') || cleaned.includes('اتفق الأئمة الأربعة')) {
-    return 'ائمۂ فقہ و حدیث کے مذاہب: ائمہ اربعہ کا اس امر پر مکمل اتفاق ہے کہ سنتِ نبوی پر عمل پیرا ہونا ہی اصل دین اور کامیابی کا راستہ ہے۔';
+  if (cleaned.includes('فترة الوحي') || cleaned.includes('المدثر')) {
+    return 'فترتِ وحی اور اعلانِ رسالت: انذار اور اعلانیہ دعوتِ توحید کے آغاز اور طہارتِ باطن کا بیان۔';
   }
-  if (cleaned.includes('العمل والاتباع')) {
-    return 'عمل اور اتباعِ سنت: حدیثِ پاک پر اخلاص کے ساتھ عمل کرنا دارین کی فلاح اور صراطِ مستقیم پر استقامت کی کلید ہے۔';
+  if (cleaned.includes('حفظ القرآن') || cleaned.includes('لا تحرك به لسانك')) {
+    return 'حفظ و جمعِ قرآن: اللہ تعالیٰ کی طرف سے سینۂ نبوی میں قرآن کو محفوظ کرنے اور بیان فرمانے کی ضمانت۔';
+  }
+  if (cleaned.includes('جود النبي') || cleaned.includes('أجود الناس')) {
+    return 'جود و سخاوتِ نبوی: رمضان المبارک میں حضرت جبرائیل کے ساتھ دورۂ قرآن اور تیز ہوا سے بھی بڑھ کر صدقہ و خیرات۔';
+  }
+  if (cleaned.includes('حديث هرقل') || cleaned.includes('أبو سفيان')) {
+    return 'قیصرِ روم اور ابو سفیان: نبوت کے دس بنیادی دلائل، سچائی، امانت داری، اور احکامِ توحید و صلہ رحمی کی برتری کا اعتراف۔';
   }
 
   // Fallback
@@ -125,33 +131,32 @@ export function translateArabicFiqhToUrdu(arabicText: string): string {
 }
 
 /**
- * Parses raw Tashreeh lines into structured items with Madhhab detection and Urdu translation.
+ * Parses raw Tashreeh block into structured item with Madhhab detection and Urdu translation.
  */
-export function parseTashreehLine(rawLine: string): TashreehItemParsed {
-  if (!rawLine) return { arabic: '', urdu: '' };
+export function parseTashreehBlock(rawBlock: string): TashreehItemParsed {
+  if (!rawBlock) return { arabic: '', urdu: '' };
 
   let madhhab: 'hanafi' | 'shafii' | 'maliki' | 'hanbali' | 'general' = 'general';
   let madhhabLabel = '';
 
-  if (rawLine.includes('احناف') || rawLine.includes('الحنفية')) {
+  if (rawBlock.includes('احناف') || rawBlock.includes('الحنفية')) {
     madhhab = 'hanafi';
     madhhabLabel = 'مذہبِ احناف (الحنفیۃ)';
-  } else if (rawLine.includes('شوافع') || rawLine.includes('الشافعية')) {
+  } else if (rawBlock.includes('شوافع') || rawBlock.includes('الشافعية')) {
     madhhab = 'shafii';
     madhhabLabel = 'مذہبِ شوافع (الشافعیۃ)';
-  } else if (rawLine.includes('مالکیہ') || rawLine.includes('المالكية')) {
+  } else if (rawBlock.includes('مالکیہ') || rawBlock.includes('المالكية')) {
     madhhab = 'maliki';
     madhhabLabel = 'مذہبِ مالکیہ (المالکیۃ)';
-  } else if (rawLine.includes('حنابلہ') || rawLine.includes('الحنابلة')) {
+  } else if (rawBlock.includes('حنابلہ') || rawBlock.includes('الحنابلة')) {
     madhhab = 'hanbali';
     madhhabLabel = 'مذہبِ حنابلہ (الحنابلۃ)';
   }
 
-  // Check if line contains an explicit Urdu explanation separator
   const urduSeparatorRegex = /(?:\n\s*)?(?:❖\s*)?اردو\s*(?:وضاحت|تشریح|ترجمہ)?[:：]\s*/i;
   
-  if (urduSeparatorRegex.test(rawLine)) {
-    const parts = rawLine.split(urduSeparatorRegex);
+  if (urduSeparatorRegex.test(rawBlock)) {
+    const parts = rawBlock.split(urduSeparatorRegex);
     const arabicPart = parts[0].trim();
     const urduPart = parts.slice(1).join(' ').trim();
     return {
@@ -162,29 +167,103 @@ export function parseTashreehLine(rawLine: string): TashreehItemParsed {
     };
   }
 
-  // Check if raw line is already primarily Urdu
-  const isPrimarilyUrdu = /[\u0679\u0686\u0698\u0691\u06BA\u06D2\u06AF\u06C1\u06BE]/.test(rawLine) ||
-    /ہے|ہیں|ہو|تھا|تھی|گے|کے|کی|کو|سے|میں|پر|اور|نیت|نماز|روزہ|وضو/.test(rawLine);
+  // If block starts with ❖ اردو تشریح without an Arabic part:
+  if (/^❖?\s*اردو\s*(?:وضاحت|تشریح|ترجمہ)?[:：]/i.test(rawBlock)) {
+    const cleanedUrdu = rawBlock.replace(/^❖?\s*اردو\s*(?:وضاحت|تشریح|ترجمہ)?[:：]\s*/i, '').trim();
+    return {
+      madhhab,
+      madhhabLabel,
+      arabic: '',
+      urdu: cleanedUrdu
+    };
+  }
+
+  // Check if primarily Urdu
+  const isPrimarilyUrdu = /[\u0679\u0686\u0698\u0691\u06BA\u06D2\u06AF\u06C1\u06BE]/.test(rawBlock) ||
+    /ہے|ہیں|ہو|تھا|تھی|گے|کے|کی|کو|سے|میں|پر|اور|نیت|نماز|روزہ|وضو/.test(rawBlock);
 
   if (isPrimarilyUrdu) {
     return {
       madhhab,
       madhhabLabel,
-      arabic: rawLine.trim(),
-      urdu: rawLine.trim()
+      arabic: '',
+      urdu: rawBlock.trim()
     };
   }
 
   // It's in Arabic -> derive Urdu translation
-  const arabicText = rawLine.trim();
+  const arabicText = rawBlock.trim();
   const urduText = translateArabicFiqhToUrdu(arabicText);
 
   return {
     madhhab,
     madhhabLabel,
     arabic: arabicText,
-    urdu: urduText
+    urdu: urduText !== arabicText ? urduText : ''
   };
+}
+
+export const parseTashreehLine = parseTashreehBlock;
+
+/**
+ * Group full text into distinct scholarly blocks and deduplicate identical items.
+ */
+export function parseTashreehText(text: string): TashreehItemParsed[] {
+  if (!text || text.trim().length === 0) return [];
+
+  const normalized = text.replace(/\r\n/g, '\n');
+  const rawLines = normalized.split('\n');
+  const blocks: string[] = [];
+  let currentBlock = '';
+
+  for (const line of rawLines) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      if (currentBlock) {
+        blocks.push(currentBlock);
+        currentBlock = '';
+      }
+      continue;
+    }
+
+    // Check if this line starts a new point (e.g. "1. ", "2. ", "3. ", "4. ", or "• ")
+    const isNewPoint = /^(?:[0-9]+[\.\)]|\s*•\s*(?:احناف|شوافع|مالکیہ|حنابلہ|الجمهور|نکتہ))/i.test(trimmed);
+    const isUrduContinuation = /^(?:❖\s*)?اردو\s*(?:وضاحت|تشریح|ترجمہ)?[:：]/i.test(trimmed);
+
+    if (isNewPoint && currentBlock && !isUrduContinuation) {
+      blocks.push(currentBlock);
+      currentBlock = trimmed;
+    } else {
+      if (currentBlock) {
+        currentBlock += '\n' + trimmed;
+      } else {
+        currentBlock = trimmed;
+      }
+    }
+  }
+  if (currentBlock) {
+    blocks.push(currentBlock);
+  }
+
+  const items: TashreehItemParsed[] = [];
+  const seenUrdu = new Set<string>();
+
+  for (const block of blocks) {
+    const parsed = parseTashreehBlock(block);
+    if (!parsed.arabic && !parsed.urdu) continue;
+
+    // Deduplicate identical points
+    const normalizeKey = (s: string) => s.replace(/[\s\.\:\-،؛؟!]+/g, ' ').trim();
+    const key = normalizeKey(parsed.urdu || parsed.arabic);
+    if (key && seenUrdu.has(key)) {
+      continue;
+    }
+    if (key) seenUrdu.add(key);
+
+    items.push(parsed);
+  }
+
+  return items;
 }
 
 interface DarsiTashreehSectionViewProps {
@@ -201,8 +280,7 @@ export const DarsiTashreehSectionView: React.FC<DarsiTashreehSectionViewProps> =
 
   if (!tashreehText || tashreehText.trim().length === 0) return null;
 
-  const lines = tashreehText.split('\n').filter(l => l && l.trim().length > 0);
-  const parsedItems = lines.map(line => parseTashreehLine(line));
+  const parsedItems = parseTashreehText(tashreehText);
 
   const handleCopy = (item: TashreehItemParsed, idx: number) => {
     const textToCopy = `عربی نکتہ: ${item.arabic}\nاردو تشریح: ${item.urdu}`;
@@ -349,7 +427,7 @@ export const DarsiTashreehSectionView: React.FC<DarsiTashreehSectionViewProps> =
               </div>
 
               {/* Classical Arabic Scholarly Text (shown in 'both' or 'arabic' mode) */}
-              {(viewMode === 'both' || viewMode === 'arabic') && (
+              {(viewMode === 'both' || viewMode === 'arabic') && item.arabic && item.arabic !== item.urdu && (
                 <div className="pt-0.5">
                   <p 
                     className="arabic-naskh text-stone-800 text-right select-text pr-1"

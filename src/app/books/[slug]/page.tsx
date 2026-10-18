@@ -704,66 +704,6 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
                     ))}
                   </div>
                 </div>
-
-                {/* New: مستنبط فقہی احکام و مسائل (شرعی رہنمائی) */}
-                {analysis.ahkamShariat && (
-                  <div className="bg-emerald-50/70 border-2 border-emerald-300 rounded-2xl p-4 shadow-xs space-y-2.5" dir="rtl">
-                    <div className="flex items-center justify-between border-b border-emerald-200 pb-2">
-                      <h4 className="text-xs sm:text-sm font-bold text-emerald-950 font-nastaliq flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded-md bg-emerald-800 text-amber-300 text-[10px] font-bold">فقہ و فتاویٰ</span>
-                        <span>مستنبط فقہی احکام و مسائل (شرعی رہنمائی):</span>
-                      </h4>
-                      <span className="text-[10px] text-emerald-800 font-nastaliq font-bold bg-white px-2 py-0.5 rounded-lg border border-emerald-200">
-                        مذہبِ حنفی و تقابل
-                      </span>
-                    </div>
-
-                    <div className="space-y-2 text-xs font-nastaliq text-stone-800 leading-relaxed pr-1">
-                      <div className="bg-white/80 p-2.5 rounded-xl border border-emerald-100 space-y-1">
-                        <strong className="text-emerald-900 block font-bold">۱. مذہبِ حنفی کے مطابق شرعی حکم:</strong>
-                        <p className="text-stone-700 leading-loose">{analysis.ahkamShariat.hanafiRuling}</p>
-                      </div>
-
-                      <div className="bg-white/80 p-2.5 rounded-xl border border-emerald-100 space-y-1">
-                        <strong className="text-indigo-900 block font-bold">۲. تقابلی فقہی نکتہ (دیگر ائمہ رحمہم اللہ):</strong>
-                        <p className="text-stone-700 leading-loose">{analysis.ahkamShariat.comparativeNote}</p>
-                      </div>
-
-                      <div className="bg-emerald-100/60 p-2.5 rounded-xl border border-emerald-200/80 space-y-1">
-                        <strong className="text-emerald-950 block font-bold">💡 عام قاری کے لیے خلاصۂ عمل:</strong>
-                        <p className="text-emerald-900 leading-loose font-bold">{analysis.ahkamShariat.awamSummary}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* New: تربیتی و اصلاحی پہلو (عملی سبق) */}
-                {analysis.islahAamal && (
-                  <div className="bg-amber-50/70 border-2 border-amber-300 rounded-2xl p-4 shadow-xs space-y-2.5" dir="rtl">
-                    <div className="flex items-center justify-between border-b border-amber-200 pb-2">
-                      <h4 className="text-xs sm:text-sm font-bold text-amber-950 font-nastaliq flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded-md bg-amber-800 text-amber-100 text-[10px] font-bold">اصلاحِ نفس</span>
-                        <span>تربیتی و اصلاحی پہلو (عملی سبق برائے باطن):</span>
-                      </h4>
-                      <span className="text-[10px] text-amber-800 font-nastaliq font-bold bg-white px-2 py-0.5 rounded-lg border border-amber-200">
-                        تزکیۂ اخلاق
-                      </span>
-                    </div>
-
-                    <div className="space-y-2 text-xs font-nastaliq text-stone-800 leading-relaxed pr-1">
-                      <ul className="space-y-1.5 list-disc list-inside text-stone-700 leading-loose bg-white/80 p-3 rounded-xl border border-amber-100">
-                        {analysis.islahAamal.lessonPoints.map((pt, ptIdx) => (
-                          <li key={ptIdx} className="font-nastaliq font-medium">{pt}</li>
-                        ))}
-                      </ul>
-
-                      <div className="bg-amber-100/70 p-2.5 rounded-xl border border-amber-200/80">
-                        <strong className="text-amber-950 block font-bold mb-0.5">🌱 روزمرہ عملی نسخہ (مجرب عمل):</strong>
-                        <p className="text-amber-900 leading-loose font-bold">{analysis.islahAamal.amalNuskha}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
             ) : null}
           </div>
@@ -3761,34 +3701,6 @@ ${urduToCopy}
                     </div>
                   )}
 
-                  {/* New: مستنبط فقہی احکام و مسائل (شرعی رہنمائی) */}
-                  {showScholarlySections && pipelineAnalysis?.ahkamShariat && (
-                    <div className="pt-3 border-t border-emerald-100/70 bg-emerald-50/80 border-2 border-emerald-300 rounded-2xl p-4 shadow-xs space-y-2.5" dir="rtl">
-                      <div className="flex items-center justify-between border-b border-emerald-200 pb-2">
-                        <h4 className="text-xs sm:text-sm font-bold text-emerald-950 font-nastaliq flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded-md bg-emerald-800 text-amber-300 text-[10px] font-bold">فقہ و فتاویٰ</span>
-                          <span>مستنبط فقہی احکام و مسائل (شرعی رہنمائی):</span>
-                        </h4>
-                        <span className="text-[10px] text-emerald-800 font-nastaliq font-bold bg-white px-2 py-0.5 rounded-lg border border-emerald-200">
-                          مذہبِ حنفی و تقابل
-                        </span>
-                      </div>
-                      <div className="space-y-2 text-xs font-nastaliq text-stone-800 leading-relaxed pr-1">
-                        <div className="bg-white/90 p-2.5 rounded-xl border border-emerald-100 space-y-1">
-                          <strong className="text-emerald-900 block font-bold">۱. مذہبِ حنفی کے مطابق شرعی حکم:</strong>
-                          <p className="text-stone-700 leading-loose">{pipelineAnalysis.ahkamShariat.hanafiRuling}</p>
-                        </div>
-                        <div className="bg-white/90 p-2.5 rounded-xl border border-emerald-100 space-y-1">
-                          <strong className="text-indigo-900 block font-bold">۲. تقابلی فقہی نکتہ (دیگر ائمہ رحمہم اللہ):</strong>
-                          <p className="text-stone-700 leading-loose">{pipelineAnalysis.ahkamShariat.comparativeNote}</p>
-                        </div>
-                        <div className="bg-emerald-100/70 p-2.5 rounded-xl border border-emerald-200/80 space-y-1">
-                          <strong className="text-emerald-950 block font-bold">💡 عام قاری کے لیے خلاصۂ عمل:</strong>
-                          <p className="text-emerald-900 leading-loose font-bold">{pipelineAnalysis.ahkamShariat.awamSummary}</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
 
                   {/* روزمرہ زندگی کا سبق (عملی تربیت) */}
                   {showScholarlySections && pipelineAnalysis?.islahAamal && (
