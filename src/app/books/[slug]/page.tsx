@@ -34,6 +34,7 @@ import { TafseerModal } from "@/components/Reader/TafseerModal";
 import { BukhariTarajimBox } from "@/components/Reader/BukhariTarajimBox";
 import { IraabSectionView } from "@/components/Reader/IraabSectionView";
 import { DarsiTashreehSectionView } from "@/components/Reader/DarsiTashreehSectionView";
+import { ComparativeFiqhBox } from "@/components/Reader/ComparativeFiqhBox";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { parseSanadNarratorSegments, NarratorInfo } from "@/services/rijalService";
 import { getBukhariTarjamahInfo } from "@/services/bukhariTarajimService";
@@ -559,6 +560,11 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
 
                 {/* Mahal-e-I'rab & Nahwi Tarkeeb */}
                 <IraabSectionView iraabLines={analysis.iraab} />
+
+                {/* Comparative Fiqh across the 4 Madhahib (مقارنہ بین المذاہب) */}
+                {analysis.comparativeFiqh && (
+                  <ComparativeFiqhBox data={analysis.comparativeFiqh} />
+                )}
 
                 {/* Hawashi & Takhrij */}
                 <div className="bg-amber-50/40 rounded-xl p-3.5 border border-amber-200/60 shadow-2xs space-y-1.5">
@@ -3505,6 +3511,13 @@ ${urduToCopy}
                   {showScholarlySections && (parsedDarsPage.iraab || pipelineAnalysis?.iraab) && (
                     <div className="pt-3 border-t border-emerald-100/70">
                       <IraabSectionView iraabLines={parsedDarsPage.iraab || pipelineAnalysis?.iraab || []} />
+                    </div>
+                  )}
+
+                  {/* Comparative Fiqh across the 4 Madhahib (مقارنہ بین المذاہب) */}
+                  {showScholarlySections && pipelineAnalysis?.comparativeFiqh && (
+                    <div className="pt-3 border-t border-emerald-100/70">
+                      <ComparativeFiqhBox data={pipelineAnalysis.comparativeFiqh} />
                     </div>
                   )}
 

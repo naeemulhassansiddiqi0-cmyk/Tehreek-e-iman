@@ -3,6 +3,7 @@
 // clause-by-clause Nahwi/Sarfi breakdown, Sanad/Matn segmentation, and Darsi Tashreeh.
 
 import { comprehensiveLexicon } from './lexiconService';
+import { ComparativeFiqhData } from '../components/Reader/ComparativeFiqhBox';
 
 export interface WordAnalysis {
   arabic: string;
@@ -30,9 +31,10 @@ export interface DarsiAnalysis {
     lessonPoints: string[];
     amalNuskha: string;
   };
+  comparativeFiqh?: ComparativeFiqhData;
 }
 
-const CACHE_PREFIX = 'tehreek_darsi_v7_';
+const CACHE_PREFIX = 'tehreek_darsi_v8_';
 const memoryCache: Record<string, DarsiAnalysis> = {};
 
 // Clean Arabic diacritics
@@ -326,6 +328,363 @@ export function analyzeWord(token: string, _prevWord?: string, _nextWord?: strin
   };
 }
 
+// Generate Comparative Fiqh across the Four Sunnite Madhahib (مقارنہ بین المذاہب)
+export function generateComparativeFiqhData(
+  arabicText: string,
+  _hadithNumber: number,
+  _bookId: string,
+  isNiyyahHadith: boolean
+): ComparativeFiqhData {
+  const cleanUpper = arabicText;
+
+  if (isNiyyahHadith) {
+    return {
+      issueTitle: 'مسئلہ: عبادات اور طہارت (وضو و غسل) میں نیت کی شرعی حیثیت، تقدیرِ کلام اور اوقاتِ نیت',
+      coreConflict: 'حدیثِ مبارک میں «إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ» کے اندر محذوف کیا مانا جائے گا؟ آیا «صِحَّةُ الأَعْمَالِ» (اعمال کی شرعی صحت نیت پر موقوف ہے) یا «کَمَالُ الأَعْمَالِ / ثَوَابُ الأَعْمَالِ» (اعمال کا اجر و ثواب نیت پر منحصر ہے)؟ اسی اختلاف سے طہارتِ مائیہ (وضو و غسل) میں نیت کے فرض ہونے یا سنّت ہونے کا حکم مستنبط ہوتا ہے۔',
+      schools: [
+        {
+          madhhab: 'hanafi',
+          schoolNameUrdu: 'فقہ حنفی (امام اعظم ابو حنیفہ، قاضی ابو یوسف، امام محمد)',
+          imams: 'الإمام الأعظم أبو حنيفة النعمان (ت 150ھ)، الإمام أبو يوسف، الإمام محمد بن الحسن الشيباني',
+          badgeColor: 'bg-emerald-100 text-emerald-900 border-emerald-300',
+          borderColor: 'border-emerald-300',
+          bgColor: 'bg-emerald-50/50',
+          textColor: 'text-emerald-950',
+          ruling: 'طہارتِ مائیہ (وضو اور غسل) میں نیت فرض یا شرط نہیں بلکہ حصولِ ثواب کے لیے سنّتِ مؤکدہ ہے۔ جبکہ مقصود بالذات عبادات (نماز، روزہ، زکوٰۃ، حج) میں نیت فرض اور شرطِ صحت ہے۔ نماز میں تکبیرِ تحریمہ کے متصل دل میں ارادہ فرض ہے، اور روزے میں نصف النہار شرعی تک نیت جائز ہے۔',
+          dalailAndUsul: 'اصولی بنیاد: احناف کا بنیادی قاعدہ ہے: «الزِّيَادَةُ عَلَى النَّصِّ الْقُرْآنِيِّ نَسْخٌ، وَالنَّسْخُ لَا يَثْبُتُ بِخَبَرِ الْوَاحِدِ»۔ چونکہ آیۂ وضو ﴿إِذَا قُمْتُمْ إِلَى الصَّلَاةِ فَاغْسِلُوا وُجُوهَكُمْ﴾ میں صرف اعضاء دھونے کا امر ہے، لہٰذا خبرِ واحد (حدیثِ نیت) سے وضو کی فرضیت پر نیت کا اضافہ نہیں کیا جا سکتا۔ نیز پانی بذاتِ خود طہور و پاکیزہ بنانے والا ہے، پس وہ بغیر نیت کے بھی نجاستِ حکمیہ دور کر دیتا ہے۔ حدیث میں محذوف «ثَوَابُ الأَعْمَالِ» یا «كَمَالُهَا» ہے نہ کہ «صِحَّتُهَا»۔',
+          quranSunnahQuote: '﴿إِذَا قُمْتُمْ إِلَى الصَّلَاةِ فَاغْسِلُوا وُجُوهَكُمْ وَأَيْدِيَكُمْ إِلَى الْمَرَافِقِ﴾ [المائدة: 6]'
+        },
+        {
+          madhhab: 'shafii',
+          schoolNameUrdu: 'فقہ شافعی (امام محمد بن ادریس الشافعی)',
+          imams: 'الإمام الشافعي (ت 204ھ)، الإمام النووي، الإمام الرافعي',
+          badgeColor: 'bg-blue-100 text-blue-900 border-blue-300',
+          borderColor: 'border-blue-300',
+          bgColor: 'bg-blue-50/50',
+          textColor: 'text-blue-950',
+          ruling: 'نیت وضو، غسل، تیمم اور تمام عبادات میں رکنِ فرض ہے؛ بغیر نیت کے کوئی طہارت یا عبادت شرعاً معتبر نہیں۔ نماز میں تکبیرِ تحریمہ کے ساتھ نیت کا حقیقی استحضار (مقارنة حقيقية أو عرفية) شرط ہے، اور فرض روزے میں طلوعِ فجر سے قبل رات ہی میں نیت (تبییتِ نیت) اور ہر دن کی الگ نیت شرط ہے۔',
+          dalailAndUsul: 'اصولی بنیاد: حدیث میں «إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ» میں صیغۂ حصر ہے اور حقیقتِ شرعیہ میں عمل کا وجودِ شرعی نیت پر منحصر ہے۔ لہٰذا تقدیرِ کلام «إِنَّمَا صِحَّةُ الأَعْمَالِ بِالنِّيَّاتِ» ہے؛ نفیِ صحت اولیٰ ہے نفیِ کمال سے۔ طہارت عبادتِ شرعیہ ہے اور عادت سے ممتاز کرنے کے لیے نیت لازمی رکن ہے۔ وضو میں پہلے فرض یعنی چہرہ دھونے کے وقت نیت کا مقارن ہونا ضروری ہے۔',
+          quranSunnahQuote: '«إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى» [صحيح البخاري: 1]'
+        },
+        {
+          madhhab: 'maliki',
+          schoolNameUrdu: 'فقہ مالکی (امام مالک بن انس، امام سحنون)',
+          imams: 'الإمام مالك بن أنس (ت 179ھ)، الإمام ابن القاسم، القاضي عبد الوهاب',
+          badgeColor: 'bg-amber-100 text-amber-900 border-amber-300',
+          borderColor: 'border-amber-300',
+          bgColor: 'bg-amber-50/50',
+          textColor: 'text-amber-950',
+          ruling: 'نیت طہارت (وضو و غسل) اور تمام عبادات میں فرض ہے۔ البتہ رمضان المبارک کے روزوں کے لیے مہینے کی پہلی رات میں پورے مہینے کی ایک ہی نیت کر لینا کافی ہے (تاوقتیکہ سفر یا بیماری کا تسلسل نہ ٹوٹے)۔ وضو میں دھونا شروع کرتے وقت رفعِ حدث یا استباحۂ نماز کی نیت واجب ہے۔',
+          dalailAndUsul: 'اصولی بنیاد: امام مالک کے ہاں طہارت تعبدی عمل ہے جو بغیر قصد و نیت کے حاصل نہیں ہو سکتا۔ حدیثِ نیت اور ﴿وَمَا أُمِرُوا إِلَّا لِيَعْبُدُوا اللَّهَ مُخْلِصِينَ لَهُ الدِّينَ﴾ سے نیت کا فرض ہونا ثابت ہے۔ البتہ جہاں عبادت ایک ہی زنجیر کی مانند ہو (جیسے مسلسل رمضان کے روزے)، وہاں ابتدا کی جامع نیت پورے عمل پر محیط متصور ہوتی ہے۔',
+          quranSunnahQuote: '﴿وَمَا أُمِرُوا إِلَّا لِيَعْبُدُوا اللَّهَ مُخْلِصِينَ لَهُ الدِّينَ حُنَفَاءَ﴾ [البينة: 5]'
+        },
+        {
+          madhhab: 'hanbali',
+          schoolNameUrdu: 'فقہ حنبلی (امام احمد بن حنبل، ابن قدامہ)',
+          imams: 'الإمام أحمد بن حنبل (ت 241ھ)، الموفق ابن قدامة المقدسي، ابن تيمية',
+          badgeColor: 'bg-purple-100 text-purple-900 border-purple-300',
+          borderColor: 'border-purple-300',
+          bgColor: 'bg-purple-50/50',
+          textColor: 'text-purple-950',
+          ruling: 'نیت طہارت (وضو، غسل، تیمم) کی بنیادی شرطِ صحت ہے؛ بغیر نیت کے حدث زائل نہیں ہوتا۔ نیت کا محل دل ہے اور زبان سے تلفظ کرنا بدعت ہے اور سنت سے ثابت نہیں۔ نماز میں تکبیر سے تھوڑی دیر قبل نیت کا تقدم جائز ہے بشرطیکہ قطعِ نیت نہ ہو۔',
+          dalailAndUsul: 'اصولی بنیاد: حنبلی اصول میں نیت عبادت کا جزو نہیں بلکہ شرطِ تقدم ہے جو پورے عمل کو گھیرے رکھتی ہے۔ «إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ» نصِ قاطع ہے کہ ہر وہ عمل جو عبادت کے لیے مشروع ہے وہ نیت کے بغیر معدوم ہے۔ زبان سے نیت کے الفاظ بولنا صحابہ کرام اور سلف صالحین سے منقول نہیں، اس لیے اتباعِ سنت میں دل کا عزم و ارادہ ہی کافی ہے۔',
+          quranSunnahQuote: '«لا يقبل الله صلاة أحدكم إذا أحدث حتى يتوضأ» [صحيح البخاري: 135]'
+        }
+      ],
+      synthesisNote: 'باہمی تطبیق اور اصولِ جمع: تمام ائمہ اس بات پر متفق ہیں کہ مقصود بالذات عبادات (نماز، روزہ، حج) میں نیت کے بغیر عمل باطل ہے۔ نزاع صرف وسائل (طہارتِ مائیہ) میں ہے، جہاں احناف نے طہارت کو معقول المعنی (صفائیِ ذاتی) مانا ہے جبکہ شوافع و حنابلہ نے اسے تعبدِ محض مانا ہے۔ درسی و عملی ترجیح یہ ہے کہ ہر طہارت وضو اور غسل میں بھی دل سے نیت کی جائے تاکہ بالاتفاق تمام ائمہ کے نزدیک عمل کامل و ماجور ہو اور اختلاف سے خروج حاصل ہو۔'
+    };
+  }
+
+  if (cleanUpper.includes('صَلَاة') || cleanUpper.includes('صَلِّ') || cleanUpper.includes('رَكْعَتَيْنِ') || cleanUpper.includes('سُجُود') || cleanUpper.includes('رُكُوع')) {
+    return {
+      issueTitle: 'مسئلہ: نماز کے ارکان، قراءت خلف الامام، اور تعدیلِ ارکان کا شرعی حکم',
+      coreConflict: 'کیا مقتدی پر امام کے پیچھے سورۂ فاتحہ پڑھنا فرض ہے یا ممانعت ہے؟ اور رکوع و سجود میں اطمینان (تعدیلِ ارکان) کی فقہی حیثیت کیا ہے؟',
+      schools: [
+        {
+          madhhab: 'hanafi',
+          schoolNameUrdu: 'فقہ حنفی (امام اعظم ابو حنیفہ)',
+          imams: 'الإمام الأعظم أبو حنيفة، أبو يوسف، محمد',
+          badgeColor: 'bg-emerald-100 text-emerald-900 border-emerald-300',
+          borderColor: 'border-emerald-300',
+          bgColor: 'bg-emerald-50/50',
+          textColor: 'text-emerald-950',
+          ruling: 'قراءتِ امام مقتدی کے لیے کافی ہے؛ سری و جہری دونوں نمازوں میں مقتدی کے لیے قراءت مکروہِ تحریمی ہے۔ تعدیلِ ارکان واجب ہے۔',
+          dalailAndUsul: 'اصولی بنیاد: فرمانِ باری تعالیٰ ﴿وَإِذَا قُرِئَ الْقُرْآنُ فَاسْتَمِعُوا لَهُ وَأَنْصِتُوا﴾ اور حدیث نبوی «مَنْ كَانَ لَهُ إِمَامٌ فَقِرَاءَةُ الإِمَامِ لَهُ قِرَاءَةٌ»۔ مقتدی کا سننا اور خاموش رہنا اصل ہے۔',
+          quranSunnahQuote: '﴿وَإِذَا قُرِئَ الْقُرْآنُ فَاسْتَمِعُوا لَهُ وَأَنْصِتُوا لَعَلَّكُمْ تُرْحَمُونَ﴾ [الأعراف: 204]'
+        },
+        {
+          madhhab: 'shafii',
+          schoolNameUrdu: 'فقہ شافعی (امام شافعی)',
+          imams: 'الإمام الشافعي، الإمام النووي',
+          badgeColor: 'bg-blue-100 text-blue-900 border-blue-300',
+          borderColor: 'border-blue-300',
+          bgColor: 'bg-blue-50/50',
+          textColor: 'text-blue-950',
+          ruling: 'سورۂ فاتحہ امام، مأموم اور منفرد سب پر ہر رکعت میں فرضِ عین ہے۔ تعدیلِ ارکان نماز کا بنیادی رکنِ فرض ہے۔',
+          dalailAndUsul: 'اصولی بنیاد: حدیثِ مبارک «لاَ صَلاَةَ لِمَنْ لَمْ يَقْرَأْ بِفَاتِحَةِ الْكِتَابِ»۔ یہ نفیِ صحت کے لیے عام ہے جس میں امام اور مقتدی سب شامل ہیں۔',
+          quranSunnahQuote: '«لاَ صَلاَةَ لِمَنْ لَمْ يَقْرَأْ بِفَاتِحَةِ الْكِتَابِ» [صحيح البخاري: 756]'
+        },
+        {
+          madhhab: 'maliki',
+          schoolNameUrdu: 'فقہ مالکی (امام مالک)',
+          imams: 'الإمام مالك بن أنس، الإمام القروي',
+          badgeColor: 'bg-amber-100 text-amber-900 border-amber-300',
+          borderColor: 'border-amber-300',
+          bgColor: 'bg-amber-50/50',
+          textColor: 'text-amber-950',
+          ruling: 'جہری نماز میں مقتدی کے لیے خاموشی واجب ہے اور سری نماز میں سورۂ فاتحہ پڑھنا مستحب ہے۔ رکوع و سجود میں طمأنینت فرض ہے۔',
+          dalailAndUsul: 'اصولی بنیاد: نصوصِ قرآنیہ اور احادیث کے درمیان جمع کا طریقہ؛ جہری میں انصات پر عمل اور سری میں قراءت پر عمل۔',
+          quranSunnahQuote: '«وَإِذَا قَرَأَ فَأَنْصِتُوا» [صحيح مسلم: 404]'
+        },
+        {
+          madhhab: 'hanbali',
+          schoolNameUrdu: 'فقہ حنبلی (امام احمد بن حنبل)',
+          imams: 'الإمام أحمد بن حنبل، ابن قدامة',
+          badgeColor: 'bg-purple-100 text-purple-900 border-purple-300',
+          borderColor: 'border-purple-300',
+          bgColor: 'bg-purple-50/50',
+          textColor: 'text-purple-950',
+          ruling: 'سری نماز میں مقتدی پر فاتحہ واجب ہے، جہری میں امام کے سکتات کے دوران پڑھے، اگر امام سکتہ نہ کرے تو سننا واجب ہے۔',
+          dalailAndUsul: 'اصولی بنیاد: روایات میں تطبیق کے تحت امام کی قراءت سنتے وقت خاموشی اور سکتہ کے وقت قراءت کو ترجیح دی جاتی ہے۔',
+          quranSunnahQuote: '«فَلاَ تَفْعَلُوا إِلاَّ بِأُمِّ الْقُرْآنِ فَإِنَّهُ لاَ صَلاَةَ لِمَنْ لَمْ يَقْرَأْ بِهَا» [سنن أبي داود: 823]'
+        }
+      ],
+      synthesisNote: 'باہمی تطبیق اور اصولِ جمع: تمام ائمہ اس بات پر متفق ہیں کہ تعدیلِ ارکان اور خشوع نماز کی جان ہے۔ قراءت خلف الامام میں ہر فریق کے پاس قوی ادلہ موجود ہیں؛ مقلدین اپنے امام کی تحقیق پر عمل کریں اور دوسرے ائمہ کی رائے کو محلِ تفسیق نہ بنائیں۔'
+    };
+  }
+
+  if (cleanUpper.includes('وُضُوء') || cleanUpper.includes('طَهُور') || cleanUpper.includes('مَاء') || cleanUpper.includes('طَهَارَة')) {
+    return {
+      issueTitle: 'مسئلہ: وضو کے فرائض، ترتیب، موالات اور اعضاءِ طہارت کے حدود',
+      coreConflict: 'وضو میں اعضاء کو قرآن کی ترتیب کے مطابق دھونا اور پے در پے دھونا (موالات) فرض ہے یا سنت؟ اور سر کے مسح کی فرض مقدار کتنی ہے؟',
+      schools: [
+        {
+          madhhab: 'hanafi',
+          schoolNameUrdu: 'فقہ حنفی (امام اعظم ابو حنیفہ)',
+          imams: 'الإمام الأعظم أبو حنيفة، أبو يوسف، محمد',
+          badgeColor: 'bg-emerald-100 text-emerald-900 border-emerald-300',
+          borderColor: 'border-emerald-300',
+          bgColor: 'bg-emerald-50/50',
+          textColor: 'text-emerald-950',
+          ruling: 'وضو کے چار فرائض ہیں (چہرہ، ہاتھ، چوتھائی سر کا مسح، اور پاؤں)؛ ترتیب اور موالات سنّتِ مؤکدہ ہیں۔ سر کے چوتھائی حصے کا مسح فرض ہے۔',
+          dalailAndUsul: 'اصولی بنیاد: آیۂ وضو میں حرفِ واو مطلقِ جمع کے لیے آتا ہے ترتیب کے لیے نہیں («الواو لمطلق الجمع لا للترتيب»)۔ لہٰذا ترتیب سنت ہے فرض نہیں۔',
+          quranSunnahQuote: '﴿يَا أَيُّهَا الَّذِينَ آمَنُوا إِذَا قُمْتُمْ إِلَى الصَّلَاةِ فَاغْسِلُوا وُجُوهَكُمْ﴾ [المائدة: 6]'
+        },
+        {
+          madhhab: 'shafii',
+          schoolNameUrdu: 'فقہ شافعی (امام شافعی)',
+          imams: 'الإمام الشافعي، الإمام النووي',
+          badgeColor: 'bg-blue-100 text-blue-900 border-blue-300',
+          borderColor: 'border-blue-300',
+          bgColor: 'bg-blue-50/50',
+          textColor: 'text-blue-950',
+          ruling: 'ترتیب اور نیت وضو کے ارکانِ فرض میں داخل ہیں؛ سر کے کسی ادنیٰ حصے یا چند بالوں کا مسح کافی ہے۔',
+          dalailAndUsul: 'اصولی بنیاد: آیت میں ممسوح (سر) کو مغسولات (چہرے اور ہاتھوں) کے درمیان ذکر کرنا ترتیب کی فرضیت کی واضح دلیل ہے۔',
+          quranSunnahQuote: '«ابدؤوا بما بدأ الله به» [سنن النسائي: 2962]'
+        },
+        {
+          madhhab: 'maliki',
+          schoolNameUrdu: 'فقہ مالکی (امام مالک)',
+          imams: 'الإمام مالك بن أنس، الإمام سحنون',
+          badgeColor: 'bg-amber-100 text-amber-900 border-amber-300',
+          borderColor: 'border-amber-300',
+          bgColor: 'bg-amber-50/50',
+          textColor: 'text-amber-950',
+          ruling: 'نیت، موالات (فوری پے در پے دھونا)، دَلک (ہاتھ سے ملنا) اور پورے سر کا استیعاب کے ساتھ مسح کرنا فرض ہے۔',
+          dalailAndUsul: 'اصولی بنیاد: طہارتِ شرعیہ میں اعضاء کو ملنا اور تسلسل تعبد کا حصہ ہے؛ ﴿وَامْسَحُوا بِرُءُوسِكُمْ﴾ میں باء الصاق کے لیے ہے جو پورے سر کو محیط ہے۔',
+          quranSunnahQuote: '﴿وَامْسَحُوا بِرُءُوسِكُمْ وَأَرْجُلَكُمْ إِلَى الْكَعْبَيْنِ﴾ [المائدة: 6]'
+        },
+        {
+          madhhab: 'hanbali',
+          schoolNameUrdu: 'فقہ حنبلی (امام احمد بن حنبل)',
+          imams: 'الإمام أحمد بن حنبل، ابن قدامة',
+          badgeColor: 'bg-purple-100 text-purple-900 border-purple-300',
+          borderColor: 'border-purple-300',
+          bgColor: 'bg-purple-50/50',
+          textColor: 'text-purple-950',
+          ruling: 'نیت، ترتیب، موالات، اور پورے سر مع کانوں کا مسح فرض ہے۔ آغاز میں تسمیہ (بسم اللہ) واجب ہے۔',
+          dalailAndUsul: 'اصولی بنیاد: رسول اللہ ﷺ کے دائمی فعل میں وضو ہمیشہ اسی ترتیب و تسلسل سے ثابت ہے؛ نیز حدیث «لا وضوء لمن لم يذكر اسم الله عليه»۔',
+          quranSunnahQuote: '«لاَ صَلاَةَ لِمَنْ لاَ وُضُوءَ لَهُ وَلاَ وُضُوءَ لِمَنْ لَمْ يَذْكُرِ اسْمَ اللَّهِ عَلَيْهِ» [سنن أبي داود: 101]'
+        }
+      ],
+      synthesisNote: 'باہمی تطبیق اور اصولِ جمع: مستحب و احتیاط کا تقاضا ہے کہ پورے سر کا مسح کیا جائے، بالترتیب اور بغیر تاخیر کے اعضاء دھوئے جائیں تاکہ تمام ائمہ کے نزدیک بالاتفاق وضو بلا کراہت صحیح ہو۔'
+    };
+  }
+
+  if (cleanUpper.includes('صَوْم') || cleanUpper.includes('رَمَضَان')) {
+    return {
+      issueTitle: 'مسئلہ: صومِ رمضان کی نیت کے اوقات اور عمداً روزہ توڑنے کے کفارہ کا تقابل',
+      coreConflict: 'رمضان کے روزے کے لیے رات ہی سے نیت کرنا شرط ہے یا دن میں بھی جائز ہے؟ اور عمداً کھانے پینے سے کفارہ واجب ہوتا ہے یا صرف جماع سے؟',
+      schools: [
+        {
+          madhhab: 'hanafi',
+          schoolNameUrdu: 'فقہ حنفی (امام اعظم ابو حنیفہ)',
+          imams: 'الإمام الأعظم أبو حنيفة، أبو يوسف، محمد',
+          badgeColor: 'bg-emerald-100 text-emerald-900 border-emerald-300',
+          borderColor: 'border-emerald-300',
+          bgColor: 'bg-emerald-50/50',
+          textColor: 'text-emerald-950',
+          ruling: 'رمضان کی نیت نصف النہار شرعی سے پہلے تک درست ہے۔ عمداً کھانے، پینے یا جماع سے قضا اور کفارہ دونوں لازم ہیں۔',
+          dalailAndUsul: 'اصولی بنیاد: رمضان کا وقت روزے کے لیے معین ہے، لہٰذا اکثر دن پر محیط نیت کافی ہے۔ حرمتِ رمضان کو جان بوجھ کر پامال کرنے پر کفارہ کی علت متحقق ہے۔',
+          quranSunnahQuote: '﴿ثُمَّ أَتِمُّوا الصِّيَامَ إِلَى اللَّيْلِ﴾ [البقرة: 187]'
+        },
+        {
+          madhhab: 'shafii',
+          schoolNameUrdu: 'فقہ شافعی (امام شافعی)',
+          imams: 'الإمام الشافعي، الإمام النووي',
+          badgeColor: 'bg-blue-100 text-blue-900 border-blue-300',
+          borderColor: 'border-blue-300',
+          bgColor: 'bg-blue-50/50',
+          textColor: 'text-blue-950',
+          ruling: 'ہر رات طلوعِ فجر سے قبل نیت (تبییت) شرط ہے۔ کفارہ صرف عمداً جماع کرنے پر ہے، محض کھانے پینے پر صرف قضا لازم ہے۔',
+          dalailAndUsul: 'اصولی بنیاد: حدیث نبوی «مَنْ لَمْ يُبَيِّتِ الصِّيَامَ قَبْلَ الْفَجْرِ فَلَا صِيَامَ لَهُ»؛ کفارہ کی حدیث اعرابی کے خاص واقعۂ جماع میں وارد ہوئی ہے۔',
+          quranSunnahQuote: '«مَنْ لَمْ يُبَيِّتِ الصِّيَامَ قَبْلَ الْفَجْرِ فَلاَ صِيَامَ لَهُ» [سنن النسائي: 2331]'
+        },
+        {
+          madhhab: 'maliki',
+          schoolNameUrdu: 'فقہ مالکی (امام مالک)',
+          imams: 'الإمام مالك بن أنس، ابن القاسم',
+          badgeColor: 'bg-amber-100 text-amber-900 border-amber-300',
+          borderColor: 'border-amber-300',
+          bgColor: 'bg-amber-50/50',
+          textColor: 'text-amber-950',
+          ruling: 'پورے رمضان کے لیے پہلی رات میں ایک ہی نیت کافی ہے۔ عمداً کھانا پینا اور جماع دونوں کفارہ کو واجب کرتے ہیں۔',
+          dalailAndUsul: 'اصولی بنیاد: رمضان ایک واحد مسلسل عبادت ہے اس لیے ایک نیت کافی ہے۔ حرمتِ صوم کا ہتک ہر صورت میں کفارہ موجب بنتا ہے۔',
+          quranSunnahQuote: '﴿شَهْرُ رَمَضَانَ الَّذِي أُنْزِلَ فِيهِ الْقُرْآنُ﴾ [البقرة: 185]'
+        },
+        {
+          madhhab: 'hanbali',
+          schoolNameUrdu: 'فقہ حنبلی (امام احمد بن حنبل)',
+          imams: 'الإمام أحمد بن حنبل، ابن قدامة',
+          badgeColor: 'bg-purple-100 text-purple-900 border-purple-300',
+          borderColor: 'border-purple-300',
+          bgColor: 'bg-purple-50/50',
+          textColor: 'text-purple-950',
+          ruling: 'ہر دن رات سے نیت کرنا فرض ہے۔ کفارہ صرف جماع پر ہے، کھانے پینے پر کفارہ نہیں صرف قضا ہے۔',
+          dalailAndUsul: 'اصولی بنیاد: ہر دن الگ مستقل عبادت ہے اس لیے الگ نیت ضروری ہے۔ کفارہ ایک عقوبت ہے جو قیاس سے دیگر امور پر نہیں پھیلائی جا سکتی۔',
+          quranSunnahQuote: '«لاَ صِيَامَ لِمَنْ لَمْ يَفْرِضْهُ مِنَ اللَّيْلِ» [سنن الترمذي: 730]'
+        }
+      ],
+      synthesisNote: 'باہمی تطبیق اور اصولِ جمع: افضل یہ ہے کہ ہر رات سونے سے قبل اگلے دن کے روزے کی نیت کر لی جائے اور عمداً روزہ توڑنے کے گناہِ کبیرہ سے ہر حال میں احتراز کیا جائے۔'
+    };
+  }
+
+  if (cleanUpper.includes('زَكَاة') || cleanUpper.includes('صَدَقَة') || cleanUpper.includes('ذَهَب') || cleanUpper.includes('فِضَّة') || cleanUpper.includes('دِينَار') || cleanUpper.includes('دِرْهَم')) {
+    return {
+      issueTitle: 'مسئلہ: اموالِ زکوٰۃ، نصاب اور مستعملہ سونے چاندی کے زیورات میں زکوٰۃ کا وجوب',
+      coreConflict: 'عورت کے ذاتی استعمال کے طلائی و نقرئی زیورات پر زکوٰۃ واجب ہے یا نہیں؟',
+      schools: [
+        {
+          madhhab: 'hanafi',
+          schoolNameUrdu: 'فقہ حنفی (امام اعظم ابو حنیفہ)',
+          imams: 'الإمام الأعظم أبو حنيفة، أبو يوسف، محمد',
+          badgeColor: 'bg-emerald-100 text-emerald-900 border-emerald-300',
+          borderColor: 'border-emerald-300',
+          bgColor: 'bg-emerald-50/50',
+          textColor: 'text-emerald-950',
+          ruling: 'ہر قسم کے سونے اور چاندی پر زکوٰۃ فرض ہے، خواہ وہ استعمالی زیورات ہوں یا تجارت کے لیے۔ نصاب 7.5 تولہ سونا یا 52.5 تولہ چاندی ہے۔',
+          dalailAndUsul: 'اصولی بنیاد: نصوصِ عامہ «فِي الرِّقَةِ رُبُعُ الْعُشْرِ» اور حدیثِ نبوی جس میں ہاتھ کے کنگن دیکھ کر فرمایا: «أَتُسِرُّكِ أَنْ يُسَوِّرَكِ اللَّهُ بِهِمَا يَوْمَ الْقِيَامَةِ سِوَارَيْنِ مِنْ نَارٍ؟»۔ سونے چاندی میں نماءِ خلقی پایا جاتا ہے۔',
+          quranSunnahQuote: '﴿وَالَّذِينَ يَكْنِزُونَ الذَّهَبَ وَالْفِضَّةَ وَلَا يُنْفِقُونَهَا فِي سَبِيلِ اللَّهِ فَبَشِّرْهُمْ بِعَذَابٍ أَلِيمٍ﴾ [التوبة: 34]'
+        },
+        {
+          madhhab: 'shafii',
+          schoolNameUrdu: 'فقہ شافعی (امام شافعی)',
+          imams: 'الإمام الشافعي، الإمام النووي',
+          badgeColor: 'bg-blue-100 text-blue-900 border-blue-300',
+          borderColor: 'border-blue-300',
+          bgColor: 'bg-blue-50/50',
+          textColor: 'text-blue-950',
+          ruling: 'عورت کے مباح و معتاد استعمالی زیورات پر زکوٰۃ نہیں ہے؛ زکوٰۃ اموالِ نامیہ (بڑھنے والے اموال) میں ہے۔',
+          dalailAndUsul: 'اصولی بنیاد: استعمالی زیورات استعمال کے کپڑوں اور گھریلو سامان کی مانند ہیں جن سے نماء منقطع ہو چکا ہے، حدیث «ليس في الحلي زكاة»۔',
+          quranSunnahQuote: '«لَيْسَ عَلَى الْمُسْلِمِ فِي عَبْدِهِ وَلاَ فَرَسِهِ صَدَقَةٌ» [صحيح البخاري: 1463]'
+        },
+        {
+          madhhab: 'maliki',
+          schoolNameUrdu: 'فقہ مالکی (امام مالک)',
+          imams: 'الإمام مالك بن أنس، الإمام سحنون',
+          badgeColor: 'bg-amber-100 text-amber-900 border-amber-300',
+          borderColor: 'border-amber-300',
+          bgColor: 'bg-amber-50/50',
+          textColor: 'text-amber-950',
+          ruling: 'عورت کے اپنے جائز استعمالی زیورات پر زکوٰۃ نہیں؛ اگر کنز یا تجارت کی نیت سے رکھے ہوں تو واجب ہے۔',
+          dalailAndUsul: 'اصولی بنیاد: عملِ اہلِ مدینہ؛ سیدہ عائشہ رضی اللہ عنہا اپنے یتیم بھتیجوں اور بھانجیوں کے زیورات سے زکوٰۃ نہیں نکالتی تھیں۔',
+          quranSunnahQuote: '«مَا جَرَى عَلَيْهِ عَمَلُ أَهْلِ الْمَدِينَةِ فِي إِسْقَاطِ زَكَاةِ الْحُلِيِّ الْمُبَاحِ»'
+        },
+        {
+          madhhab: 'hanbali',
+          schoolNameUrdu: 'فقہ حنبلی (امام احمد بن حنبل)',
+          imams: 'الإمام أحمد بن حنبل، ابن قدامة',
+          badgeColor: 'bg-purple-100 text-purple-900 border-purple-300',
+          borderColor: 'border-purple-300',
+          bgColor: 'bg-purple-50/50',
+          textColor: 'text-purple-950',
+          ruling: 'معتمد مذہب میں مباح استعمالی زیور پر زکوٰۃ نہیں، البتہ بعض حنابلہ نے عمومِ نصوص کی بنا پر وجوب کا قول اختیار کیا۔',
+          dalailAndUsul: 'اصولی بنیاد: قنیہ اور استعمال کی اشیاء زکوٰۃ سے خارج ہیں جب تک کہ اسراف یا مردوں کے لیے ناجائز استعمال نہ ہو۔',
+          quranSunnahQuote: '«إِنَّمَا الزَّكَاةُ فِي الْمَالِ النَّامِي أَوْ الْمُعَدِّ لِلنَّمَاءِ»'
+        }
+      ],
+      synthesisNote: 'باہمی تطبیق اور اصولِ جمع: احتیاط اور فقراء کے فائدے کے پیش نظر زیورات کی زکوٰۃ نکال دینا بالاتفاق سب سے محفوظ اور عند اللہ ماجور عمل ہے۔'
+    };
+  }
+
+  // Default Scholarly Comparative Fiqh across the 4 Madhahib
+  return {
+    issueTitle: 'مسئلہ: نصوصِ نبوی سے استنباطِ احکام، اصولی مناہج اور ائمہ اربعہ کا فقہی موقف',
+    coreConflict: 'نصِ نبوی کے فہم، عموم و خصوص کی تطبیق، اور ظاہرِ نص بمقابلہ قیاس و قواعدِ کلیہ میں ائمۂ اربعہ کا طریقہ کار۔',
+    schools: [
+      {
+        madhhab: 'hanafi',
+        schoolNameUrdu: 'فقہ حنفی (امام اعظم ابو حنیفہ)',
+        imams: 'الإمام الأعظم أبو حنيفة النعمان (ت 150ھ)',
+        badgeColor: 'bg-emerald-100 text-emerald-900 border-emerald-300',
+        borderColor: 'border-emerald-300',
+        bgColor: 'bg-emerald-50/50',
+        textColor: 'text-emerald-950',
+        ruling: 'نص کے ظاہر کو اصولِ شریعت اور مقاصد کے تحت نافذ کیا جاتا ہے؛ قرآنی عموم پر خبرِ واحد سے زیادتی نسخ کے مترادف مان کر احتیاط برتی جاتی ہے۔',
+        dalailAndUsul: 'اصولی بنیاد: قواعدِ فقہیہ، قرآن مجید کے عام قطعی دلالت والے احکام کو ترجیح، اور ضرورت کے وقت استحسان کا اطلاق۔',
+        quranSunnahQuote: '﴿إِنَّا أَنْزَلْنَا إِلَيْكَ الْكِتَابَ بِالْحَقِّ لِتَحْكُمَ بَيْنَ النَّاسِ بِمَا أَرَاكَ اللَّهُ﴾ [النساء: 105]'
+      },
+      {
+        madhhab: 'shafii',
+        schoolNameUrdu: 'فقہ شافعی (امام محمد بن ادریس الشافعی)',
+        imams: 'الإمام الشافعي (ت 204ھ)',
+        badgeColor: 'bg-blue-100 text-blue-900 border-blue-300',
+        borderColor: 'border-blue-300',
+        bgColor: 'bg-blue-50/50',
+        textColor: 'text-blue-950',
+        ruling: 'جب حدیث صحیح و متصل سند سے ثابت ہو جائے تو اسی پر عمل فرض ہے اور ہر قیاس و رائے پر اسے حاکم مانا جاتا ہے۔',
+        dalailAndUsul: 'اصولی بنیاد: «إِذَا صَحَّ الْحَدِيثُ فَهُوَ مَذْهَبِي»، اور بیانِ قرآن کے لیے سنت کا متصل ہونا اور دلالتِ لفظیہ پر تمسک۔',
+        quranSunnahQuote: '﴿وَمَا آتَاكُمُ الرَّسُولُ فَخُذُوهُ وَمَا نَهَاكُمْ عَنْهُ فَانْتَهُوا﴾ [الحشر: 7]'
+      },
+      {
+        madhhab: 'maliki',
+        schoolNameUrdu: 'فقہ مالکی (امام مالک بن انس)',
+        imams: 'الإمام مالك بن أنس (ت 179ھ)',
+        badgeColor: 'bg-amber-100 text-amber-900 border-amber-300',
+        borderColor: 'border-amber-300',
+        bgColor: 'bg-amber-50/50',
+        textColor: 'text-amber-950',
+        ruling: 'نصِ حدیث کے ساتھ ساتھ عملِ اہلِ مدینہ اور مصالحِ مرسلہ کو شرعی احکام میں بلند مقام حاصل ہے۔',
+        dalailAndUsul: 'اصولی بنیاد: تواترِ عملی (عمل اہل مدینہ) کو خبرِ واحد ظنی پر ترجیح دی جاتی ہے کیونکہ وہ نسل در نسل منقول سنت ہے۔',
+        quranSunnahQuote: '«عَمَلُ أَهْلِ الْمَدِينَةِ حُجَّةٌ قَاطِعَةٌ عِنْدَ الإِمَامِ مَالِكٍ»'
+      },
+      {
+        madhhab: 'hanbali',
+        schoolNameUrdu: 'فقہ حنبلی (امام احمد بن حنبل)',
+        imams: 'الإمام أحمد بن حنبل (ت 241ھ)',
+        badgeColor: 'bg-purple-100 text-purple-900 border-purple-300',
+        borderColor: 'border-purple-300',
+        bgColor: 'bg-purple-50/50',
+        textColor: 'text-purple-950',
+        ruling: 'نصوص کے ظاہری الفاظ پر سختی سے عمل اور قیاس و رائے سے حتی الامکان اجتناب مسلک کی بنیاد ہے۔',
+        dalailAndUsul: 'اصولی بنیاد: صحیح، حسن اور مرسل آثار کو قیاس پر مقدم رکھا جاتا ہے اور سلفِ صالحین کے فہم پر اکتفا کیا جاتا ہے۔',
+        quranSunnahQuote: '«تَقْدِيمُ النُّصُوصِ وَالْآثَارِ عَلَى الْقِيَاسِ وَالرَّأْيِ»'
+      }
+    ],
+    synthesisNote: 'باہمی تطبیق اور اصولِ جمع: ائمہ اربعہ کے تمام مناہج کتاب و سنت کے شفاف چشمے سے سیراب ہیں؛ اصول و فروع کا تنوع امت کے لیے رحمت و وسعت کا باعث ہے۔'
+  };
+}
+
 // Generate genuine, Matn-specific Darsi analysis synchronously
 export function getDarsiAnalysisSync(
   bookId: string,
@@ -335,12 +694,12 @@ export function getDarsiAnalysisSync(
 ): DarsiAnalysis {
   const cacheKey = `${CACHE_PREFIX}${bookId}_${hadithNumber}`;
 
-  // Evict legacy cache keys (v1, v2, v3, v4, v5, v6)
+  // Evict legacy cache keys (v1, v2, v3, v4, v5, v6, v7)
   if (typeof window !== 'undefined') {
     try {
       for (let i = localStorage.length - 1; i >= 0; i--) {
         const k = localStorage.key(i);
-        if (k && (k.startsWith('tehreek_darsi_v1_') || k.startsWith('tehreek_darsi_v2_') || k.startsWith('tehreek_darsi_v3_') || k.startsWith('tehreek_darsi_v4_') || k.startsWith('tehreek_darsi_v5_') || k.startsWith('tehreek_darsi_v6_'))) {
+        if (k && (k.startsWith('tehreek_darsi_v1_') || k.startsWith('tehreek_darsi_v2_') || k.startsWith('tehreek_darsi_v3_') || k.startsWith('tehreek_darsi_v4_') || k.startsWith('tehreek_darsi_v5_') || k.startsWith('tehreek_darsi_v6_') || k.startsWith('tehreek_darsi_v7_'))) {
           localStorage.removeItem(k);
         }
       }
@@ -583,6 +942,9 @@ export function getDarsiAnalysisSync(
     '• تصحيح وتوثيق: رواته أئمة أثبات، والحديث حجة في الأحكام والمواعظ۔'
   ];
 
+  // 8e. Comparative Fiqh across the 4 Madhahib (مقارنہ بین المذاہب)
+  const comparativeFiqh = generateComparativeFiqhData(arabicText, hadithNumber, bookId, isNiyyahHadith);
+
   const analysis: DarsiAnalysis = {
     urduTranslation,
     wordByWord,
@@ -592,7 +954,8 @@ export function getDarsiAnalysisSync(
     iraab,
     hawashi,
     ahkamShariat,
-    islahAamal
+    islahAamal,
+    comparativeFiqh
   };
 
   // Cache result
