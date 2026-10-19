@@ -250,11 +250,11 @@ export const AdvancedTakhreejBox: React.FC<AdvancedTakhreejBoxProps> = ({
             <div className="space-y-1.5 select-text">
               <div 
                 className="p-2 bg-stone-100 dark:bg-slate-900 rounded-lg border border-stone-200/90 dark:border-slate-700 text-right font-arabic text-stone-950 dark:text-amber-200 text-xs sm:text-sm leading-relaxed font-semibold"
-                style={{ fontFamily: "'Amiri', serif", color: '#0f172a' }}
+                style={{ fontFamily: "'Amiri', serif" }}
               >
                 <strong>مدار الرواية:</strong> {data.chainPivotArabic}
               </div>
-              <p className="font-nastaliq text-xs sm:text-sm text-stone-950 dark:text-stone-100 leading-[2.3] pr-1 font-medium" style={{ color: '#111827' }}>
+              <p className="font-nastaliq text-xs sm:text-sm text-stone-950 dark:text-stone-100 leading-[2.3] pr-1 font-medium">
                 {data.chainPivotUrdu}
               </p>
               <p className="font-nastaliq text-xs font-bold text-emerald-950 dark:text-emerald-200 bg-emerald-50/90 dark:bg-emerald-950/70 p-2.5 rounded-lg border border-emerald-300 dark:border-emerald-700 leading-relaxed">

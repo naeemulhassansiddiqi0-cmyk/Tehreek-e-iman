@@ -460,7 +460,6 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
               fontFamily: "'Amiri Quran', 'Amiri', 'Traditional Arabic', serif",
               fontSize: `${Math.round(arabicFontSize * 0.85)}px`, 
               fontWeight: 600,
-              color: '#0f172a',
               lineHeight: `${Math.round(arabicFontSize * 1.55 * (lineHeightScale || 1))}px` 
             }}
           >
@@ -498,8 +497,7 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
             fontFamily: "'Amiri Quran', 'Amiri', 'Traditional Arabic', serif",
             fontSize: `${arabicFontSize}px`, 
             lineHeight: `${Math.round(arabicFontSize * 1.55 * (lineHeightScale || 1))}px`, 
-            fontWeight: 500,
-            color: '#111827' 
+            fontWeight: 500
           }}
         >
           {renderClickableArabic(displayMatn, arabText, hadith.urdu)}
@@ -551,8 +549,7 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
               style={{ 
                 fontSize: `${urduFontSize}px`, 
                 lineHeight: `${Math.round(urduFontSize * 1.85 * (lineHeightScale || 1))}px`, 
-                fontWeight: 600, 
-                color: '#111827' 
+                fontWeight: 600
               }}
             >
               {urduText || (loading ? 'ترجمہ کا تجزیہ جاری ہے...' : 'متنِ مبارک کے مطابق سلیس ترجمہ')}
@@ -772,7 +769,7 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
                   </h4>
                   <div className="arabic-naskh text-sm sm:text-base leading-[2.3] text-stone-900 dark:text-amber-200 space-y-1.5 pr-1 select-text font-medium" dir="rtl">
                     {analysis.hawashi.map((hw, hwidx) => (
-                      <p key={hwidx} style={{ color: '#0f172a' }}>{hw}</p>
+                      <p key={hwidx}>{hw}</p>
                     ))}
                   </div>
                 </div>
@@ -3300,8 +3297,7 @@ ${urduToCopy}
                               fontFamily: "'Amiri Quran', 'Amiri', 'Traditional Arabic', serif",
                               fontSize: `${Math.round(arabicFontSize * 1.08)}px`, 
                               lineHeight: `${Math.round(arabicFontSize * 1.55 * lineHeightScale)}px`, 
-                              fontWeight: 500,
-                              color: '#111827' 
+                              fontWeight: 500
                             }}
                           >
                             {renderClickableArabic(seg.arabicText, seg.arabicText, seg.urduTranslation)}
@@ -3320,8 +3316,7 @@ ${urduToCopy}
                               style={{ 
                                 fontSize: `${urduFontSize}px`, 
                                 lineHeight: `${Math.round(urduFontSize * 1.85 * lineHeightScale)}px`, 
-                                fontWeight: 500, 
-                                color: '#1f2937' 
+                                fontWeight: 500
                               }}
                             >
                               {seg.urduTranslation}
@@ -3431,8 +3426,7 @@ ${urduToCopy}
                                     style={{ 
                                       fontFamily: "'Amiri Quran', 'Amiri', 'Scheherazade New', 'Traditional Arabic', serif",
                                       fontSize: `${Math.round(arabicFontSize * 1.05)}px`, 
-                                      lineHeight: `${Math.round(arabicFontSize * 1.55 * lineHeightScale)}px`, 
-                                      color: '#111827' 
+                                      lineHeight: `${Math.round(arabicFontSize * 1.55 * lineHeightScale)}px`
                                     }}
                                   >
                                     {renderClickableArabic(verseText, verseText, verseUrdu)}
@@ -3449,8 +3443,7 @@ ${urduToCopy}
                                         fontFamily: "'Jameel Noori Nastaleeq', 'Urdu Nastaleeq', 'Nafees', serif",
                                         fontSize: `${urduFontSize}px`, 
                                         lineHeight: `${Math.round(urduFontSize * 1.85 * lineHeightScale)}px`, 
-                                        fontWeight: 500, 
-                                        color: '#1f2937' 
+                                        fontWeight: 500
                                       }}
                                     >
                                       {verseUrdu}
@@ -3674,8 +3667,7 @@ ${urduToCopy}
                           fontFamily: "'Amiri Quran', 'Amiri', 'Traditional Arabic', serif",
                           fontSize: `${arabicFontSize}px`, 
                           lineHeight: `${Math.round(arabicFontSize * 1.55 * lineHeightScale)}px`, 
-                          fontWeight: 500, 
-                          color: '#111827' 
+                          fontWeight: 500
                         }}
                       >
                         {renderClickableArabic(displayDarsMatn, parsedDarsPage.matn, parsedDarsPage.urduTranslation || pipelineAnalysis?.urduTranslation)}
@@ -3721,8 +3713,7 @@ ${urduToCopy}
                           fontFamily: "'Jameel Noori Nastaleeq', 'Urdu Nastaleeq', 'Nafees', serif",
                           fontSize: `${urduFontSize}px`, 
                           lineHeight: `${Math.round(urduFontSize * 1.85 * lineHeightScale)}px`, 
-                          fontWeight: 500, 
-                          color: '#1f2937' 
+                          fontWeight: 500
                         }}
                       >
                         {parsedDarsPage.urduTranslation || pipelineAnalysis?.urduTranslation}

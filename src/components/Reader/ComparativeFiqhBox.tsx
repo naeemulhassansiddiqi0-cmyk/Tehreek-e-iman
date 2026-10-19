@@ -161,7 +161,7 @@ export const ComparativeFiqhBox: React.FC<ComparativeFiqhBoxProps> = ({
             <h4 className="font-nastaliq font-bold text-sm sm:text-base text-stone-950 dark:text-stone-100 pr-1 leading-relaxed">
               {data.issueTitle}
             </h4>
-            <p className="font-nastaliq text-xs sm:text-sm text-stone-900 dark:text-stone-200 pr-1 leading-[2.3] bg-stone-100/90 dark:bg-slate-700/50 p-2.5 rounded-lg border border-stone-200 dark:border-slate-600 font-medium" style={{ color: '#111827' }}>
+            <p className="font-nastaliq text-xs sm:text-sm text-stone-900 dark:text-stone-200 pr-1 leading-[2.3] bg-stone-100/90 dark:bg-slate-700/50 p-2.5 rounded-lg border border-stone-200 dark:border-slate-600 font-medium">
               {data.coreConflict}
             </p>
           </div>
@@ -297,7 +297,7 @@ export const ComparativeFiqhBox: React.FC<ComparativeFiqhBoxProps> = ({
                         <Award className="w-3.5 h-3.5 text-amber-600 shrink-0" />
                         <span>مذہب کے مطابق معتمد شرعی حکم:</span>
                       </div>
-                      <p className="font-nastaliq text-xs sm:text-sm text-stone-950 dark:text-stone-100 leading-[2.3] pr-1 font-medium" style={{ color: '#111827' }}>
+                      <p className="font-nastaliq text-xs sm:text-sm text-stone-950 dark:text-stone-100 leading-[2.3] pr-1 font-medium">
                         {school.ruling}
                       </p>
                     </div>
@@ -308,13 +308,13 @@ export const ComparativeFiqhBox: React.FC<ComparativeFiqhBoxProps> = ({
                         <ShieldCheck className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
                         <span>اصولی دلیل، قیاس و وجہِ استدلال:</span>
                       </div>
-                      <p className="font-nastaliq text-xs sm:text-sm text-stone-950 dark:text-stone-100 leading-[2.3] pr-1 font-medium" style={{ color: '#111827' }}>
+                      <p className="font-nastaliq text-xs sm:text-sm text-stone-950 dark:text-stone-100 leading-[2.3] pr-1 font-medium">
                         {school.dalailAndUsul}
                       </p>
                       {school.quranSunnahQuote && (
                         <div 
                           className="mt-2 p-2 bg-stone-100 dark:bg-slate-900/80 rounded-lg border border-stone-200 dark:border-slate-700 text-right select-text font-arabic text-stone-950 dark:text-amber-200 text-xs sm:text-sm leading-relaxed font-semibold"
-                          style={{ fontFamily: "'Amiri Quran', 'Amiri', 'Traditional Arabic', serif", color: '#0f172a' }}
+                          style={{ fontFamily: "'Amiri Quran', 'Amiri', 'Traditional Arabic', serif" }}
                         >
                           {school.quranSunnahQuote}
                         </div>
@@ -342,7 +342,7 @@ export const ComparativeFiqhBox: React.FC<ComparativeFiqhBoxProps> = ({
                   خلاصۂ فقہاء
                 </span>
               </div>
-              <p className="font-nastaliq text-xs sm:text-sm text-stone-950 dark:text-stone-100 leading-[2.3] pr-1 select-text font-medium" style={{ color: '#111827' }}>
+              <p className="font-nastaliq text-xs sm:text-sm text-stone-950 dark:text-stone-100 leading-[2.3] pr-1 select-text font-medium">
                 {data.synthesisNote}
               </p>
             </div>

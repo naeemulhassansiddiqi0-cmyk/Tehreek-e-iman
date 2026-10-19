@@ -531,8 +531,7 @@ export const DarsiTashreehSectionView: React.FC<DarsiTashreehSectionViewProps> =
                     style={{ 
                       fontSize: '1.2rem', 
                       lineHeight: '2.3',
-                      fontWeight: 600,
-                      color: '#111827'
+                      fontWeight: 600
                     }}
                   >
                     {item.urdu}

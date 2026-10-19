@@ -125,7 +125,7 @@ export const DailyLifeTakeawayBox: React.FC<DailyLifeTakeawayBoxProps> = ({
 
             <ul className="space-y-2 text-stone-950 dark:text-stone-100 pr-1">
               {points.map((point, pIdx) => (
-                <li key={pIdx} className="flex items-start gap-2.5 text-xs sm:text-sm font-nastaliq leading-[2.3] text-stone-950 dark:text-stone-100 font-medium" style={{ color: '#111827' }}>
+                <li key={pIdx} className="flex items-start gap-2.5 text-xs sm:text-sm font-nastaliq leading-[2.3] text-stone-950 dark:text-stone-100 font-medium">
                   <span className="w-5 h-5 rounded-full bg-amber-100 dark:bg-amber-900/60 border border-amber-300 dark:border-amber-700 text-amber-950 dark:text-amber-200 flex items-center justify-center text-[10px] font-bold shrink-0 mt-1 font-mono">
                     {pIdx + 1}
                   </span>
@@ -146,7 +146,7 @@ export const DailyLifeTakeawayBox: React.FC<DailyLifeTakeawayBoxProps> = ({
               <span className="text-[11px] font-bold font-nastaliq text-amber-950 dark:text-amber-200 block">
                 🌱 روزمرہ عملی نسخہ (مجرب معمول برائے تزکیۂ نفس):
               </span>
-              <p className="font-nastaliq font-bold text-xs sm:text-sm text-stone-950 dark:text-stone-100 leading-[2.3]" style={{ color: '#111827' }}>
+              <p className="font-nastaliq font-bold text-xs sm:text-sm text-stone-950 dark:text-stone-100 leading-[2.3]">
                 {practicalHabit}
               </p>
             </div>

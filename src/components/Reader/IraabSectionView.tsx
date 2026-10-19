@@ -312,8 +312,7 @@ export const IraabSectionView: React.FC<IraabSectionViewProps> = ({
                     fontFamily: "'Amiri Quran', 'Amiri', 'Traditional Arabic', serif",
                     fontSize: '1.35rem', 
                     lineHeight: '2.2',
-                    fontWeight: 600,
-                    color: '#0f172a'
+                    fontWeight: 600
                   }}
                 >
                   {item.arabic}
@@ -336,8 +335,7 @@ export const IraabSectionView: React.FC<IraabSectionViewProps> = ({
                   style={{ 
                     fontSize: '1.2rem', 
                     lineHeight: '2.3',
-                    fontWeight: 600,
-                    color: '#111827'
+                    fontWeight: 600
                   }}
                 >
                   {item.urdu}

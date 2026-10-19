@@ -1630,7 +1630,6 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                                 style={{
                                   fontFamily: "'Jameel Noori Nastaleeq', 'Urdu Nastaleeq', 'Nafees', serif",
                                   fontSize: '20px',
-                                  color: '#14532d',
                                   background: '#f0fdf4',
                                   padding: '16px',
                                   borderRight: '5px solid #16a34a',
@@ -1640,15 +1639,14 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                                 className="rounded-2xl shadow-xs space-y-2 border border-emerald-200"
                               >
                                 <div className="flex items-center justify-between border-b border-emerald-300/70 pb-2">
-                                  <div className="flex items-center gap-2 text-xs font-nastaliq font-bold" style={{ color: '#14532d' }}>
+                                  <div className="flex items-center gap-2 text-xs font-nastaliq font-bold text-emerald-950 dark:text-emerald-300">
                                     <BookOpen className="w-4 h-4 text-emerald-700 shrink-0" />
                                     <span className="font-bold text-sm">اردو ترجمہ و شرعی مفہوم (پیراگراف {pIdx + 1}):</span>
                                   </div>
                                   <button
                                     type="button"
                                     onClick={() => onSendToAI(arPara, selectedBook.title)}
-                                    className="text-xs hover:underline font-nastaliq font-bold flex items-center gap-1 cursor-pointer transition-colors"
-                                    style={{ color: '#14532d' }}
+                                    className="text-xs hover:underline font-nastaliq font-bold flex items-center gap-1 cursor-pointer transition-colors text-emerald-900 dark:text-emerald-300"
                                     title="اے آئی سے اس پیراگراف کا تفصیلی حل پوچھیں"
                                   >
                                     <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
@@ -1938,7 +1936,6 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                           <div 
                             style={currentLang === 'ur' ? {
                               fontFamily: "'Jameel Noori Nastaleeq', 'Urdu Nastaleeq', 'Nafees', serif",
-                              color: '#14532d',
                               background: '#f0fdf4',
                               padding: '16px',
                               borderRight: '5px solid #16a34a',

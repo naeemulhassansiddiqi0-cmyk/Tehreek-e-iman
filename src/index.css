@@ -68,36 +68,114 @@ html, body {
 }
 
 /* ==========================================================================
-   HIGH-CONTRAST LIGHT MODE TYPOGRAPHY & VISIBILITY RULES (CRITICAL FIX)
+   URGENT GLOBAL OVERRIDE: FORCE SOLID HIGH-CONTRAST TEXT ACROSS ALL READERS
    ========================================================================== */
+
+/* ── 1. LIGHT MODE: Solid High-Contrast Dark (#0f172a) ── */
 html:not(.dark),
 html.light-mode {
   color-scheme: light;
+  color: #0f172a;
 }
 
 html:not(.dark) body,
 html.light-mode body {
-  background-color: #ffffff;
-  color: #111827;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
 }
 
-/* Ensure all Urdu Nastaliq text in Light Mode is crisp, high-contrast dark (#111827) */
+/* Force all paragraphs, translation text, Nastaliq, and reading body text to solid #0f172a */
+html:not(.dark) p,
 html:not(.dark) .urdu-text,
 html:not(.dark) .urdu,
 html:not(.dark) [lang="ur"],
+html:not(.dark) .font-nastaliq,
+html:not(.dark) .font-gulzar,
+html:not(.dark) .book-content,
+html:not(.dark) article,
+html:not(.dark) [dir="rtl"] p,
+html:not(.dark) [data-reader-card] p,
+html:not(.dark) .darsi-box p,
+html:not(.dark) .analysis-box p,
+html:not(.dark) .bg-white p,
+html:not(.dark) .bg-stone-50 p,
+html:not(.dark) .bg-gray-50 p,
+html:not(.dark) .bg-emerald-50 p,
+html:not(.dark) .bg-emerald-50\/20 p,
+html:not(.dark) .bg-emerald-50\/25 p,
+html:not(.dark) .bg-emerald-50\/30 p,
+html:not(.dark) .bg-emerald-50\/40 p,
+html:not(.dark) .bg-emerald-50\/50 p,
+html:not(.dark) .bg-emerald-50\/60 p,
+html:not(.dark) .bg-emerald-50\/70 p,
+html:not(.dark) .bg-emerald-50\/80 p,
+html:not(.dark) .bg-amber-50 p,
+html:not(.dark) .bg-amber-50\/20 p,
+html:not(.dark) .bg-amber-50\/30 p,
+html:not(.dark) .bg-amber-50\/40 p,
+html:not(.dark) .bg-amber-50\/50 p,
+html:not(.dark) .bg-amber-50\/60 p,
+html:not(.dark) .bg-amber-50\/70 p,
+html:not(.dark) .bg-indigo-50 p,
+html:not(.dark) .bg-indigo-50\/20 p,
+html:not(.dark) .bg-indigo-50\/30 p,
+html:not(.dark) .bg-indigo-50\/40 p,
+html:not(.dark) .bg-indigo-50\/50 p,
+html:not(.dark) .bg-teal-50 p,
+html:not(.dark) [class*="bg-"] p,
+html:not(.dark) [class*="border-"] p,
+html.light-mode p,
 html.light-mode .urdu-text,
 html.light-mode .urdu,
-html.light-mode [lang="ur"] {
-  color: #111827;
-  font-weight: 500;
-  -webkit-font-smoothing: antialiased;
+html.light-mode [lang="ur"],
+html.light-mode .font-nastaliq,
+html.light-mode .font-gulzar,
+html.light-mode .book-content,
+html.light-mode article,
+html.light-mode [dir="rtl"] p,
+html.light-mode [data-reader-card] p,
+html.light-mode .darsi-box p,
+html.light-mode .analysis-box p,
+html.light-mode .bg-white p,
+html.light-mode .bg-stone-50 p,
+html.light-mode .bg-gray-50 p,
+html.light-mode .bg-emerald-50 p,
+html.light-mode .bg-emerald-50\/20 p,
+html.light-mode .bg-emerald-50\/25 p,
+html.light-mode .bg-emerald-50\/30 p,
+html.light-mode .bg-emerald-50\/40 p,
+html.light-mode .bg-emerald-50\/50 p,
+html.light-mode .bg-emerald-50\/60 p,
+html.light-mode .bg-emerald-50\/70 p,
+html.light-mode .bg-emerald-50\/80 p,
+html.light-mode .bg-amber-50 p,
+html.light-mode .bg-amber-50\/20 p,
+html.light-mode .bg-amber-50\/30 p,
+html.light-mode .bg-amber-50\/40 p,
+html.light-mode .bg-amber-50\/50 p,
+html.light-mode .bg-amber-50\/60 p,
+html.light-mode .bg-amber-50\/70 p,
+html.light-mode .bg-indigo-50 p,
+html.light-mode .bg-indigo-50\/20 p,
+html.light-mode .bg-indigo-50\/30 p,
+html.light-mode .bg-indigo-50\/40 p,
+html.light-mode .bg-indigo-50\/50 p,
+html.light-mode .bg-teal-50 p,
+html.light-mode [class*="bg-"] p,
+html.light-mode [class*="border-"] p {
+  color: #0f172a !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #0f172a !important;
+  -webkit-font-smoothing: antialiased !important;
 }
 
-/* Ensure all Arabic Naskh text in Light Mode is razor-sharp deep black (#0f172a) */
+/* Force all Arabic Matn, Naskh & Sanad in Light Mode to razor-sharp #0f172a */
 html:not(.dark) .arabic-naskh,
 html:not(.dark) .arabic-text,
 html:not(.dark) .font-arabic,
 html:not(.dark) .font-amiri,
+html:not(.dark) .font-scheherazade,
+html:not(.dark) .font-lateef,
 html:not(.dark) .iraab-text,
 html:not(.dark) .takhreej-text,
 html:not(.dark) [lang="ar"],
@@ -107,50 +185,94 @@ html.light-mode .arabic-naskh,
 html.light-mode .arabic-text,
 html.light-mode .font-arabic,
 html.light-mode .font-amiri,
+html.light-mode .font-scheherazade,
+html.light-mode .font-lateef,
 html.light-mode .iraab-text,
 html.light-mode .takhreej-text,
 html.light-mode [lang="ar"],
 html.light-mode .arabic-matn,
 html.light-mode .arabic-sanad {
-  color: #0f172a;
-  font-weight: 600;
-  -webkit-font-smoothing: antialiased;
+  color: #0f172a !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #0f172a !important;
+  font-weight: 600 !important;
+  -webkit-font-smoothing: antialiased !important;
 }
 
-/* Overwrite any washed-out grey classes in Light Mode inside cards, analysis boxes, and sidebars */
-html:not(.dark) .text-stone-700,
-html:not(.dark) .text-stone-800,
+/* Ensure Urdu Nastaliq has proper font-weight in Light Mode */
+html:not(.dark) .urdu-text,
+html:not(.dark) .urdu,
+html:not(.dark) [lang="ur"],
+html:not(.dark) .font-nastaliq,
+html.light-mode .urdu-text,
+html.light-mode .urdu,
+html.light-mode [lang="ur"],
+html.light-mode .font-nastaliq {
+  font-weight: 600 !important;
+}
+
+/* Strip any faded/dim grey classes across all readers in Light Mode */
+html:not(.dark) .text-slate-400,
+html:not(.dark) .text-slate-500,
+html:not(.dark) .text-slate-600,
+html:not(.dark) .text-slate-700,
+html:not(.dark) .text-slate-800,
+html:not(.dark) .text-gray-400,
+html:not(.dark) .text-gray-500,
+html:not(.dark) .text-gray-600,
 html:not(.dark) .text-gray-700,
 html:not(.dark) .text-gray-800,
+html:not(.dark) .text-stone-400,
+html:not(.dark) .text-stone-500,
+html:not(.dark) .text-stone-600,
+html:not(.dark) .text-stone-700,
+html:not(.dark) .text-stone-800,
+html:not(.dark) .text-zinc-400,
+html:not(.dark) .text-zinc-500,
+html:not(.dark) .text-zinc-600,
+html:not(.dark) .text-zinc-700,
+html:not(.dark) .text-zinc-800,
+html:not(.dark) .text-neutral-400,
+html:not(.dark) .text-neutral-500,
+html:not(.dark) .text-neutral-600,
+html:not(.dark) .text-neutral-700,
+html:not(.dark) .text-neutral-800,
+html.light-mode .text-slate-400,
+html.light-mode .text-slate-500,
+html.light-mode .text-slate-600,
+html.light-mode .text-slate-700,
+html.light-mode .text-slate-800,
+html.light-mode .text-gray-400,
+html.light-mode .text-gray-500,
+html.light-mode .text-gray-600,
+html.light-mode .text-gray-700,
+html.light-mode .text-gray-800,
+html.light-mode .text-stone-400,
+html.light-mode .text-stone-500,
+html.light-mode .text-stone-600,
 html.light-mode .text-stone-700,
 html.light-mode .text-stone-800,
-html.light-mode .text-gray-700,
-html.light-mode .text-gray-800 {
-  color: #111827 !important;
+html.light-mode .text-zinc-400,
+html.light-mode .text-zinc-500,
+html.light-mode .text-zinc-600,
+html.light-mode .text-zinc-700,
+html.light-mode .text-zinc-800,
+html.light-mode .text-neutral-400,
+html.light-mode .text-neutral-500,
+html.light-mode .text-neutral-600,
+html.light-mode .text-neutral-700,
+html.light-mode .text-neutral-800 {
+  color: #0f172a !important;
+  opacity: 1 !important;
 }
 
-html:not(.dark) .text-stone-600,
-html:not(.dark) .text-gray-600,
-html.light-mode .text-stone-600,
-html.light-mode .text-gray-600 {
-  color: #1f2937 !important;
+/* Remove any inherited faint opacity utilities from reading elements in Light Mode */
+html:not(.dark) [class*="opacity-"],
+html.light-mode [class*="opacity-"] {
+  opacity: 1 !important;
 }
 
-html:not(.dark) .text-stone-500,
-html:not(.dark) .text-gray-500,
-html.light-mode .text-stone-500,
-html.light-mode .text-gray-500 {
-  color: #334155 !important;
-}
-
-html:not(.dark) .text-stone-400,
-html:not(.dark) .text-gray-400,
-html.light-mode .text-stone-400,
-html.light-mode .text-gray-400 {
-  color: #475569 !important;
-}
-
-/* High contrast for headings and titles in Light Mode */
+/* Headings in Light Mode */
 html:not(.dark) h1,
 html:not(.dark) h2,
 html:not(.dark) h3,
@@ -164,47 +286,16 @@ html.light-mode h4,
 html.light-mode h5,
 html.light-mode h6 {
   color: #0f172a !important;
+  opacity: 1 !important;
 }
 
-/* High-contrast text inside all cards, boxes, and sidebars in Light Mode */
-html:not(.dark) .bg-white p,
-html:not(.dark) .bg-stone-50 p,
-html:not(.dark) .bg-emerald-50 p,
-html:not(.dark) .bg-emerald-50\/30 p,
-html:not(.dark) .bg-emerald-50\/40 p,
-html:not(.dark) .bg-emerald-50\/50 p,
-html:not(.dark) .bg-emerald-50\/60 p,
-html:not(.dark) .bg-amber-50 p,
-html:not(.dark) .bg-amber-50\/30 p,
-html:not(.dark) .bg-amber-50\/40 p,
-html:not(.dark) .bg-amber-50\/50 p,
-html:not(.dark) .bg-indigo-50 p,
-html:not(.dark) .bg-indigo-50\/30 p,
-html:not(.dark) .bg-indigo-50\/40 p,
-html.light-mode .bg-white p,
-html.light-mode .bg-stone-50 p,
-html.light-mode .bg-emerald-50 p,
-html.light-mode .bg-emerald-50\/30 p,
-html.light-mode .bg-emerald-50\/40 p,
-html.light-mode .bg-emerald-50\/50 p,
-html.light-mode .bg-emerald-50\/60 p,
-html.light-mode .bg-amber-50 p,
-html.light-mode .bg-amber-50\/30 p,
-html.light-mode .bg-amber-50\/40 p,
-html.light-mode .bg-amber-50\/50 p,
-html.light-mode .bg-indigo-50 p,
-html.light-mode .bg-indigo-50\/30 p,
-html.light-mode .bg-indigo-50\/40 p {
-  color: #111827 !important;
-}
-
-/* Modals, Dropdowns & Analysis boxes in Light Mode */
+/* Modals, Dropdowns & Analysis dialogs in Light Mode */
 html:not(.dark) .modal-content,
 html:not(.dark) [role="dialog"],
 html.light-mode .modal-content,
 html.light-mode [role="dialog"] {
   background-color: #ffffff !important;
-  color: #111827 !important;
+  color: #0f172a !important;
 }
 
 html:not(.dark) select,
@@ -213,12 +304,12 @@ html:not(.dark) textarea,
 html.light-mode select,
 html.light-mode input,
 html.light-mode textarea {
-  color: #111827 !important;
+  color: #0f172a !important;
   background-color: #ffffff !important;
   border-color: #cbd5e1 !important;
 }
 
-/* Deep Slate / Emerald Dark Mode Palette (Phase 7: #0f172a, #1e293b) */
+/* ── 2. DARK MODE: Solid High-Contrast Light (#f1f5f9) & Gold for Arabic (#fef3c7) ── */
 html.dark {
   color-scheme: dark;
 }
@@ -228,21 +319,51 @@ html.dark body {
   color: #f1f5f9 !important;
 }
 
+/* Force all paragraphs, translation text, Nastaliq, and reading body text to solid #f1f5f9 in Dark Mode */
+html.dark p,
 html.dark .urdu-text,
 html.dark .urdu,
 html.dark [lang="ur"],
-html.dark .font-nastaliq {
-  color: #f8fafc;
+html.dark .font-nastaliq,
+html.dark .font-gulzar,
+html.dark .book-content,
+html.dark article,
+html.dark [dir="rtl"] p,
+html.dark [data-reader-card] p,
+html.dark .darsi-box p,
+html.dark .analysis-box p,
+html.dark .bg-white p,
+html.dark .bg-stone-50 p,
+html.dark .bg-gray-50 p,
+html.dark .bg-emerald-50 p,
+html.dark .bg-amber-50 p,
+html.dark .bg-indigo-50 p,
+html.dark .rounded-2xl p,
+html.dark .rounded-3xl p,
+html.dark .rounded-xl p,
+html.dark [class*="bg-"] p,
+html.dark [class*="border-"] p {
+  color: #f1f5f9 !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #f1f5f9 !important;
 }
 
+/* Arabic in Dark Mode: Radiant Golden (#fef3c7) */
 html.dark .arabic-naskh,
 html.dark .arabic-text,
 html.dark .font-arabic,
 html.dark .font-amiri,
+html.dark .font-scheherazade,
+html.dark .font-lateef,
 html.dark .iraab-text,
+html.dark .takhreej-text,
 html.dark [lang="ar"],
-html.dark .arabic-matn {
-  color: #fef3c7;
+html.dark .arabic-matn,
+html.dark .arabic-sanad {
+  color: #fef3c7 !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #fef3c7 !important;
+  font-weight: 600 !important;
 }
 
 html.dark .bg-white {
@@ -266,12 +387,27 @@ html.dark .border-stone-200 {
 html.dark .text-stone-900,
 html.dark .text-stone-800,
 html.dark .text-gray-900,
-html.dark .text-gray-800 {
+html.dark .text-gray-800,
+html.dark .text-slate-900,
+html.dark .text-slate-800 {
   color: #f8fafc !important;
 }
 
 html.dark .text-stone-700,
-html.dark .text-stone-600 {
+html.dark .text-stone-600,
+html.dark .text-slate-700,
+html.dark .text-slate-600,
+html.dark .text-gray-700,
+html.dark .text-gray-600 {
+  color: #e2e8f0 !important;
+}
+
+html.dark .text-stone-400,
+html.dark .text-stone-500,
+html.dark .text-slate-400,
+html.dark .text-slate-500,
+html.dark .text-gray-400,
+html.dark .text-gray-500 {
   color: #cbd5e1 !important;
 }
 
