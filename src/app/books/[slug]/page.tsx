@@ -45,6 +45,7 @@ import { DarsiTashreehSectionView } from "@/components/Reader/DarsiTashreehSecti
 import { ComparativeFiqhBox } from "@/components/Reader/ComparativeFiqhBox";
 import { DailyLifeTakeawayBox } from "@/components/Reader/DailyLifeTakeawayBox";
 import { AdvancedTakhreejBox } from "@/components/Reader/AdvancedTakhreejBox";
+import { SocialShareModal } from "@/components/Reader/SocialShareModal";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { parseSanadNarratorSegments, NarratorInfo } from "@/services/rijalService";
 import { getBukhariTarjamahInfo } from "@/services/bukhariTarajimService";
@@ -168,6 +169,9 @@ function HadithCardDarsiView({
   const [showNotes, setShowNotes] = useState<boolean>(false);
   const [localTashkeel, setLocalTashkeel] = useState<boolean>(globalTashkeel);
   const [copiedRef, setCopiedRef] = useState<boolean>(false);
+  const [copiedArabic, setCopiedArabic] = useState<boolean>(false);
+  const [copiedUrdu, setCopiedUrdu] = useState<boolean>(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
   const [wordLimit, setWordLimit] = useState<number>(24);
   // Instant synchronous Darsi Analysis (zero network delay or loading hangs)
   const analysis = useMemo(() => {
@@ -240,6 +244,31 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
       navigator.clipboard.writeText(textToCopy);
       setCopiedRef(true);
       setTimeout(() => setCopiedRef(false), 2200);
+    }
+  };
+
+  const handleCopyArabic = () => {
+    const text = localTashkeel ? (matn || arabText) : stripTashkeel(matn || arabText);
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      setCopiedArabic(true);
+      setTimeout(() => setCopiedArabic(false), 2200);
+    }
+  };
+
+  const handleCopyUrdu = () => {
+    let urduText = hadith.urdu || analysis?.urduTranslation || '';
+    if (hadithNum === 1 && (slug || '').toLowerCase().includes('bukhari')) {
+      if (urduText.startsWith('ہم سے حمیدی') || urduText.startsWith('کو حمیدی')) {
+        urduText = urduText.replace(/^(?:ہم سے حمیدی نے بیان کیا، کہا ہم سے سفیان نے|کو حمیدی نے یہ حدیث بیان کی|ہم سے حمیدی عبد اللہ بن زبیر نے بیان کیا)/, 'ہم کو حمیدی نے یہ حدیث بیان کی');
+      } else if (!urduText.startsWith('ہم کو حمیدی نے')) {
+        urduText = 'ہم کو حمیدی نے یہ حدیث بیان کی، ' + urduText;
+      }
+    }
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(urduText);
+      setCopiedUrdu(true);
+      setTimeout(() => setCopiedUrdu(false), 2200);
     }
   };
 
@@ -368,6 +397,17 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
             <span>{copiedRef ? 'کاپی ہو گیا' : 'حوالے کے ساتھ نقل کریں'}</span>
           </button>
 
+          {/* Social Share Button (WhatsApp, Telegram, System Share) */}
+          <button
+            type="button"
+            onClick={() => setIsShareModalOpen(true)}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold font-nastaliq bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs transition cursor-pointer"
+            title="حدیث شریف کو واٹس ایپ، ٹیلی گرام یا دیگر سوشل ایپس پر شیئر کریں"
+          >
+            <Share2 className="w-3 h-3 text-amber-300" />
+            <span>شیئر کریں</span>
+          </button>
+
           {/* Bookmark Button */}
           <button
             type="button"
@@ -431,13 +471,24 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
       {/* 3. المتن الأصلي (متنِ حدیث شریف) */}
       <div className="bg-amber-50/20 border border-amber-200/40 rounded-xl p-4 sm:p-5 space-y-2.5">
         <div className="flex items-center justify-between">
-          <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-900 bg-amber-100/80 border border-amber-300/70 px-2.5 py-0.5 rounded-md font-nastaliq">
-            <BookOpen className="w-3.5 h-3.5 text-amber-800" />
+          <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-900 dark:text-amber-300 bg-amber-100/80 dark:bg-amber-950/60 border border-amber-300/70 dark:border-amber-700 px-2.5 py-0.5 rounded-md font-nastaliq">
+            <BookOpen className="w-3.5 h-3.5 text-amber-800 dark:text-amber-400" />
             <span>متنِ حدیث مبارک (کلامِ نبوی ﷺ)</span>
           </span>
-          <span className="text-[11px] text-stone-400 font-nastaliq">
-            💡 ہر عربی لفظ پر کلک کر کے صرف و نحو دیکھیں
-          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleCopyArabic}
+              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[11px] font-bold font-nastaliq bg-amber-100/90 dark:bg-amber-950 hover:bg-amber-200 dark:hover:bg-amber-900 text-amber-950 dark:text-amber-200 border border-amber-300 dark:border-amber-700 transition cursor-pointer shadow-2xs"
+              title="صرف عربی متن کاپی کریں"
+            >
+              {copiedArabic ? <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-3 h-3 text-amber-800 dark:text-amber-400" />}
+              <span>{copiedArabic ? 'کاپی ہو گیا!' : 'عربی کاپی کریں'}</span>
+            </button>
+            <span className="text-[11px] text-stone-400 font-nastaliq hidden sm:inline">
+              💡 ہر عربی لفظ پر کلک کر کے صرف و نحو دیکھیں
+            </span>
+          </div>
         </div>
         <p
           className="font-arabic arabic-text text-right select-text px-1"
@@ -457,19 +508,31 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
       {/* 4. سلیس اور با محاورہ اردو ترجمہ */}
       <div className="pt-2 border-t border-dashed border-gray-100 space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold text-emerald-950 font-nastaliq flex items-center gap-1">
+          <span className="text-xs font-bold text-emerald-950 dark:text-emerald-300 font-nastaliq flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-emerald-700"></span>
             <span>سلیس و با محاورہ اردو ترجمہ:</span>
           </span>
-          {/* Word by word Toggle */}
-          <button
-            type="button"
-            onClick={() => setShowWordByWord(!showWordByWord)}
-            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[11px] font-bold font-nastaliq bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 transition cursor-pointer"
-          >
-            <Layers className="w-3 h-3 text-emerald-800" />
-            <span>{showWordByWord ? 'لفظی ترجمہ گرڈ چھپائیں' : 'لفظ بہ لفظ انٹرلینیئر ترجمہ'}</span>
-          </button>
+          <div className="flex items-center gap-1.5">
+            {/* Copy Urdu Translation Button */}
+            <button
+              type="button"
+              onClick={handleCopyUrdu}
+              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[11px] font-bold font-nastaliq bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-emerald-950 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700 transition cursor-pointer shadow-2xs"
+              title="صرف سلیس اردو ترجمہ کاپی کریں"
+            >
+              {copiedUrdu ? <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-3 h-3 text-emerald-800 dark:text-emerald-400" />}
+              <span>{copiedUrdu ? 'کاپی ہو گیا!' : 'اردو ترجمہ کاپی کریں'}</span>
+            </button>
+            {/* Word by word Toggle */}
+            <button
+              type="button"
+              onClick={() => setShowWordByWord(!showWordByWord)}
+              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[11px] font-bold font-nastaliq bg-emerald-50 dark:bg-slate-800 hover:bg-emerald-100 text-emerald-900 dark:text-emerald-200 border border-emerald-200 dark:border-slate-700 transition cursor-pointer"
+            >
+              <Layers className="w-3 h-3 text-emerald-800 dark:text-emerald-400" />
+              <span>{showWordByWord ? 'لفظی گرڈ بند کریں' : 'لفظ بہ لفظ گرڈ'}</span>
+            </button>
+          </div>
         </div>
         {(() => {
           let urduText = hadith.urdu || analysis?.urduTranslation || '';
@@ -717,6 +780,18 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
           </div>
         )}
       </div>
+
+      {/* Social Share Modal (WhatsApp, Telegram, Native Share) */}
+      <SocialShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        title={`حدیث شریف نمبر: ${hadithNum.toLocaleString('ur-PK')} — ${bookTitle}`}
+        arabicText={displayMatn}
+        urduText={hadith.urdu || analysis?.urduTranslation || ''}
+        reference={`${bookTitle} • حدیث شریف نمبر ${hadithNum.toLocaleString('ur-PK')} (صفحہ ${(currentPage + 1).toLocaleString('ur-PK')})`}
+        pageUrl={typeof window !== 'undefined' ? `${window.location.origin}/books/${slug}?hadith=${hadithNum}` : ''}
+        scholarlyNotes={analysis?.tashreeh ? analysis.tashreeh.slice(0, 300) : undefined}
+      />
     </div>
   );
 }

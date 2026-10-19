@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Scale, ChevronDown, ChevronUp, Sparkles, Check, Copy, Award, ShieldCheck } from 'lucide-react';
+import { Scale, ChevronDown, ChevronUp, Sparkles, Check, Copy, Award, ShieldCheck, Share2 } from 'lucide-react';
+import { SocialShareModal } from './SocialShareModal';
 
 export interface SchoolRuling {
   madhhab: 'hanafi' | 'shafii' | 'maliki' | 'hanbali';
@@ -34,6 +35,9 @@ export const ComparativeFiqhBox: React.FC<ComparativeFiqhBoxProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(defaultExpanded);
   const [copiedSchool, setCopiedSchool] = useState<string | null>(null);
+  const [copiedAll, setCopiedAll] = useState<boolean>(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
+  const [shareData, setShareData] = useState<{ title: string; urdu: string; notes?: string } | null>(null);
   const [activeTab, setActiveTab] = useState<'all' | 'hanafi' | 'shafii' | 'maliki' | 'hanbali'>('all');
 
   if (!data) return null;
@@ -45,6 +49,35 @@ export const ComparativeFiqhBox: React.FC<ComparativeFiqhBoxProps> = ({
       setCopiedSchool(school.madhhab);
       setTimeout(() => setCopiedSchool(null), 2000);
     }
+  };
+
+  const handleCopyAll = () => {
+    const rulings = data.schools.map(s => `【${s.schoolNameUrdu} (${s.imams})】\nشرعی حکم: ${s.ruling}\nاصولی ادلہ: ${s.dalailAndUsul}`).join('\n\n────────────────────\n\n');
+    const fullText = `【مقارنہ بین المذاہب (Comparative Fiqh)】\nمسئلہ: ${data.issueTitle}\n\n${rulings}\n\nباہمی تطبیق: ${data.synthesisNote}\n\n🌐 تحریکِ ایمان اسلامی پورٹل • https://tehreek-e-iman.pages.dev`;
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(fullText);
+      setCopiedAll(true);
+      setTimeout(() => setCopiedAll(false), 2200);
+    }
+  };
+
+  const handleShareSchool = (school: SchoolRuling) => {
+    setShareData({
+      title: `فقہی موقف: ${school.schoolNameUrdu}`,
+      urdu: `مسئلہ: ${data.issueTitle}\n\nمعتمد شرعی حکم: ${school.ruling}`,
+      notes: `دلائل و اصولی بنیاد: ${school.dalailAndUsul} (${school.imams})`
+    });
+    setIsShareModalOpen(true);
+  };
+
+  const handleShareAll = () => {
+    const summary = data.schools.map(s => `${s.schoolNameUrdu}: ${s.ruling}`).join('\n\n');
+    setShareData({
+      title: `مقارنہ بین المذاہب: ${data.issueTitle}`,
+      urdu: summary,
+      notes: `خلاصۂ تطبیق: ${data.synthesisNote}`
+    });
+    setIsShareModalOpen(true);
   };
 
   const filteredSchools = activeTab === 'all'
@@ -78,11 +111,31 @@ export const ComparativeFiqhBox: React.FC<ComparativeFiqhBoxProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={handleCopyAll}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white dark:bg-slate-800 hover:bg-emerald-50 text-stone-700 dark:text-stone-300 border border-emerald-300 text-xs font-bold font-nastaliq shadow-2xs transition-all cursor-pointer"
+            title="تمام چاروں مذاہب کے فتاویٰ اور دلائل نقل کریں"
+          >
+            {copiedAll ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-stone-400" />}
+            <span>{copiedAll ? 'تمام تقابل کاپی ہو گیا!' : 'تمام تقابل نقل کریں'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleShareAll}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold font-nastaliq shadow-2xs transition-all cursor-pointer"
+            title="تقابلی فقہ کو واٹس ایپ یا ٹیلی گرام پر شیئر کریں"
+          >
+            <Share2 className="w-3.5 h-3.5 text-amber-300" />
+            <span>شیئر کریں</span>
+          </button>
+
           <button
             type="button"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white hover:bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs font-bold font-nastaliq shadow-2xs transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white dark:bg-slate-800 hover:bg-emerald-50 border border-emerald-300 text-emerald-900 dark:text-emerald-300 text-xs font-bold font-nastaliq shadow-2xs transition-all cursor-pointer"
           >
             <span>{isExpanded ? 'تقابل سمیٹیں' : 'تقابلی فقہ کھولیں'}</span>
             {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -206,24 +259,36 @@ export const ComparativeFiqhBox: React.FC<ComparativeFiqhBoxProps> = ({
                         </span>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => handleCopy(school)}
-                        className="flex items-center gap-1 text-[11px] font-nastaliq text-stone-500 hover:text-stone-900 px-2 py-0.5 rounded-md hover:bg-white/60 transition cursor-pointer"
-                        title="یہ فقہی موقف نقل کریں"
-                      >
-                        {copiedSchool === school.madhhab ? (
-                          <>
-                            <Check className="w-3 h-3 text-emerald-600" />
-                            <span className="text-emerald-700 font-bold">کاپی ہو گیا</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3 h-3 text-stone-400" />
-                            <span>کاپی</span>
-                          </>
-                        )}
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleCopy(school)}
+                          className="flex items-center gap-1 text-[11px] font-nastaliq text-stone-500 hover:text-stone-900 px-2 py-0.5 rounded-md hover:bg-white/60 transition cursor-pointer"
+                          title="یہ فقہی موقف نقل کریں"
+                        >
+                          {copiedSchool === school.madhhab ? (
+                            <>
+                              <Check className="w-3 h-3 text-emerald-600" />
+                              <span className="text-emerald-700 font-bold">کاپی ہو گیا!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3 h-3 text-stone-400" />
+                              <span>کاپی کریں</span>
+                            </>
+                          )}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleShareSchool(school)}
+                          className="flex items-center gap-1 text-[11px] font-nastaliq text-emerald-800 dark:text-emerald-400 hover:text-emerald-950 px-2 py-0.5 rounded-md hover:bg-white/60 transition cursor-pointer"
+                          title="یہ فقہی موقف سوشل ایپس پر شیئر کریں"
+                        >
+                          <Share2 className="w-3 h-3 text-emerald-700 dark:text-emerald-400" />
+                          <span>شیئر</span>
+                        </button>
+                      </div>
                     </div>
 
                     {/* Section 1: شرعی حکم و فتویٰ */}
@@ -284,6 +349,22 @@ export const ComparativeFiqhBox: React.FC<ComparativeFiqhBoxProps> = ({
           )}
 
         </div>
+      )}
+
+      {/* Social Share Modal for Comparative Fiqh */}
+      {shareData && (
+        <SocialShareModal
+          isOpen={isShareModalOpen}
+          onClose={() => {
+            setIsShareModalOpen(false);
+            setShareData(null);
+          }}
+          title={shareData.title}
+          urduText={shareData.urdu}
+          scholarlyNotes={shareData.notes}
+          reference="مقارنہ بین المذاہب (المذاہب الأربعة: احناف، شوافع، مالکیہ، حنابلہ)"
+          pageUrl={typeof window !== 'undefined' ? window.location.href : undefined}
+        />
       )}
     </div>
   );

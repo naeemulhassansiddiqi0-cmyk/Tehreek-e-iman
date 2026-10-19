@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Scale, Sparkles, Languages, Check, Copy } from 'lucide-react';
+import { Scale, Sparkles, Languages, Check, Copy, Share2 } from 'lucide-react';
+import { SocialShareModal } from './SocialShareModal';
 
 export interface TashreehItemParsed {
   title?: string;
@@ -277,6 +278,9 @@ export const DarsiTashreehSectionView: React.FC<DarsiTashreehSectionViewProps> =
 }) => {
   const [viewMode, setViewMode] = useState<'both' | 'urdu' | 'arabic'>('both');
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+  const [copiedAll, setCopiedAll] = useState<boolean>(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
+  const [shareData, setShareData] = useState<{ title: string; arabic?: string; urdu?: string; notes?: string } | null>(null);
 
   if (!tashreehText || tashreehText.trim().length === 0) return null;
 
@@ -289,6 +293,39 @@ export const DarsiTashreehSectionView: React.FC<DarsiTashreehSectionViewProps> =
       setCopiedIdx(idx);
       setTimeout(() => setCopiedIdx(null), 2000);
     }
+  };
+
+  const handleCopyAll = () => {
+    const compiled = parsedItems.map((item, i) => {
+      const label = item.madhhabLabel ? `【${item.madhhabLabel}】` : `【نکتہ ${i + 1}】`;
+      return `${label}\nعربی عبارت: ${item.arabic}\nاردو تشریح: ${item.urdu}`;
+    }).join('\n\n────────────────────\n\n');
+    const fullText = `【درسی تشریح و تقابلی فقہی مذاہب (احناف، شوافع، مالکیہ، حنابلہ)】\n\n${compiled}\n\n🌐 تحریکِ ایمان اسلامی پورٹل • https://tehreek-e-iman.pages.dev`;
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(fullText);
+      setCopiedAll(true);
+      setTimeout(() => setCopiedAll(false), 2200);
+    }
+  };
+
+  const handleShareItem = (item: TashreehItemParsed, idx: number) => {
+    setShareData({
+      title: item.madhhabLabel ? `فقہی نکتہ: ${item.madhhabLabel}` : `درسی نکتہ نمبر ${idx + 1}`,
+      arabic: item.arabic,
+      urdu: item.urdu,
+      notes: 'تقابلی فقہی مذاہب و درسی تحقیق • تحریکِ ایمان'
+    });
+    setIsShareModalOpen(true);
+  };
+
+  const handleShareAll = () => {
+    const summary = parsedItems.slice(0, 4).map(it => `${it.madhhabLabel || 'نکتہ'}: ${it.urdu}`).join('\n\n');
+    setShareData({
+      title: 'درسی تشریح و تقابلی فقہی مذاہب (ائمۂ اربعہ)',
+      urdu: summary,
+      notes: 'احناف، شوافع، مالکیہ اور حنابلہ کے معتمد اقوال'
+    });
+    setIsShareModalOpen(true);
   };
 
   return (
@@ -318,8 +355,30 @@ export const DarsiTashreehSectionView: React.FC<DarsiTashreehSectionViewProps> =
           </div>
         </div>
 
-        {/* View Mode Switcher Pills */}
-        <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-emerald-200/80 shadow-2xs text-xs font-nastaliq">
+        {/* Action Controls: Copy All, Share, and View Mode Switcher */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <button
+            type="button"
+            onClick={handleCopyAll}
+            className="flex items-center gap-1 text-xs font-bold font-nastaliq bg-white dark:bg-slate-800 text-stone-700 dark:text-stone-300 hover:text-teal-900 px-2.5 py-1 rounded-xl border border-emerald-200 dark:border-slate-700 shadow-2xs transition cursor-pointer"
+            title="تمام فقہی نکات اور درسی تشریح نقل کریں"
+          >
+            {copiedAll ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-stone-400" />}
+            <span>{copiedAll ? 'تمام تشریح کاپی ہو گئی!' : 'تمام تشریح نقل کریں'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleShareAll}
+            className="flex items-center gap-1 text-xs font-bold font-nastaliq bg-teal-700 hover:bg-teal-800 text-white px-2.5 py-1 rounded-xl shadow-2xs transition cursor-pointer"
+            title="تمام درسی تشریح واٹس ایپ یا ٹیلی گرام پر شیئر کریں"
+          >
+            <Share2 className="w-3.5 h-3.5 text-amber-300" />
+            <span>شیئر کریں</span>
+          </button>
+
+          {/* View Mode Switcher Pills */}
+          <div className="flex items-center gap-1 bg-white dark:bg-slate-800 p-1 rounded-xl border border-emerald-200/80 dark:border-slate-700 shadow-2xs text-xs font-nastaliq">
           <button
             type="button"
             onClick={() => setViewMode('both')}
@@ -361,6 +420,7 @@ export const DarsiTashreehSectionView: React.FC<DarsiTashreehSectionViewProps> =
           </button>
         </div>
       </div>
+    </div>
 
       {/* 2. List of Tashreeh and Fiqhi Points */}
       <div className="space-y-3 pt-1">
@@ -406,24 +466,36 @@ export const DarsiTashreehSectionView: React.FC<DarsiTashreehSectionViewProps> =
                   </span>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => handleCopy(item, idx)}
-                  className="flex items-center gap-1 text-[11px] font-nastaliq text-stone-500 hover:text-teal-900 px-2 py-0.5 rounded-md hover:bg-emerald-50 transition cursor-pointer"
-                  title="یہ فقہی نکتہ نقل کریں"
-                >
-                  {copiedIdx === idx ? (
-                    <>
-                      <Check className="w-3 h-3 text-emerald-600" />
-                      <span className="text-emerald-700 font-bold">کاپی ہو گیا</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3 h-3 text-stone-400 group-hover:text-teal-700" />
-                      <span>کاپی</span>
-                    </>
-                  )}
-                </button>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(item, idx)}
+                    className="flex items-center gap-1 text-[11px] font-nastaliq text-stone-500 hover:text-teal-900 px-2 py-0.5 rounded-md hover:bg-emerald-50 dark:hover:bg-slate-800 transition cursor-pointer"
+                    title="یہ فقہی نکتہ نقل کریں"
+                  >
+                    {copiedIdx === idx ? (
+                      <>
+                        <Check className="w-3 h-3 text-emerald-600" />
+                        <span className="text-emerald-700 font-bold">کاپی ہو گیا!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3 h-3 text-stone-400 group-hover:text-teal-700" />
+                        <span>کاپی کریں</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleShareItem(item, idx)}
+                    className="flex items-center gap-1 text-[11px] font-nastaliq text-teal-700 dark:text-teal-400 hover:text-teal-900 px-2 py-0.5 rounded-md hover:bg-teal-50 dark:hover:bg-slate-800 transition cursor-pointer"
+                    title="یہ فقہی نکتہ سوشل ایپس پر شیئر کریں"
+                  >
+                    <Share2 className="w-3 h-3 text-teal-600 dark:text-teal-400" />
+                    <span>شیئر</span>
+                  </button>
+                </div>
               </div>
 
               {/* Classical Arabic Scholarly Text (shown in 'both' or 'arabic' mode) */}
@@ -471,6 +543,23 @@ export const DarsiTashreehSectionView: React.FC<DarsiTashreehSectionViewProps> =
           );
         })}
       </div>
+
+      {/* Social Share Modal for Fiqh Insights */}
+      {shareData && (
+        <SocialShareModal
+          isOpen={isShareModalOpen}
+          onClose={() => {
+            setIsShareModalOpen(false);
+            setShareData(null);
+          }}
+          title={shareData.title}
+          arabicText={shareData.arabic}
+          urduText={shareData.urdu}
+          scholarlyNotes={shareData.notes}
+          reference="درسی تشریح و تقابلی فقہی مذاہب (احناف، شوافع، مالکیہ، حنابلہ)"
+          pageUrl={typeof window !== 'undefined' ? window.location.href : undefined}
+        />
+      )}
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { GitFork, ChevronDown, ChevronUp, Check, Copy, ExternalLink, BookmarkCheck, Layers } from 'lucide-react';
+import { GitFork, ChevronDown, ChevronUp, Check, Copy, ExternalLink, BookmarkCheck, Layers, Share2 } from 'lucide-react';
 import { TakhreejData } from '@/services/takhreejService';
+import { SocialShareModal } from './SocialShareModal';
 import Link from 'next/link';
 
 interface AdvancedTakhreejBoxProps {
@@ -16,6 +17,7 @@ export const AdvancedTakhreejBox: React.FC<AdvancedTakhreejBoxProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(defaultExpanded);
   const [copied, setCopied] = useState<boolean>(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
   const [activeFilter, setActiveFilter] = useState<string>('all');
 
   if (!data) return null;
@@ -36,6 +38,7 @@ export const AdvancedTakhreejBox: React.FC<AdvancedTakhreejBoxProps> = ({
         text += `- حدیث نمبر ${rep.hadithNumber}: ${rep.chapterTitleUrdu}\n`;
       });
     }
+    text += `\n🌐 تحریکِ ایمان اسلامی پورٹل • https://tehreek-e-iman.pages.dev`;
 
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(text);
@@ -75,18 +78,18 @@ export const AdvancedTakhreejBox: React.FC<AdvancedTakhreejBoxProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {/* Copy Full Takhrij */}
           <button
             type="button"
             onClick={handleCopyAll}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white hover:bg-indigo-50 border border-indigo-200 text-indigo-900 text-xs font-bold font-nastaliq shadow-2xs transition-all cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white dark:bg-slate-800 hover:bg-indigo-50 border border-indigo-200 text-indigo-900 dark:text-indigo-300 text-xs font-bold font-nastaliq shadow-2xs transition-all cursor-pointer"
             title="مکمل تخریج نقل کریں"
           >
             {copied ? (
               <>
                 <Check className="w-3.5 h-3.5 text-emerald-600" />
-                <span className="text-emerald-700">کاپی ہو گیا</span>
+                <span className="text-emerald-700 font-bold">کاپی ہو گیا!</span>
               </>
             ) : (
               <>
@@ -96,11 +99,22 @@ export const AdvancedTakhreejBox: React.FC<AdvancedTakhreejBoxProps> = ({
             )}
           </button>
 
+          {/* Share Takhrij Button */}
+          <button
+            type="button"
+            onClick={() => setIsShareModalOpen(true)}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-bold font-nastaliq shadow-2xs transition-all cursor-pointer"
+            title="تخریج و شواہد کو واٹس ایپ یا ٹیلی گرام پر شیئر کریں"
+          >
+            <Share2 className="w-3.5 h-3.5 text-amber-300" />
+            <span>شیئر کریں</span>
+          </button>
+
           {/* Expand/Collapse */}
           <button
             type="button"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white hover:bg-indigo-50 border border-indigo-300 text-indigo-950 text-xs font-bold font-nastaliq shadow-2xs transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white dark:bg-slate-800 hover:bg-indigo-50 border border-indigo-300 text-indigo-950 dark:text-indigo-200 text-xs font-bold font-nastaliq shadow-2xs transition-all cursor-pointer"
           >
             <span>{isExpanded ? 'تخریج سمیٹیں' : 'تخریج دیکھیں'}</span>
             {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -251,6 +265,17 @@ export const AdvancedTakhreejBox: React.FC<AdvancedTakhreejBoxProps> = ({
 
         </div>
       )}
+
+      {/* Social Share Modal for Takhreej & Cross-References */}
+      <SocialShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        title={`تخریج و حوالہ جات — صحیح بخاری حدیث نمبر ${data.bukhariHadithNumber}`}
+        urduText={`خلاصۂ تخریج: ${data.takhreejSummary}\n\nمدارِ اسناد: ${data.chainPivotUrdu || ''}\n\nشواہد: ${data.primaryReferences.map(r => `${r.bookNameUrdu} (حدیث ${r.hadithNumber})`).join('، ')}`}
+        scholarlyNotes={`کتبِ ستہ و مسند احمد کی تقابلی تخریج`}
+        reference={`صحیح بخاری • حدیث شریف نمبر ${data.bukhariHadithNumber}`}
+        pageUrl={typeof window !== 'undefined' ? window.location.href : undefined}
+      />
     </div>
   );
 };

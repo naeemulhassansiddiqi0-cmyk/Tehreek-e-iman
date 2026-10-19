@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Sparkles, ChevronDown, ChevronUp, Check, Copy, HeartHandshake, Compass } from 'lucide-react';
+import { Sparkles, ChevronDown, ChevronUp, Check, Copy, HeartHandshake, Compass, Share2 } from 'lucide-react';
+import { SocialShareModal } from './SocialShareModal';
 
 interface DailyLifeTakeawayBoxProps {
   lessonPoints?: string[];
@@ -18,6 +19,7 @@ export const DailyLifeTakeawayBox: React.FC<DailyLifeTakeawayBoxProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(defaultExpanded);
   const [copied, setCopied] = useState<boolean>(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
 
   // Fallback defaults if not provided
   const points = lessonPoints && lessonPoints.length > 0 ? lessonPoints : [
@@ -31,7 +33,7 @@ export const DailyLifeTakeawayBox: React.FC<DailyLifeTakeawayBoxProps> = ({
   const handleCopy = () => {
     const textToCopy = `【روزمرہ زندگی کا سبق (عملی تربیت) — حدیث نمبر ${hadithNumber || ''}】\n` +
       points.map((p, i) => `${i + 1}. ${p}`).join('\n') +
-      `\n🌱 روزمرہ عملی نسخہ: ${practicalHabit}`;
+      `\n🌱 روزمرہ عملی نسخہ: ${practicalHabit}\n\n🌐 تحریکِ ایمان اسلامی پورٹل • https://tehreek-e-iman.pages.dev`;
 
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(textToCopy);
@@ -67,18 +69,18 @@ export const DailyLifeTakeawayBox: React.FC<DailyLifeTakeawayBoxProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {/* Copy Button */}
           <button
             type="button"
             onClick={handleCopy}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white hover:bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold font-nastaliq shadow-2xs transition-all cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white dark:bg-slate-800 hover:bg-amber-50 border border-amber-200 text-amber-900 dark:text-amber-300 text-xs font-bold font-nastaliq shadow-2xs transition-all cursor-pointer"
             title="سبق نقل کریں"
           >
             {copied ? (
               <>
                 <Check className="w-3.5 h-3.5 text-emerald-600" />
-                <span className="text-emerald-700">کاپی ہو گیا</span>
+                <span className="text-emerald-700 font-bold">کاپی ہو گیا!</span>
               </>
             ) : (
               <>
@@ -88,11 +90,22 @@ export const DailyLifeTakeawayBox: React.FC<DailyLifeTakeawayBoxProps> = ({
             )}
           </button>
 
+          {/* Social Share Button */}
+          <button
+            type="button"
+            onClick={() => setIsShareModalOpen(true)}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold font-nastaliq shadow-2xs transition-all cursor-pointer"
+            title="یہ عملی سبق واٹس ایپ یا ٹیلی گرام پر شیئر کریں"
+          >
+            <Share2 className="w-3.5 h-3.5 text-amber-200" />
+            <span>شیئر کریں</span>
+          </button>
+
           {/* Collapse Toggle */}
           <button
             type="button"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white hover:bg-amber-50 border border-amber-300 text-amber-950 text-xs font-bold font-nastaliq shadow-2xs transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white dark:bg-slate-800 hover:bg-amber-50 border border-amber-300 text-amber-950 dark:text-amber-200 text-xs font-bold font-nastaliq shadow-2xs transition-all cursor-pointer"
           >
             <span>{isExpanded ? 'سبق سمیٹیں' : 'سبق پڑھیں'}</span>
             {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -140,6 +153,17 @@ export const DailyLifeTakeawayBox: React.FC<DailyLifeTakeawayBoxProps> = ({
           </div>
         </div>
       )}
+
+      {/* Social Share Modal for Daily Life Takeaway */}
+      <SocialShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        title={`روزمرہ زندگی کا سبق (عملی تربیت) — حدیث نمبر ${hadithNumber || ''}`}
+        urduText={points.map((p, i) => `${i + 1}. ${p}`).join('\n\n')}
+        scholarlyNotes={`🌱 روزمرہ عملی نسخہ:\n${practicalHabit}`}
+        reference={`تحریکِ ایمان • اخلاقی و عملی تربیت (حدیث شریف نمبر ${hadithNumber || ''})`}
+        pageUrl={typeof window !== 'undefined' ? window.location.href : undefined}
+      />
     </div>
   );
 };

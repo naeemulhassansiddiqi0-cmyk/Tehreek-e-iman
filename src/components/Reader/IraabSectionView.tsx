@@ -141,6 +141,7 @@ export const IraabSectionView: React.FC<IraabSectionViewProps> = ({
   // Mode switcher: 'both' = Arabic + Urdu, 'urdu' = Urdu Only, 'arabic' = Arabic Only
   const [viewMode, setViewMode] = useState<'both' | 'urdu' | 'arabic'>('both');
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+  const [copiedAll, setCopiedAll] = useState<boolean>(false);
 
   // Normalize lines to array
   const linesArray: string[] = Array.isArray(iraabLines)
@@ -157,6 +158,16 @@ export const IraabSectionView: React.FC<IraabSectionViewProps> = ({
       navigator.clipboard.writeText(textToCopy);
       setCopiedIdx(idx);
       setTimeout(() => setCopiedIdx(null), 2000);
+    }
+  };
+
+  const handleCopyAll = () => {
+    const text = parsedItems.map(p => `[${p.token}]\nعربی ترکیب: ${p.arabic}\nاردو تشریح: ${p.urdu}`).join('\n\n────────────────────\n\n');
+    const fullText = `【حلِ اعراب و نحوی ترکیب】\n\n${text}\n\n🌐 تحریکِ ایمان اسلامی پورٹل • https://tehreek-e-iman.pages.dev`;
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(fullText);
+      setCopiedAll(true);
+      setTimeout(() => setCopiedAll(false), 2200);
     }
   };
 
@@ -187,8 +198,20 @@ export const IraabSectionView: React.FC<IraabSectionViewProps> = ({
           </div>
         </div>
 
-        {/* View Mode Switcher Pills */}
-        <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-indigo-200/80 shadow-2xs text-xs font-nastaliq">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {/* Copy All Iraab Button */}
+          <button
+            type="button"
+            onClick={handleCopyAll}
+            className="flex items-center gap-1 text-xs font-bold font-nastaliq bg-white dark:bg-slate-800 text-stone-700 dark:text-stone-300 hover:text-indigo-900 px-2.5 py-1 rounded-xl border border-indigo-200 dark:border-slate-700 shadow-2xs transition cursor-pointer"
+            title="پورے صفحے کے تمام نحوی و اعرابی نکات نقل کریں"
+          >
+            {copiedAll ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-stone-400" />}
+            <span>{copiedAll ? 'تمام اعراب کاپی ہو گیا!' : 'تمام اعراب نقل کریں'}</span>
+          </button>
+
+          {/* View Mode Switcher Pills */}
+          <div className="flex items-center gap-1 bg-white dark:bg-slate-800 p-1 rounded-xl border border-indigo-200/80 dark:border-slate-700 shadow-2xs text-xs font-nastaliq">
           <button
             type="button"
             onClick={() => setViewMode('both')}
@@ -230,6 +253,7 @@ export const IraabSectionView: React.FC<IraabSectionViewProps> = ({
           </button>
         </div>
       </div>
+    </div>
 
       {/* 2. List of Grammatical Points */}
       <div className="space-y-3 pt-1">
@@ -267,12 +291,12 @@ export const IraabSectionView: React.FC<IraabSectionViewProps> = ({
                 {copiedIdx === idx ? (
                   <>
                     <Check className="w-3 h-3 text-emerald-600" />
-                    <span className="text-emerald-700 font-bold">کاپی ہو گیا</span>
+                    <span className="text-emerald-700 font-bold">کاپی ہو گیا!</span>
                   </>
                 ) : (
                   <>
                     <Copy className="w-3 h-3 text-stone-400 group-hover:text-indigo-600" />
-                    <span>کاپی</span>
+                    <span>کاپی کریں</span>
                   </>
                 )}
               </button>
