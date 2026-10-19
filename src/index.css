@@ -1,5 +1,5 @@
 @import url('https://fonts.cdnfonts.com/css/jameel-noori-nastaleeq');
-@import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Scheherazade+New:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;500;600;700&family=Amiri+Quran&family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Scheherazade+New:wght@400;700&display=swap');
 @import "tailwindcss";
 
 @font-face {
@@ -68,23 +68,39 @@ html, body {
 }
 
 /* ==========================================================================
-   URGENT GLOBAL OVERRIDE: FORCE SOLID HIGH-CONTRAST TEXT ACROSS ALL READERS
+   FINAL ABSOLUTE FIX: MAXIMUM TEXT CONTRAST & SOLID OPAQUE CONTAINERS
    ========================================================================== */
 
-/* ── 1. LIGHT MODE: Solid High-Contrast Dark (#0f172a) ── */
+/* ── FONT RENDERING & WEIGHT ENFORCEMENT (User Requirement 2) ── */
+.urdu-text,
+.urdu,
+[lang="ur"],
+.font-nastaliq,
+.font-gulzar,
+.book-content .urdu-text,
+.book-content [lang="ur"],
+.book-content .font-nastaliq {
+  font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', 'Urdu Nastaleeq', 'Nafees', serif !important;
+  font-weight: 700 !important;
+  text-rendering: optimizeLegibility !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+}
+
+/* ── 1. LIGHT MODE: Solid #111827 Dark Text & Opaque Containers ── */
 html:not(.dark),
 html.light-mode {
   color-scheme: light;
-  color: #0f172a;
+  color: #111827;
 }
 
 html:not(.dark) body,
 html.light-mode body {
   background-color: #ffffff !important;
-  color: #0f172a !important;
+  color: #111827 !important;
 }
 
-/* Force all paragraphs, translation text, Nastaliq, and reading body text to solid #0f172a */
+/* Force all body text, Urdu translations, and scholarly notes to solid, razor-sharp #111827 */
 html:not(.dark) p,
 html:not(.dark) .urdu-text,
 html:not(.dark) .urdu,
@@ -97,33 +113,9 @@ html:not(.dark) [dir="rtl"] p,
 html:not(.dark) [data-reader-card] p,
 html:not(.dark) .darsi-box p,
 html:not(.dark) .analysis-box p,
-html:not(.dark) .bg-white p,
-html:not(.dark) .bg-stone-50 p,
-html:not(.dark) .bg-gray-50 p,
-html:not(.dark) .bg-emerald-50 p,
-html:not(.dark) .bg-emerald-50\/20 p,
-html:not(.dark) .bg-emerald-50\/25 p,
-html:not(.dark) .bg-emerald-50\/30 p,
-html:not(.dark) .bg-emerald-50\/40 p,
-html:not(.dark) .bg-emerald-50\/50 p,
-html:not(.dark) .bg-emerald-50\/60 p,
-html:not(.dark) .bg-emerald-50\/70 p,
-html:not(.dark) .bg-emerald-50\/80 p,
-html:not(.dark) .bg-amber-50 p,
-html:not(.dark) .bg-amber-50\/20 p,
-html:not(.dark) .bg-amber-50\/30 p,
-html:not(.dark) .bg-amber-50\/40 p,
-html:not(.dark) .bg-amber-50\/50 p,
-html:not(.dark) .bg-amber-50\/60 p,
-html:not(.dark) .bg-amber-50\/70 p,
-html:not(.dark) .bg-indigo-50 p,
-html:not(.dark) .bg-indigo-50\/20 p,
-html:not(.dark) .bg-indigo-50\/30 p,
-html:not(.dark) .bg-indigo-50\/40 p,
-html:not(.dark) .bg-indigo-50\/50 p,
-html:not(.dark) .bg-teal-50 p,
-html:not(.dark) [class*="bg-"] p,
-html:not(.dark) [class*="border-"] p,
+html:not(.dark) .translation-box p,
+html:not(.dark) .glass-card p,
+html:not(.dark) li,
 html.light-mode p,
 html.light-mode .urdu-text,
 html.light-mode .urdu,
@@ -136,40 +128,17 @@ html.light-mode [dir="rtl"] p,
 html.light-mode [data-reader-card] p,
 html.light-mode .darsi-box p,
 html.light-mode .analysis-box p,
-html.light-mode .bg-white p,
-html.light-mode .bg-stone-50 p,
-html.light-mode .bg-gray-50 p,
-html.light-mode .bg-emerald-50 p,
-html.light-mode .bg-emerald-50\/20 p,
-html.light-mode .bg-emerald-50\/25 p,
-html.light-mode .bg-emerald-50\/30 p,
-html.light-mode .bg-emerald-50\/40 p,
-html.light-mode .bg-emerald-50\/50 p,
-html.light-mode .bg-emerald-50\/60 p,
-html.light-mode .bg-emerald-50\/70 p,
-html.light-mode .bg-emerald-50\/80 p,
-html.light-mode .bg-amber-50 p,
-html.light-mode .bg-amber-50\/20 p,
-html.light-mode .bg-amber-50\/30 p,
-html.light-mode .bg-amber-50\/40 p,
-html.light-mode .bg-amber-50\/50 p,
-html.light-mode .bg-amber-50\/60 p,
-html.light-mode .bg-amber-50\/70 p,
-html.light-mode .bg-indigo-50 p,
-html.light-mode .bg-indigo-50\/20 p,
-html.light-mode .bg-indigo-50\/30 p,
-html.light-mode .bg-indigo-50\/40 p,
-html.light-mode .bg-indigo-50\/50 p,
-html.light-mode .bg-teal-50 p,
-html.light-mode [class*="bg-"] p,
-html.light-mode [class*="border-"] p {
-  color: #0f172a !important;
+html.light-mode .translation-box p,
+html.light-mode .glass-card p,
+html.light-mode li {
+  color: #111827 !important;
   opacity: 1 !important;
-  -webkit-text-fill-color: #0f172a !important;
+  -webkit-text-fill-color: #111827 !important;
+  font-weight: 600 !important;
   -webkit-font-smoothing: antialiased !important;
 }
 
-/* Force all Arabic Matn, Naskh & Sanad in Light Mode to razor-sharp #0f172a */
+/* Force classical Arabic Matn, Naskh & Sanad in Light Mode to razor-sharp #0f172a */
 html:not(.dark) .arabic-naskh,
 html:not(.dark) .arabic-text,
 html:not(.dark) .font-arabic,
@@ -195,23 +164,157 @@ html.light-mode .arabic-sanad {
   color: #0f172a !important;
   opacity: 1 !important;
   -webkit-text-fill-color: #0f172a !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
   -webkit-font-smoothing: antialiased !important;
 }
 
-/* Ensure Urdu Nastaliq has proper font-weight in Light Mode */
-html:not(.dark) .urdu-text,
-html:not(.dark) .urdu,
-html:not(.dark) [lang="ur"],
-html:not(.dark) .font-nastaliq,
-html.light-mode .urdu-text,
-html.light-mode .urdu,
-html.light-mode [lang="ur"],
-html.light-mode .font-nastaliq {
-  font-weight: 600 !important;
+/* ── SOLID, FULLY OPAQUE CONTAINERS IN LIGHT MODE (ZERO BLUR OR TRANSLUCENCY) ── */
+html:not(.dark) .glass-card,
+html:not(.dark) [class*="backdrop-blur"],
+html:not(.dark) [data-reader-card],
+html:not(.dark) .bg-white,
+html:not(.dark) .bg-white\/95,
+html:not(.dark) .bg-white\/90,
+html:not(.dark) .bg-white\/80,
+html:not(.dark) .bg-white\/70,
+html:not(.dark) .bg-white\/60,
+html:not(.dark) .bg-white\/50,
+html:not(.dark) .bg-stone-50,
+html:not(.dark) .bg-stone-50\/80,
+html:not(.dark) .bg-stone-50\/70,
+html:not(.dark) .bg-stone-100,
+html:not(.dark) .bg-gray-50,
+html:not(.dark) .bg-gray-100,
+html.light-mode .glass-card,
+html.light-mode [class*="backdrop-blur"],
+html.light-mode [data-reader-card],
+html.light-mode .bg-white,
+html.light-mode .bg-white\/95,
+html.light-mode .bg-white\/90,
+html.light-mode .bg-white\/80,
+html.light-mode .bg-white\/70,
+html.light-mode .bg-white\/60,
+html.light-mode .bg-white\/50,
+html.light-mode .bg-stone-50,
+html.light-mode .bg-stone-50\/80,
+html.light-mode .bg-stone-50\/70,
+html.light-mode .bg-stone-100,
+html.light-mode .bg-gray-50,
+html.light-mode .bg-gray-100 {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 1 !important;
 }
 
-/* Strip any faded/dim grey classes across all readers in Light Mode */
+/* Cream / Amber cards: Solid fully opaque light cream #fefce8 */
+html:not(.dark) .bg-amber-50,
+html:not(.dark) .bg-amber-50\/90,
+html:not(.dark) .bg-amber-50\/80,
+html:not(.dark) .bg-amber-50\/70,
+html:not(.dark) .bg-amber-50\/60,
+html:not(.dark) .bg-amber-50\/50,
+html:not(.dark) .bg-amber-50\/40,
+html:not(.dark) .bg-amber-50\/30,
+html:not(.dark) .bg-amber-50\/20,
+html:not(.dark) .bg-amber-100,
+html.light-mode .bg-amber-50,
+html.light-mode .bg-amber-50\/90,
+html.light-mode .bg-amber-50\/80,
+html.light-mode .bg-amber-50\/70,
+html.light-mode .bg-amber-50\/60,
+html.light-mode .bg-amber-50\/50,
+html.light-mode .bg-amber-50\/40,
+html.light-mode .bg-amber-50\/30,
+html.light-mode .bg-amber-50\/20,
+html.light-mode .bg-amber-100 {
+  background-color: #fefce8 !important;
+  background: #fefce8 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 1 !important;
+}
+
+/* Mint / Emerald cards: Solid fully opaque #f0fdf4 */
+html:not(.dark) .bg-emerald-50,
+html:not(.dark) .bg-emerald-50\/90,
+html:not(.dark) .bg-emerald-50\/80,
+html:not(.dark) .bg-emerald-50\/70,
+html:not(.dark) .bg-emerald-50\/60,
+html:not(.dark) .bg-emerald-50\/50,
+html:not(.dark) .bg-emerald-50\/40,
+html:not(.dark) .bg-emerald-50\/30,
+html:not(.dark) .bg-emerald-50\/25,
+html:not(.dark) .bg-emerald-50\/20,
+html:not(.dark) .bg-emerald-100,
+html.light-mode .bg-emerald-50,
+html.light-mode .bg-emerald-50\/90,
+html.light-mode .bg-emerald-50\/80,
+html.light-mode .bg-emerald-50\/70,
+html.light-mode .bg-emerald-50\/60,
+html.light-mode .bg-emerald-50\/50,
+html.light-mode .bg-emerald-50\/40,
+html.light-mode .bg-emerald-50\/30,
+html.light-mode .bg-emerald-50\/25,
+html.light-mode .bg-emerald-50\/20,
+html.light-mode .bg-emerald-100 {
+  background-color: #f0fdf4 !important;
+  background: #f0fdf4 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 1 !important;
+}
+
+/* Lavender / Indigo cards: Solid fully opaque #f5f3ff */
+html:not(.dark) .bg-indigo-50,
+html:not(.dark) .bg-indigo-50\/90,
+html:not(.dark) .bg-indigo-50\/80,
+html:not(.dark) .bg-indigo-50\/70,
+html:not(.dark) .bg-indigo-50\/60,
+html:not(.dark) .bg-indigo-50\/50,
+html:not(.dark) .bg-indigo-50\/40,
+html:not(.dark) .bg-indigo-50\/30,
+html:not(.dark) .bg-indigo-50\/20,
+html:not(.dark) .bg-indigo-100,
+html.light-mode .bg-indigo-50,
+html.light-mode .bg-indigo-50\/90,
+html.light-mode .bg-indigo-50\/80,
+html.light-mode .bg-indigo-50\/70,
+html.light-mode .bg-indigo-50\/60,
+html.light-mode .bg-indigo-50\/50,
+html.light-mode .bg-indigo-50\/40,
+html.light-mode .bg-indigo-50\/30,
+html.light-mode .bg-indigo-50\/20,
+html.light-mode .bg-indigo-100 {
+  background-color: #f5f3ff !important;
+  background: #f5f3ff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 1 !important;
+}
+
+/* Teal cards: Solid fully opaque #f0fdfa */
+html:not(.dark) .bg-teal-50,
+html:not(.dark) .bg-teal-50\/90,
+html:not(.dark) .bg-teal-50\/80,
+html:not(.dark) .bg-teal-50\/70,
+html:not(.dark) .bg-teal-50\/60,
+html:not(.dark) .bg-teal-100,
+html.light-mode .bg-teal-50,
+html.light-mode .bg-teal-50\/90,
+html.light-mode .bg-teal-50\/80,
+html.light-mode .bg-teal-50\/70,
+html.light-mode .bg-teal-50\/60,
+html.light-mode .bg-teal-100 {
+  background-color: #f0fdfa !important;
+  background: #f0fdfa !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 1 !important;
+}
+
+/* Eradicate any faint or low-contrast text classes in Light Mode */
 html:not(.dark) .text-slate-400,
 html:not(.dark) .text-slate-500,
 html:not(.dark) .text-slate-600,
@@ -262,7 +365,7 @@ html.light-mode .text-neutral-500,
 html.light-mode .text-neutral-600,
 html.light-mode .text-neutral-700,
 html.light-mode .text-neutral-800 {
-  color: #0f172a !important;
+  color: #111827 !important;
   opacity: 1 !important;
 }
 
@@ -295,7 +398,9 @@ html:not(.dark) [role="dialog"],
 html.light-mode .modal-content,
 html.light-mode [role="dialog"] {
   background-color: #ffffff !important;
-  color: #0f172a !important;
+  color: #111827 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 html:not(.dark) select,
@@ -304,12 +409,12 @@ html:not(.dark) textarea,
 html.light-mode select,
 html.light-mode input,
 html.light-mode textarea {
-  color: #0f172a !important;
+  color: #111827 !important;
   background-color: #ffffff !important;
   border-color: #cbd5e1 !important;
 }
 
-/* ── 2. DARK MODE: Solid High-Contrast Light (#f1f5f9) & Gold for Arabic (#fef3c7) ── */
+/* ── 2. DARK MODE: Solid Fully Opaque Deep Slate (#0f172a / #1e293b) & #f1f5f9 Text ── */
 html.dark {
   color-scheme: dark;
 }
@@ -317,6 +422,29 @@ html.dark {
 html.dark body {
   background-color: #0f172a !important;
   color: #f1f5f9 !important;
+}
+
+/* Force solid opaque backgrounds in Dark Mode (ZERO washed-out translucency) */
+html.dark .glass-card,
+html.dark [class*="backdrop-blur"],
+html.dark [data-reader-card],
+html.dark .bg-white,
+html.dark .bg-stone-50,
+html.dark .bg-gray-50,
+html.dark .bg-amber-50,
+html.dark .bg-emerald-50,
+html.dark .bg-indigo-50,
+html.dark .bg-teal-50,
+html.dark [class*="bg-white\/"],
+html.dark [class*="bg-amber-50\/"],
+html.dark [class*="bg-emerald-50\/"],
+html.dark [class*="bg-indigo-50\/"],
+html.dark [class*="bg-teal-50\/"] {
+  background-color: #0f172a !important;
+  background: #0f172a !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 1 !important;
 }
 
 /* Force all paragraphs, translation text, Nastaliq, and reading body text to solid #f1f5f9 in Dark Mode */
@@ -332,12 +460,7 @@ html.dark [dir="rtl"] p,
 html.dark [data-reader-card] p,
 html.dark .darsi-box p,
 html.dark .analysis-box p,
-html.dark .bg-white p,
-html.dark .bg-stone-50 p,
-html.dark .bg-gray-50 p,
-html.dark .bg-emerald-50 p,
-html.dark .bg-amber-50 p,
-html.dark .bg-indigo-50 p,
+html.dark .glass-card p,
 html.dark .rounded-2xl p,
 html.dark .rounded-3xl p,
 html.dark .rounded-xl p,
@@ -346,6 +469,7 @@ html.dark [class*="border-"] p {
   color: #f1f5f9 !important;
   opacity: 1 !important;
   -webkit-text-fill-color: #f1f5f9 !important;
+  font-weight: 600 !important;
 }
 
 /* Arabic in Dark Mode: Radiant Golden (#fef3c7) */
@@ -363,7 +487,7 @@ html.dark .arabic-sanad {
   color: #fef3c7 !important;
   opacity: 1 !important;
   -webkit-text-fill-color: #fef3c7 !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
 }
 
 html.dark .bg-white {
