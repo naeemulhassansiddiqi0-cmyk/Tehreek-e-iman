@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Clock, GraduationCap, Scale, Heart, Headphones, Mic2, Menu, X, ChevronDown } from 'lucide-react';
+import { BookOpen, Clock, GraduationCap, Scale, Heart, Headphones, Mic2, Menu, X, ChevronDown, Award } from 'lucide-react';
 import { TehreekImanLogo } from './TehreekImanLogo';
 import { AppTab } from '../types';
 import { GlobalSearchInput } from './Search/GlobalSearchInput';
@@ -267,13 +267,27 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span>{t('nav_exams', 'امتحانی مرکز')}</span>
               </button>
 
+              <button
+                type="button"
+                onClick={() => setActiveTab('quiz')}
+                className={`hidden xl:flex items-center gap-1 px-2.5 py-1.5 rounded-xl font-nastaliq font-bold transition-all text-xs cursor-pointer ${
+                  activeTab === 'quiz'
+                    ? 'bg-emerald-800 text-white shadow-xs'
+                    : 'text-stone-700 hover:bg-gray-100'
+                }`}
+                title="تعلیمی کوئز و خود تشخیصی جائزہ"
+              >
+                <Award className="w-3 h-3 text-amber-500" />
+                <span>{t('nav_quiz', 'امتحانی کوئز')}</span>
+              </button>
+
               {/* LG-Only "More" Dropdown to prevent squishing search bar */}
               <div className="xl:hidden relative">
                 <button
                   type="button"
                   onClick={() => setMoreMenuOpen(prev => !prev)}
                   className={`px-2 py-1.5 rounded-xl font-nastaliq font-bold transition-all flex items-center gap-1 text-xs cursor-pointer ${
-                    activeTab === 'islah-aamal' || activeTab === 'prayer-times' || activeTab === 'exams'
+                    activeTab === 'islah-aamal' || activeTab === 'prayer-times' || activeTab === 'exams' || activeTab === 'quiz'
                       ? 'bg-emerald-800 text-white shadow-xs'
                       : 'text-stone-700 hover:bg-gray-100'
                   }`}
@@ -316,6 +330,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                     >
                       <GraduationCap className="w-3.5 h-3.5 text-amber-600" />
                       <span>امتحانی مرکز</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('quiz')}
+                      className={`w-full px-3 py-2 text-right font-nastaliq text-xs flex items-center gap-2 hover:bg-emerald-50 ${
+                        activeTab === 'quiz' ? 'text-emerald-800 font-bold bg-emerald-50' : 'text-stone-700'
+                      }`}
+                    >
+                      <Award className="w-3.5 h-3.5 text-amber-500" />
+                      <span>امتحانی کوئز</span>
                     </button>
                   </div>
                 )}
@@ -474,6 +498,20 @@ export const Navbar: React.FC<NavbarProps> = ({
               >
                 <GraduationCap className="w-3.5 h-3.5 text-amber-600" />
                 <span>{t('nav_exams', 'امتحانی مرکز')}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('quiz');
+                  setMobileMenuOpen(false);
+                }}
+                className={`p-2.5 rounded-xl font-bold transition flex items-center gap-2 ${
+                  activeTab === 'quiz' ? 'bg-emerald-800 text-white shadow-xs' : 'bg-white text-stone-800 hover:bg-emerald-50'
+                }`}
+              >
+                <Award className="w-3.5 h-3.5 text-amber-500" />
+                <span>{t('nav_quiz', 'امتحانی کوئز')}</span>
               </button>
             </div>
           </div>

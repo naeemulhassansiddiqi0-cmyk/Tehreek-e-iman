@@ -21,6 +21,7 @@ import BookDetailPage from './app/books/[slug]/page';
 import SourcesAndLicensesPage from './app/sources-and-licenses/page';
 import { AhkamShariatView } from './components/AhkamShariat/AhkamShariatView';
 import { IslahAamalView } from './components/IslahAamal/IslahAamalView';
+import { QuizCenterView } from './components/Quiz/QuizCenterView';
 import { Headphones, Mic2 } from 'lucide-react';
 import { SearchCategoryFilter, GlobalSearchResult } from './services/globalSearchService';
 import { LanguageProvider, usePortalLanguage } from './context/LanguageContext';
@@ -69,11 +70,26 @@ function AppContent() {
   useEffect(() => {
     const handlePopState = () => {
       setCurrentPath(window.location.pathname);
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const tabParam = params.get('tab') as AppTab | null;
+        if (tabParam && ['dashboard', 'reader', 'ai-tutor', 'exams', 'quiz', 'notes', 'flashcards', 'prayer-times', 'ahkam-shariat', 'islah-aamal'].includes(tabParam)) {
+          setActiveTab(tabParam);
+        }
+      } catch {}
     };
     const handleTehreekNav = (e: any) => {
       if (e?.detail?.url) {
         const p = e.detail.url.split('?')[0];
         setCurrentPath(p);
+        try {
+          const search = e.detail.url.includes('?') ? e.detail.url.split('?')[1] : '';
+          const params = new URLSearchParams(search);
+          const tabParam = params.get('tab') as AppTab | null;
+          if (tabParam && ['dashboard', 'reader', 'ai-tutor', 'exams', 'quiz', 'notes', 'flashcards', 'prayer-times', 'ahkam-shariat', 'islah-aamal'].includes(tabParam)) {
+            setActiveTab(tabParam);
+          }
+        } catch {}
       } else {
         setCurrentPath(window.location.pathname);
       }
@@ -144,7 +160,7 @@ function AppContent() {
       const bookParam = params.get('book');
       const modalParam = params.get('modal');
 
-      if (tabParam && ['dashboard', 'reader', 'ai-tutor', 'exams', 'notes', 'flashcards', 'prayer-times'].includes(tabParam)) {
+      if (tabParam && ['dashboard', 'reader', 'ai-tutor', 'exams', 'quiz', 'notes', 'flashcards', 'prayer-times', 'ahkam-shariat', 'islah-aamal'].includes(tabParam)) {
         setActiveTab(tabParam);
       }
 
@@ -512,6 +528,13 @@ function AppContent() {
 
         {activeTab === 'exams' && (
           <ExamHubView 
+            theme={theme} 
+            onBackToDashboard={() => setActiveTab('dashboard')}
+          />
+        )}
+
+        {activeTab === 'quiz' && (
+          <QuizCenterView 
             theme={theme} 
             onBackToDashboard={() => setActiveTab('dashboard')}
           />

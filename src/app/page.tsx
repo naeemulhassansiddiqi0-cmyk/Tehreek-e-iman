@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { BookOpen, ExternalLink, Sparkles, BookMarked, Search, GraduationCap, Layers } from 'lucide-react';
+import { BookOpen, ExternalLink, Sparkles, BookMarked, Search, GraduationCap, Layers, Award } from 'lucide-react';
 import { publicDomainBooks, modernBooks, BookCategoryTitle } from '../data/publicDomainBooks';
 import { NaatPlayer } from '../components/NaatPlayer';
 import { WIFAQ_DARJAT, getDarjaForBookSlug } from '../data/wifaqCurriculum';
@@ -123,6 +123,21 @@ export default function HomePage() {
               <BookMarked className="w-3.5 h-3.5 text-amber-600" />
               <span>میرے محفوظ شدہ بُک مارکس و تاریخ</span>
             </button>
+
+            {/* Interactive Quiz Center Trigger */}
+            <a
+              href="/?tab=quiz"
+              onClick={(e) => {
+                e.preventDefault();
+                window.history.pushState({}, '', '/?tab=quiz');
+                window.dispatchEvent(new CustomEvent('tehreek:navigate', { detail: { url: '/?tab=quiz' } }));
+              }}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 text-emerald-900 text-xs font-nastaliq font-bold shadow-2xs transition cursor-pointer"
+              title="صحیح البخاری و فقہ کے خود امتحانی کوئز حل کریں"
+            >
+              <Award className="w-3.5 h-3.5 text-amber-600" />
+              <span>امتحانی کوئز سنٹر (MCQs)</span>
+            </a>
           </div>
 
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black font-nastaliq text-emerald-900 leading-relaxed">

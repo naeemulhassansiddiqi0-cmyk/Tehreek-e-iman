@@ -30,7 +30,8 @@ import {
   BookOpenCheck,
   Trash2,
   Volume2,
-  Pause
+  Pause,
+  Award
 } from "lucide-react";
 import { UrduStyler } from "@/components/UrduStyler";
 import { FontSizeControlModal } from "@/components/Reader/FontSizeControlModal";
@@ -61,6 +62,8 @@ import { bukhariChapters } from "@/data/bukhariData";
 import { muslimChapters } from "@/data/muslimData";
 import { abudawoodChapters, tirmidhiChapters, nasaiChapters, ibnmajahChapters } from "@/data/allHadithBooksData";
 import { BookmarksHistoryModal } from "@/components/Reader/BookmarksHistoryModal";
+import { QuizModal } from "@/components/Quiz/QuizModal";
+import { ALL_QUIZZES, QuizModule } from "@/data/quizData";
 import { 
   saveReadingHistory, 
   getReadingHistory, 
@@ -1193,6 +1196,7 @@ export default function BookDetailPage({ slugProp }: { slugProp?: string } = {})
   const [isPageBookmarked, setIsPageBookmarked] = useState<boolean>(false);
   const [isBookmarksModalOpen, setIsBookmarksModalOpen] = useState<boolean>(false);
   const [bookmarkFeedbackToast, setBookmarkFeedbackToast] = useState<string | null>(null);
+  const [isQuizModalOpen, setIsQuizModalOpen] = useState<boolean>(false);
   const [copiedPageRef, setCopiedPageRef] = useState<boolean>(false);
   const [activeTafseer, setActiveTafseer] = useState<TafseerEntry | null>(null);
   const [isTafseerOpen, setIsTafseerOpen] = useState<boolean>(false);
@@ -1898,6 +1902,32 @@ ${urduToCopy}
     const startHadith = currentPage * PER_PAGE + 1;
     return getBukhariTarjamahInfo(bannerAr, bannerUr, startHadith, currentPage);
   }, [isBukhari, bannerAr, bannerUr, currentPage, PER_PAGE]);
+
+  const activeChapterQuiz = useMemo<QuizModule | null>(() => {
+    if (isBukhari) {
+      const p = currentPage + 1;
+      if (p <= 2) {
+        return ALL_QUIZZES.find(q => q.id === 'bukhari-bad-al-wahy') || null;
+      } else if (p <= 10) {
+        return ALL_QUIZZES.find(q => q.id === 'bukhari-kitab-al-iman') || null;
+      } else if (p <= 25) {
+        return ALL_QUIZZES.find(q => q.id === 'bukhari-kitab-al-ilm') || null;
+      } else {
+        return ALL_QUIZZES.find(q => q.id === 'bukhari-bad-al-wahy') || null;
+      }
+    }
+    const slugStr = (slug || '').toLowerCase();
+    if (slugStr.includes('quduri') || slugStr.includes('hidayah') || slugStr.includes('nur') || book?.category === 'Fiqh') {
+      const p = currentPage + 1;
+      return p <= 15 
+        ? (ALL_QUIZZES.find(q => q.id === 'fiqh-taharah-wudu') || null)
+        : (ALL_QUIZZES.find(q => q.id === 'fiqh-ahkam-salah') || null);
+    }
+    if (isHadith) {
+      return ALL_QUIZZES.find(q => q.id === 'mustalah-hadith-fundamentals') || ALL_QUIZZES[0];
+    }
+    return null;
+  }, [isBukhari, isHadith, slug, book, currentPage]);
 
   const currentHadiths = useMemo(() => {
     if (!isHadith) return [];
@@ -2629,6 +2659,19 @@ ${urduToCopy}
             <span className="hidden sm:inline">بُک مارکس و تاریخ</span>
           </button>
 
+          {/* Chapter Quiz Trigger Button */}
+          {activeChapterQuiz && (
+            <button
+              type="button"
+              onClick={() => setIsQuizModalOpen(true)}
+              className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl border border-emerald-400/80 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:border-emerald-700 dark:hover:bg-emerald-900 text-emerald-900 dark:text-emerald-200 transition cursor-pointer text-xs flex items-center gap-1.5 font-nastaliq font-bold shadow-2xs"
+              title="اس باب کا خود امتحانی جائزہ حل کریں"
+            >
+              <Award className="w-3.5 h-3.5 text-amber-500" />
+              <span className="hidden sm:inline">امتحانی کوئز</span>
+            </button>
+          )}
+
           {/* Current Page Badge */}
           <div className="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-emerald-800 text-white rounded-xl text-xs font-bold font-nastaliq shadow-xs flex items-center gap-1.5">
             <BookOpen className="w-3.5 h-3.5 text-amber-300" />
@@ -3315,9 +3358,22 @@ ${urduToCopy}
                         {book?.title_ur || book?.title || 'کتاب شریف'} • صفحہ {(currentPage + 1).toLocaleString('ur-PK')} از {totalPages.toLocaleString('ur-PK')}
                       </span>
                     </div>
-                    <span className="text-[11px] font-nastaliq text-emerald-200 bg-emerald-900/90 px-2.5 py-0.5 rounded-lg border border-emerald-700/60">
-                      احادیث {currentPage * PER_PAGE + 1} تا {Math.min((currentPage + 1) * PER_PAGE, totalHadithsCount)}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {activeChapterQuiz && (
+                        <button
+                          type="button"
+                          onClick={() => setIsQuizModalOpen(true)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 font-nastaliq font-bold text-xs shadow-xs transition hover:scale-105 cursor-pointer"
+                          title="اس باب کا خود امتحانی جائزہ حل کریں"
+                        >
+                          <Award className="w-3.5 h-3.5 text-stone-950" />
+                          <span>اس باب کا خود امتحانی جائزہ (کوئز)</span>
+                        </button>
+                      )}
+                      <span className="text-[11px] font-nastaliq text-emerald-200 bg-emerald-900/90 px-2.5 py-0.5 rounded-lg border border-emerald-700/60">
+                        احادیث {currentPage * PER_PAGE + 1} تا {Math.min((currentPage + 1) * PER_PAGE, totalHadithsCount)}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="space-y-1">
@@ -4681,6 +4737,15 @@ ${urduToCopy}
           }
         }}
       />
+
+      {/* Chapter Quiz Modal (Phase 11) */}
+      {activeChapterQuiz && isQuizModalOpen && (
+        <QuizModal
+          isOpen={isQuizModalOpen}
+          onClose={() => setIsQuizModalOpen(false)}
+          quiz={activeChapterQuiz}
+        />
+      )}
 
       {/* Bookmark Toast Feedback */}
       {bookmarkFeedbackToast && (

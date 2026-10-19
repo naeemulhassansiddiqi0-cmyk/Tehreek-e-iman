@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { BookOpen, ExternalLink, Sparkles, BookMarked } from 'lucide-react';
+import { BookOpen, ExternalLink, Sparkles, BookMarked, Award } from 'lucide-react';
 import { publicDomainBooks, modernBooks, PublicDomainBook, BookCategoryTitle } from '../data/publicDomainBooks';
 import { AppTab } from '../types';
 import { NaatPlayer } from './NaatPlayer';
@@ -104,7 +104,7 @@ const DARJA_OPTIONS: DarjaOption[] = [
 export const Dashboard: React.FC<DashboardProps> = ({
   onSelectPublicBook,
   onSelectBook,
-  setActiveTab: _setActiveTab,
+  setActiveTab,
   searchQuery = '',
   onOpenNaatPlayer
 }) => {
@@ -192,11 +192,23 @@ export const Dashboard: React.FC<DashboardProps> = ({
         {/* Top: 6 Category Chips Filter */}
         <div className="flex flex-col items-center gap-2 text-center">
           <div
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-800 text-xs font-semibold"
+            className="flex flex-wrap items-center justify-center gap-2"
             style={{ marginBottom: '0.75rem', position: 'relative', zIndex: 2 }}
           >
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-            <span>مکتبہ شاملہ طرز — کتبِ علومِ اسلامیہ</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-800 text-xs font-semibold">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <span>مکتبہ شاملہ طرز — کتبِ علومِ اسلامیہ</span>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('quiz')}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 text-xs font-nastaliq font-bold shadow-2xs transition cursor-pointer"
+              title="امتحانی کوئز اور خود تشخیصی مرکز کھولیں"
+            >
+              <Award className="w-3.5 h-3.5 text-amber-600" />
+              <span>امتحانی کوئز سنٹر (MCQs)</span>
+            </button>
           </div>
 
           <h1
