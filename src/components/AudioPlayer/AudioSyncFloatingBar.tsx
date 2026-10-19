@@ -35,6 +35,7 @@ export const AudioSyncFloatingBar: React.FC = () => {
     setAutoScroll,
     playNext,
     playPrevious,
+    playlist,
   } = useAudioSync();
 
   const [isReciterMenuOpen, setIsReciterMenuOpen] = useState(false);
@@ -52,6 +53,7 @@ export const AudioSyncFloatingBar: React.FC = () => {
 
   const currentReciterMeta = QURAN_AYAH_RECITERS.find(r => r.id === selectedReciter) || QURAN_AYAH_RECITERS[0];
   const totalSentences = activeItem.sentences.length;
+  const currentQueueIndex = playlist.length > 0 ? playlist.findIndex(it => it.id === activeItem.id) : -1;
 
   return (
     <div 
@@ -90,6 +92,11 @@ export const AudioSyncFloatingBar: React.FC = () => {
                 {activeItem.type === 'hadith' && (
                   <span className="text-[10px] bg-teal-950 text-teal-300 border border-teal-700/60 px-1.5 py-0.2 rounded-md font-nastaliq font-bold shrink-0">
                     حدیث شریف
+                  </span>
+                )}
+                {playlist.length > 1 && currentQueueIndex !== -1 && (
+                  <span className="text-[10px] bg-amber-400/20 text-amber-300 border border-amber-400/50 px-1.5 py-0.2 rounded-md font-nastaliq font-bold shrink-0">
+                    ٹریک {currentQueueIndex + 1} از {playlist.length}
                   </span>
                 )}
               </div>

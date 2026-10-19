@@ -91,6 +91,55 @@ export function buildAudioSentences(arabicText: string, urduText?: string): Audi
   });
 }
 
+export function buildSurahAyahPlaylist(opts: {
+  surahNumber: number;
+  ayahCount: number;
+  surahNameUrdu?: string;
+  surahNameArabic?: string;
+  reciterId?: string;
+  segments?: Array<{ arabicText: string; urduTranslation?: string }>;
+}): AudioSyncItem[] {
+  const list: AudioSyncItem[] = [];
+  const reciter = opts.reciterId || 'Alafasy_128kbps';
+  const total = opts.ayahCount || 7;
+
+  for (let a = 1; a <= total; a++) {
+    // Attempt to match verse text from segments if available
+    let arText = '';
+    let urText = '';
+    if (opts.segments && opts.segments.length > 0) {
+      for (const seg of opts.segments) {
+        if (seg.arabicText.includes(String(a)) || seg.arabicText.includes(`(${a})`) || seg.arabicText.includes(`﴿${a}﴾`)) {
+          arText = seg.arabicText;
+          urText = seg.urduTranslation || '';
+          break;
+        }
+      }
+      if (!arText && opts.segments[a - 1]) {
+        arText = opts.segments[a - 1].arabicText;
+        urText = opts.segments[a - 1].urduTranslation || '';
+      }
+    }
+
+    list.push({
+      id: `quran-${opts.surahNumber}-${a}`,
+      type: 'quran',
+      title: `${opts.surahNameArabic || `سورة ${opts.surahNumber}`} — آیت ${a}`,
+      subtitle: `${opts.surahNameUrdu || 'القرآن الکریم'} • آیت ${a} از ${total}`,
+      bookTitle: opts.surahNameUrdu || 'القرآن الکریم',
+      surahNumber: opts.surahNumber,
+      itemNumber: a,
+      totalItems: total,
+      arabicText: arText || `آیت کریمہ نمبر ${a}`,
+      urduText: urText,
+      audioUrl: buildQuranAyahAudioUrl(reciter, opts.surahNumber, a),
+      sentences: buildAudioSentences(arText || `آیت کریمہ نمبر ${a}`, urText)
+    });
+  }
+
+  return list;
+}
+
 export type AudioMode = 'arabic' | 'urdu' | 'both';
 
 interface AudioSyncContextType {
@@ -359,30 +408,67 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const playNext = useCallback(() => {
-    if (!activeItem || playlist.length === 0) return;
-    const curIdx = playlist.findIndex(it => it.id === activeItem.id);
-    if (curIdx !== -1 && curIdx < playlist.length - 1) {
-      playItem(playlist[curIdx + 1]);
-    } else if (activeItem.type === 'quran' && activeItem.surahNumber) {
-      // Auto-advance to next Ayah even if not in explicit playlist
+    if (!activeItem) return;
+
+    // 1. If we have a playlist with items, find current position and advance
+    if (playlist.length > 0) {
+      const curIdx = playlist.findIndex(it => it.id === activeItem.id);
+      if (curIdx !== -1 && curIdx < playlist.length - 1) {
+        playItem(playlist[curIdx + 1]);
+        return;
+      }
+    }
+
+    // 2. Fallback for Quran Ayahs: Auto-advance to next Ayah in Surah
+    if (activeItem.type === 'quran' && activeItem.surahNumber) {
+      const totalAyahs = activeItem.totalItems || 999;
       const nextAyah = activeItem.itemNumber + 1;
-      const nextItem: AudioSyncItem = {
-        ...activeItem,
-        id: `quran-${activeItem.surahNumber}-${nextAyah}`,
-        itemNumber: nextAyah,
-        title: `${activeItem.bookTitle || 'القرآن الکریم'} — آیت ${nextAyah}`,
-        audioUrl: buildQuranAyahAudioUrl(selectedReciter, activeItem.surahNumber, nextAyah),
-      };
-      playItem(nextItem);
+      if (nextAyah <= totalAyahs) {
+        const nextItem: AudioSyncItem = {
+          ...activeItem,
+          id: `quran-${activeItem.surahNumber}-${nextAyah}`,
+          itemNumber: nextAyah,
+          title: `${activeItem.bookTitle || 'القرآن الکریم'} — آیت ${nextAyah}`,
+          audioUrl: buildQuranAyahAudioUrl(selectedReciter, activeItem.surahNumber, nextAyah),
+        };
+        playItem(nextItem);
+        return;
+      }
+    }
+
+    // 3. Fallback for Hadith: advance to next hadith if numbered
+    if (activeItem.type === 'hadith' && activeItem.itemNumber && activeItem.bookSlug) {
+      const totalHadiths = activeItem.totalItems || 9999;
+      const nextNum = activeItem.itemNumber + 1;
+      if (nextNum <= totalHadiths) {
+        const nextItem: AudioSyncItem = {
+          ...activeItem,
+          id: `hadith-${activeItem.bookSlug}-${nextNum}`,
+          itemNumber: nextNum,
+          title: `${activeItem.bookTitle || 'حدیث شریف'} — حدیث ${nextNum}`,
+          subtitle: `حدیث شریف نمبر: ${nextNum}${activeItem.totalItems ? ` از ${activeItem.totalItems}` : ''}`,
+          audioUrl: undefined,
+        };
+        playItem(nextItem);
+        return;
+      }
     }
   }, [activeItem, playlist, selectedReciter, playItem]);
 
   const playPrevious = useCallback(() => {
-    if (!activeItem || playlist.length === 0) return;
-    const curIdx = playlist.findIndex(it => it.id === activeItem.id);
-    if (curIdx > 0) {
-      playItem(playlist[curIdx - 1]);
-    } else if (activeItem.type === 'quran' && activeItem.surahNumber && activeItem.itemNumber > 1) {
+    if (!activeItem) return;
+
+    // 1. If we have a playlist, move backwards
+    if (playlist.length > 0) {
+      const curIdx = playlist.findIndex(it => it.id === activeItem.id);
+      if (curIdx > 0) {
+        playItem(playlist[curIdx - 1]);
+        return;
+      }
+    }
+
+    // 2. Quran Fallback
+    if (activeItem.type === 'quran' && activeItem.surahNumber && activeItem.itemNumber > 1) {
       const prevAyah = activeItem.itemNumber - 1;
       const prevItem: AudioSyncItem = {
         ...activeItem,
@@ -392,6 +478,22 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         audioUrl: buildQuranAyahAudioUrl(selectedReciter, activeItem.surahNumber, prevAyah),
       };
       playItem(prevItem);
+      return;
+    }
+
+    // 3. Hadith Fallback
+    if (activeItem.type === 'hadith' && activeItem.itemNumber > 1 && activeItem.bookSlug) {
+      const prevNum = activeItem.itemNumber - 1;
+      const prevItem: AudioSyncItem = {
+        ...activeItem,
+        id: `hadith-${activeItem.bookSlug}-${prevNum}`,
+        itemNumber: prevNum,
+        title: `${activeItem.bookTitle || 'حدیث شریف'} — حدیث ${prevNum}`,
+        subtitle: `حدیث شریف نمبر: ${prevNum}${activeItem.totalItems ? ` از ${activeItem.totalItems}` : ''}`,
+        audioUrl: undefined,
+      };
+      playItem(prevItem);
+      return;
     }
   }, [activeItem, playlist, selectedReciter, playItem]);
 
@@ -464,9 +566,21 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const setReciter = (reciterId: string) => {
     setSelectedReciter(reciterId);
+    // Update active playlist items with new reciter URLs
+    setPlaylist(prev => prev.map(it => {
+      if (it.type === 'quran' && it.surahNumber) {
+        return {
+          ...it,
+          audioUrl: buildQuranAyahAudioUrl(reciterId, it.surahNumber, it.itemNumber),
+        };
+      }
+      return it;
+    }));
+
     if (activeItem && activeItem.type === 'quran' && activeItem.surahNumber) {
       const wasPlaying = isPlaying;
       const newUrl = buildQuranAyahAudioUrl(reciterId, activeItem.surahNumber, activeItem.itemNumber);
+      setActiveItem(prev => prev ? { ...prev, audioUrl: newUrl } : null);
       if (audioRef.current) {
         audioRef.current.src = newUrl;
         audioRef.current.load();

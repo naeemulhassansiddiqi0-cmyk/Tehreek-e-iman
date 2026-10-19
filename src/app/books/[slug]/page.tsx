@@ -37,7 +37,7 @@ import { FontSizeControlModal } from "@/components/Reader/FontSizeControlModal";
 import { ReaderZoomToolbar } from "@/components/Reader/ReaderZoomToolbar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePortalLanguage } from "@/context/LanguageContext";
-import { useAudioSync, splitTextIntoSentences } from "@/context/AudioSyncContext";
+import { useAudioSync, splitTextIntoSentences, buildSurahAyahPlaylist, AudioSyncItem } from "@/context/AudioSyncContext";
 import { GlobalComments } from "@/components/GlobalComments";
 import { WordLookupModal } from "@/components/Reader/WordLookupModal";
 import { NarratorModal } from "@/components/Reader/NarratorModal";
@@ -145,6 +145,7 @@ interface HadithCardDarsiViewProps {
   lineHeightScale?: number;
   isVerified: boolean;
   globalTashkeel: boolean;
+  pagePlaylist?: AudioSyncItem[];
   renderClickableArabic: (text: string, fullSentence?: string, translation?: string) => React.ReactNode;
   onOpenNarrator: (narrator: NarratorInfo) => void;
   onWordClick: (word: string, sentenceText?: string, translation?: string) => void;
@@ -163,6 +164,7 @@ function HadithCardDarsiView({
   lineHeightScale = 1.0,
   isVerified,
   globalTashkeel,
+  pagePlaylist,
   renderClickableArabic,
   onOpenNarrator,
   onWordClick
@@ -190,6 +192,7 @@ function HadithCardDarsiView({
         hadithNumber: hadithNum,
         arabicText: arabText,
         urduText: hadith.urdu || analysis?.urduTranslation || '',
+        playlist: pagePlaylist,
       });
     }
   };
@@ -3221,36 +3224,64 @@ ${urduToCopy}
                   <BukhariTarajimBox tarjamah={bukhariTarjamah} />
                 )}
 
-                {currentHadiths.map((h, hIdx) => {
-                  if (!h) return null;
-                  const hadithNum = h.hadithnumber || h.number || (currentPage * PER_PAGE + hIdx + 1);
-                  const arabText = h.arab || h.text || '';
-                  const isVerified = Boolean(
-                    userReviewStatus[`${slug}:${hadithNum}`] === 'verified' || 
-                    userReviewStatus[`${hadithFileKey}:${hadithNum}`] === 'verified'
-                  );
-                  return (
-                    <ErrorBoundary key={hadithNum || hIdx} fallbackTitle={`حدیث شریف نمبر ${hadithNum} لوڈ کرنے میں خرابی`}>
-                      <HadithCardDarsiView
-                        hadith={h}
-                        hadithNum={hadithNum}
-                        arabText={arabText}
-                        slug={slug || hadithFileKey || 'hadith'}
-                        bookTitle={book?.title_ur || 'حدیث شریف'}
-                        currentPage={currentPage}
-                        bookFontSize={bookFontSize}
-                        arabicFontSize={arabicFontSize}
-                        urduFontSize={urduFontSize}
-                        lineHeightScale={lineHeightScale}
-                        isVerified={isVerified}
-                        globalTashkeel={globalTashkeel}
-                        renderClickableArabic={renderClickableArabic}
-                        onOpenNarrator={setActiveNarrator}
-                        onWordClick={handleWordClick}
-                      />
-                    </ErrorBoundary>
-                  );
-                })}
+                {(() => {
+                  // Build active page playlist for continuous Hadith recitation
+                  const pageHadithPlaylist: AudioSyncItem[] = currentHadiths.map((h, hIdx) => {
+                    const hNum = h.hadithnumber || h.number || (currentPage * PER_PAGE + hIdx + 1);
+                    const arTxt = h.arab || h.text || '';
+                    const bSlug = slug || hadithFileKey || 'hadith';
+                    const bTitle = book?.title_ur || 'حدیث شریف';
+                    return {
+                      id: `hadith-${bSlug}-${hNum}`,
+                      type: 'hadith',
+                      title: `${bTitle} — حدیث ${hNum}`,
+                      subtitle: `حدیث شریف نمبر: ${hNum} از ${totalHadithsCount}`,
+                      bookTitle: bTitle,
+                      bookSlug: bSlug,
+                      itemNumber: hNum,
+                      totalItems: totalHadithsCount,
+                      arabicText: arTxt,
+                      urduText: h.urdu || undefined,
+                      sentences: splitTextIntoSentences(arTxt, false).map((sent, sIdx, arr) => ({
+                        arabic: sent,
+                        startRatio: sIdx / Math.max(arr.length, 1),
+                        endRatio: (sIdx + 1) / Math.max(arr.length, 1)
+                      }))
+                    };
+                  });
+
+                  return currentHadiths.map((h, hIdx) => {
+                    if (!h) return null;
+                    const hadithNum = h.hadithnumber || h.number || (currentPage * PER_PAGE + hIdx + 1);
+                    const arabText = h.arab || h.text || '';
+                    const isVerified = Boolean(
+                      userReviewStatus[`${slug}:${hadithNum}`] === 'verified' || 
+                      userReviewStatus[`${hadithFileKey}:${hadithNum}`] === 'verified'
+                    );
+                    return (
+                      <ErrorBoundary key={hadithNum || hIdx} fallbackTitle={`حدیث شریف نمبر ${hadithNum} لوڈ کرنے میں خرابی`}>
+                        <HadithCardDarsiView
+                          hadith={h}
+                          hadithNum={hadithNum}
+                          arabText={arabText}
+                          slug={slug || hadithFileKey || 'hadith'}
+                          bookTitle={book?.title_ur || 'حدیث شریف'}
+                          currentPage={currentPage}
+                          bookFontSize={bookFontSize}
+                          arabicFontSize={arabicFontSize}
+                          urduFontSize={urduFontSize}
+                          lineHeightScale={lineHeightScale}
+                          isVerified={isVerified}
+                          globalTashkeel={globalTashkeel}
+                          pagePlaylist={pageHadithPlaylist}
+                          renderClickableArabic={renderClickableArabic}
+                          onOpenNarrator={setActiveNarrator}
+                          onWordClick={handleWordClick}
+                        />
+                      </ErrorBoundary>
+                    );
+                  });
+                })()}
 
                 {currentHadiths.length === 0 && (
                   <div className="text-center py-16 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
@@ -3284,20 +3315,79 @@ ${urduToCopy}
                       </p>
                     </div>
 
-                    {/* Master Tafseer Button for Entire Surah */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const tEntry = getTafseerForAyah(currentPage + 1);
-                        setActiveTafseer(tEntry);
-                        setIsTafseerOpen(true);
-                      }}
-                      className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-stone-950 font-black font-nastaliq text-sm sm:text-base transition-all cursor-pointer shadow-lg hover:shadow-xl active:scale-95 border-2 border-amber-500 ring-2 ring-amber-400/40"
-                      title="اس سورت کی تمام تفاسیر (ابن کثیر، جلالین، بیضاوی، عثمانی) دیکھیں"
-                    >
-                      <BookOpen className="w-5 h-5 text-stone-950" />
-                      <span>📖 پوری سورت کی تفاسیر دیکھیں</span>
-                    </button>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {/* Full Surah Continuous Recitation Button */}
+                      {(() => {
+                        const surahAyahsCount = quranMeta?.ayahCount || 7;
+                        const surahFullPlaylist = buildSurahAyahPlaylist({
+                          surahNumber: currentPage + 1,
+                          ayahCount: surahAyahsCount,
+                          surahNameUrdu: quranSurah?.titleUrdu,
+                          surahNameArabic: quranSurah?.titleArabic,
+                          segments: quranSurah?.segments
+                        });
+                        const isCurrentSurahPlaying = activeItem?.type === 'quran' && activeItem.surahNumber === (currentPage + 1) && isAudioPlaying;
+
+                        return (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (isCurrentSurahPlaying) {
+                                toggleAudioPlay();
+                              } else {
+                                // Start recitation from Ayah 1 with full Surah playlist queued
+                                const firstAyah = surahFullPlaylist[0];
+                                if (firstAyah) {
+                                  playQuranAyah({
+                                    surahNumber: currentPage + 1,
+                                    ayahNumber: 1,
+                                    arabicText: firstAyah.arabicText,
+                                    urduText: firstAyah.urduText,
+                                    surahNameUrdu: quranSurah?.titleUrdu,
+                                    surahNameArabic: quranSurah?.titleArabic,
+                                    totalAyahs: surahAyahsCount,
+                                    playlist: surahFullPlaylist,
+                                  });
+                                }
+                              }
+                            }}
+                            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl font-black font-nastaliq text-xs sm:text-sm transition-all cursor-pointer shadow-md hover:shadow-lg active:scale-95 border-2 ${
+                              isCurrentSurahPlaying
+                                ? 'bg-amber-400 text-stone-950 border-amber-300 ring-2 ring-amber-300 animate-pulse'
+                                : 'bg-emerald-800 hover:bg-emerald-700 text-amber-200 border-amber-400/80 hover:text-white'
+                            }`}
+                            title="پوری سورت کی مسلسل تلاوت سنیں (تمام آیات خودکار ایک کے بعد ایک چلیں گی)"
+                          >
+                            {isCurrentSurahPlaying ? (
+                              <>
+                                <Pause className="w-4 h-4 fill-stone-950 text-stone-950" />
+                                <span>تلاوت موقوف کریں</span>
+                              </>
+                            ) : (
+                              <>
+                                <Volume2 className="w-4 h-4 text-amber-300" />
+                                <span>🔊 مکمل سورۃ سنیں (مسلسل تلاوت)</span>
+                              </>
+                            )}
+                          </button>
+                        );
+                      })()}
+
+                      {/* Master Tafseer Button for Entire Surah */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const tEntry = getTafseerForAyah(currentPage + 1);
+                          setActiveTafseer(tEntry);
+                          setIsTafseerOpen(true);
+                        }}
+                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-stone-950 font-black font-nastaliq text-xs sm:text-sm transition-all cursor-pointer shadow-lg hover:shadow-xl active:scale-95 border-2 border-amber-500 ring-2 ring-amber-400/40"
+                        title="اس سورت کی تمام تفاسیر (ابن کثیر، جلالین، بیضاوی، عثمانی) دیکھیں"
+                      >
+                        <BookOpen className="w-4 h-4 text-stone-950" />
+                        <span>📖 پوری سورت کی تفاسیر دیکھیں</span>
+                      </button>
+                    </div>
                   </div>
 
                   {/* Quran View Switcher Pills */}
@@ -3341,7 +3431,17 @@ ${urduToCopy}
                 </div>
 
                 {/* 2. Quran Content: Mode Switcher Rendering */}
-                {quranViewMode === 'mushaf' ? (
+                {(() => {
+                  const surahAyahsCount = quranMeta?.ayahCount || 7;
+                  const surahPagePlaylist = buildSurahAyahPlaylist({
+                    surahNumber: currentPage + 1,
+                    ayahCount: surahAyahsCount,
+                    surahNameUrdu: quranSurah?.titleUrdu,
+                    surahNameArabic: quranSurah?.titleArabic,
+                    segments: quranSurah?.segments
+                  });
+
+                  return quranViewMode === 'mushaf' ? (
                   /* ─── Mode A: مصحف ویو (رکوع وار پیوستہ تلاوت) ─── */
                   (quranSurah?.segments && quranSurah.segments.length > 0 ? quranSurah.segments : [{
                     id: `quran_fallback_${currentPage}`,
@@ -3396,6 +3496,8 @@ ${urduToCopy}
                                 if (activeItem?.id === rukuId) {
                                   toggleAudioPlay();
                                 } else {
+                                  // Find the slice of the playlist starting from this Ruku's first ayah
+                                  const rukuPlaylist = surahPagePlaylist.slice(Math.max(0, rukuAyah - 1));
                                   playQuranAyah({
                                     surahNumber: currentPage + 1,
                                     ayahNumber: rukuAyah,
@@ -3403,7 +3505,8 @@ ${urduToCopy}
                                     urduText: seg.urduTranslation,
                                     surahNameUrdu: quranSurah?.titleUrdu,
                                     surahNameArabic: quranSurah?.titleArabic,
-                                    totalAyahs: quranMeta?.ayahCount,
+                                    totalAyahs: surahAyahsCount,
+                                    playlist: rukuPlaylist.length > 0 ? rukuPlaylist : surahPagePlaylist,
                                   });
                                 }
                               }}
@@ -3538,6 +3641,7 @@ ${urduToCopy}
                                       if (activeItem?.id === aId) {
                                         toggleAudioPlay();
                                       } else {
+                                        const ayahPlaylist = surahPagePlaylist.slice(Math.max(0, ayahNum - 1));
                                         playQuranAyah({
                                           surahNumber: currentPage + 1,
                                           ayahNumber: ayahNum,
@@ -3545,7 +3649,8 @@ ${urduToCopy}
                                           urduText: seg.urduTranslation,
                                           surahNameUrdu: quranSurah?.titleUrdu,
                                           surahNameArabic: quranSurah?.titleArabic,
-                                          totalAyahs: quranMeta?.ayahCount,
+                                          totalAyahs: surahAyahsCount,
+                                          playlist: ayahPlaylist.length > 0 ? ayahPlaylist : surahPagePlaylist,
                                         });
                                       }
                                     }}
@@ -3653,6 +3758,7 @@ ${urduToCopy}
                                         if (activeItem?.id === verseCardId) {
                                           toggleAudioPlay();
                                         } else {
+                                          const ayahPlaylist = surahPagePlaylist.slice(Math.max(0, matchedAyahNum - 1));
                                           playQuranAyah({
                                             surahNumber: currentPage + 1,
                                             ayahNumber: matchedAyahNum,
@@ -3660,7 +3766,8 @@ ${urduToCopy}
                                             urduText: verseUrdu,
                                             surahNameUrdu: quranSurah?.titleUrdu,
                                             surahNameArabic: quranSurah?.titleArabic,
-                                            totalAyahs: quranMeta?.ayahCount,
+                                            totalAyahs: surahAyahsCount,
+                                            playlist: ayahPlaylist.length > 0 ? ayahPlaylist : surahPagePlaylist,
                                           });
                                         }
                                       }}
@@ -3796,7 +3903,8 @@ ${urduToCopy}
                       );
                     })}
                   </div>
-                )}
+                );
+                })()}
               </div>
             ) : parsedDarsPage ? (
               /* Dars-e-Nizami & Structured Classical Reader (Page 1 Golden Standard) */
