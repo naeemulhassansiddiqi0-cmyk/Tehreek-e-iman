@@ -1218,3 +1218,44 @@ body, button, input, textarea, select, .font-nastaliq {
     break-inside: avoid !important;
   }
 }
+
+/* =========================================================================
+   PHASE 9: REAL-TIME AUDIO SYNCHRONIZATION & TEXT HIGHLIGHTING STYLES
+   ========================================================================= */
+
+.audio-sync-active-sentence-ar {
+  background-color: #fde047 !important;
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  font-weight: 700 !important;
+  border-radius: 6px !important;
+  padding: 2px 6px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15) !important;
+  transition: all 0.25s ease-in-out !important;
+}
+
+.dark .audio-sync-active-sentence-ar {
+  background-color: #facc15 !important;
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  font-weight: 700 !important;
+}
+
+.audio-sync-active-sentence-ur {
+  background-color: #bbf7d0 !important;
+  color: #064e3b !important;
+  -webkit-text-fill-color: #064e3b !important;
+  font-weight: 700 !important;
+  border-radius: 6px !important;
+  padding: 2px 6px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
+  transition: all 0.25s ease-in-out !important;
+}
+
+.dark .audio-sync-active-sentence-ur {
+  background-color: #4ade80 !important;
+  color: #022c22 !important;
+  -webkit-text-fill-color: #022c22 !important;
+  font-weight: 700 !important;
+}
+

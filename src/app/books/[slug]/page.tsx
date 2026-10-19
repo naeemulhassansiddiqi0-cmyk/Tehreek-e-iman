@@ -28,13 +28,16 @@ import {
   Maximize2,
   Minimize2,
   BookOpenCheck,
-  Trash2
+  Trash2,
+  Volume2,
+  Pause
 } from "lucide-react";
 import { UrduStyler } from "@/components/UrduStyler";
 import { FontSizeControlModal } from "@/components/Reader/FontSizeControlModal";
 import { ReaderZoomToolbar } from "@/components/Reader/ReaderZoomToolbar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePortalLanguage } from "@/context/LanguageContext";
+import { useAudioSync, splitTextIntoSentences } from "@/context/AudioSyncContext";
 import { GlobalComments } from "@/components/GlobalComments";
 import { WordLookupModal } from "@/components/Reader/WordLookupModal";
 import { NarratorModal } from "@/components/Reader/NarratorModal";
@@ -173,6 +176,24 @@ function HadithCardDarsiView({
   const [copiedUrdu, setCopiedUrdu] = useState<boolean>(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
   const [wordLimit, setWordLimit] = useState<number>(24);
+  const { activeItem, isPlaying, playHadith, togglePlay, activeSentenceIndex } = useAudioSync();
+  const hadithCardId = `hadith-${slug}-${hadithNum}`;
+  const isThisAudioActive = activeItem?.id === hadithCardId && isPlaying;
+
+  const handleToggleHadithAudio = () => {
+    if (activeItem?.id === hadithCardId) {
+      togglePlay();
+    } else {
+      playHadith({
+        bookSlug: slug,
+        bookTitle,
+        hadithNumber: hadithNum,
+        arabicText: arabText,
+        urduText: hadith.urdu || analysis?.urduTranslation || '',
+      });
+    }
+  };
+
   // Instant synchronous Darsi Analysis (zero network delay or loading hangs)
   const analysis = useMemo(() => {
     return getDarsiAnalysisSync(slug, hadithNum, arabText, hadith.urdu);
@@ -331,7 +352,12 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
 
   return (
     <div 
-      className="border border-gray-100/90 rounded-2xl p-4 sm:p-6 space-y-4 hover:border-emerald-200 transition-all bg-white shadow-2xs"
+      id={hadithCardId}
+      className={`border rounded-2xl p-4 sm:p-6 space-y-4 transition-all bg-white shadow-2xs ${
+        isThisAudioActive
+          ? 'ring-4 ring-emerald-400 border-emerald-500 shadow-2xl bg-emerald-50/15'
+          : 'border-gray-100/90 hover:border-emerald-200'
+      }`}
       style={{ contentVisibility: 'auto', containIntrinsicSize: '280px' }}
     >
       {/* 1. Header & Controls Toolbar */}
@@ -347,6 +373,12 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
           ) : (
             <span className="font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-full font-nastaliq text-[11px]">
               نسخۂ معتمد
+            </span>
+          )}
+          {isThisAudioActive && (
+            <span className="inline-flex items-center gap-1.5 font-bold text-emerald-950 bg-amber-400 border border-amber-500 px-2.5 py-0.5 rounded-full font-nastaliq text-[11px] shadow-sm animate-pulse">
+              <span className="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
+              <span>🔊 صوتی قراءت جاری ہے...</span>
             </span>
           )}
           {/* Note Presence Badge */}
@@ -371,6 +403,30 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
 
         {/* Action Buttons Toolbar for Madaris Students */}
         <div className="flex items-center gap-1.5 flex-wrap">
+          {/* Audio Recitation Button */}
+          <button
+            type="button"
+            onClick={handleToggleHadithAudio}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] font-bold font-nastaliq transition cursor-pointer border shadow-2xs ${
+              isThisAudioActive
+                ? 'bg-amber-400 text-stone-950 border-amber-500 font-black ring-2 ring-amber-300'
+                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border-emerald-300'
+            }`}
+            title="حدیث شریف کی صوتی قراءت سنیں اور متن پر لائیو ہائی لائٹ دیکھیں"
+          >
+            {isThisAudioActive ? (
+              <>
+                <Pause className="w-3.5 h-3.5 text-stone-950 fill-stone-950" />
+                <span>قراءت روکیں</span>
+              </>
+            ) : (
+              <>
+                <Volume2 className="w-3.5 h-3.5 text-emerald-700" />
+                <span>سنیں (قراءت)</span>
+              </>
+            )}
+          </button>
+
           {/* Tashkeel Toggle Button */}
           <button
             type="button"
@@ -500,7 +556,26 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
             fontWeight: 500
           }}
         >
-          {renderClickableArabic(displayMatn, arabText, hadith.urdu)}
+          {isThisAudioActive ? (
+            splitTextIntoSentences(displayMatn, false).map((sent, sIdx) => {
+              const isCurrent = sIdx === activeSentenceIndex;
+              return (
+                <span
+                  key={`matn-sent-${sIdx}`}
+                  className={`transition-all duration-300 inline ${
+                    isCurrent
+                      ? 'bg-amber-300 dark:bg-amber-400 text-stone-950 font-bold px-1.5 py-0.5 rounded-lg shadow-sm ring-2 ring-amber-400'
+                      : ''
+                  }`}
+                >
+                  {renderClickableArabic(sent, arabText, hadith.urdu)}
+                  {' '}
+                </span>
+              );
+            })
+          ) : (
+            renderClickableArabic(displayMatn, arabText, hadith.urdu)
+          )}
         </p>
       </div>
 
@@ -552,7 +627,25 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
                 fontWeight: 600
               }}
             >
-              {urduText || (loading ? 'ترجمہ کا تجزیہ جاری ہے...' : 'متنِ مبارک کے مطابق سلیس ترجمہ')}
+              {isThisAudioActive && urduText ? (
+                splitTextIntoSentences(urduText, true).map((sent, sIdx) => {
+                  const isCurrent = sIdx === activeSentenceIndex;
+                  return (
+                    <span
+                      key={`ur-sent-${sIdx}`}
+                      className={`transition-all duration-300 inline ${
+                        isCurrent
+                          ? 'bg-emerald-200 dark:bg-emerald-400 text-emerald-950 font-bold px-1.5 py-0.5 rounded-lg shadow-sm'
+                          : ''
+                      }`}
+                    >
+                      {sent}{' '}
+                    </span>
+                  );
+                })
+              ) : (
+                urduText || (loading ? 'ترجمہ کا تجزیہ جاری ہے...' : 'متنِ مبارک کے مطابق سلیس ترجمہ')
+              )}
             </p>
           );
         })()}
@@ -1041,6 +1134,18 @@ export default function BookDetailPage({ slugProp }: { slugProp?: string } = {})
   const [showScholarlySections, setShowScholarlySections] = useState<boolean>(true);
   const [lookupWord, setLookupWord] = useState<string | null>(null);
   const [lookupContext, setLookupContext] = useState<WordLookupContextInfo | null>(null);
+  
+  // Audio Synchronization & Live Text Tracking
+  const { 
+    activeItem, 
+    isPlaying: isAudioPlaying, 
+    playQuranAyah, 
+    playHadith, 
+    togglePlay: toggleAudioPlay, 
+    activeSentenceIndex 
+  } = useAudioSync();
+  const darsCardId = `dars-${slug}-${currentPage + 1}`;
+  const isDarsPlaying = activeItem?.id === darsCardId && isAudioPlaying;
   
   // Madaris Student & Ulama Specialized Tools State
   const [globalTashkeel, setGlobalTashkeel] = useState<boolean>(true);
@@ -3252,36 +3357,91 @@ ${urduToCopy}
                       ? `آیت ${ayahs[0]}`
                       : `حصہ ${rukuNum}`;
 
+                    const rukuAyah = ayahs[0] || 1;
+                    const rukuId = `quran-${currentPage + 1}-${rukuAyah}`;
+                    const isRukuPlaying = activeItem?.id === rukuId && isAudioPlaying;
+
                     return (
                       <div 
                         key={seg.id || sIdx}
-                        className="bg-white rounded-3xl border-2 border-emerald-100/90 shadow-md p-5 sm:p-7 space-y-4 hover:border-emerald-300/80 transition-colors"
+                        id={rukuId}
+                        className={`bg-white rounded-3xl border-2 transition-all p-5 sm:p-7 space-y-4 shadow-md ${
+                          isRukuPlaying
+                            ? 'ring-4 ring-amber-400 border-amber-500 shadow-2xl bg-amber-50/20'
+                            : 'border-emerald-100/90 hover:border-emerald-300/80'
+                        }`}
                       >
-                        {/* Ruku Top Bar with Badges and Tafseer Action */}
+                        {/* Ruku Top Bar with Badges, Audio Recitation and Tafseer Action */}
                         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-emerald-100 pb-3">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black font-nastaliq bg-emerald-100 text-emerald-950 border border-emerald-200">
                               <span>رکوع {rukuNum} از {totalRukus}</span>
                             </span>
                             <span className="text-xs font-nastaliq text-stone-500">
                               • {ayahRangeLabel}
                             </span>
+                            {isRukuPlaying && (
+                              <span className="inline-flex items-center gap-1.5 font-bold text-amber-950 bg-amber-400 border border-amber-500 px-2.5 py-0.5 rounded-full font-nastaliq text-[11px] shadow-sm animate-pulse">
+                                <span className="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
+                                <span>🔊 تلاوت جاری ہے...</span>
+                              </span>
+                            )}
                           </div>
 
-                          {/* High-Contrast Tafseer Action Button */}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const tEntry = getTafseerForAyah(currentPage + 1, ayahs[0] || undefined, rukuNum);
-                              setActiveTafseer(tEntry);
-                              setIsTafseerOpen(true);
-                            }}
-                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 font-bold font-nastaliq text-xs sm:text-sm transition-all cursor-pointer shadow-sm hover:shadow-md active:scale-95 border border-amber-500"
-                            title="اس رکوع و آیات کی 4 معتمد تفاسیر (ابن کثیر، جلالین، بیضاوی، عثمانی) دیکھیں"
-                          >
-                            <BookOpen className="w-4 h-4 text-stone-950" />
-                            <span>📖 تفاسیر دیکھیں (ابن کثیر، جلالین، بیضاوی، عثمانی)</span>
-                          </button>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {/* Audio Recitation Button for Ruku */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (activeItem?.id === rukuId) {
+                                  toggleAudioPlay();
+                                } else {
+                                  playQuranAyah({
+                                    surahNumber: currentPage + 1,
+                                    ayahNumber: rukuAyah,
+                                    arabicText: seg.arabicText,
+                                    urduText: seg.urduTranslation,
+                                    surahNameUrdu: quranSurah?.titleUrdu,
+                                    surahNameArabic: quranSurah?.titleArabic,
+                                    totalAyahs: quranMeta?.ayahCount,
+                                  });
+                                }
+                              }}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold font-nastaliq transition cursor-pointer border shadow-sm ${
+                                isRukuPlaying
+                                  ? 'bg-amber-400 text-stone-950 border-amber-500 font-black ring-2 ring-amber-300'
+                                  : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-950 border-emerald-300'
+                              }`}
+                              title="اس رکوع کی صوتی تلاوت سنیں اور سطر بہ سطر لائیو ہائی لائٹ دیکھیں"
+                            >
+                              {isRukuPlaying ? (
+                                <>
+                                  <Pause className="w-3.5 h-3.5 fill-stone-950 text-stone-950" />
+                                  <span>تلاوت روکیں</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Volume2 className="w-3.5 h-3.5 text-emerald-800" />
+                                  <span>تلاوت سنیں 🔊</span>
+                                </>
+                              )}
+                            </button>
+
+                            {/* High-Contrast Tafseer Action Button */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const tEntry = getTafseerForAyah(currentPage + 1, ayahs[0] || undefined, rukuNum);
+                                setActiveTafseer(tEntry);
+                                setIsTafseerOpen(true);
+                              }}
+                              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 font-bold font-nastaliq text-xs sm:text-sm transition-all cursor-pointer shadow-sm hover:shadow-md active:scale-95 border border-amber-500"
+                              title="اس رکوع و آیات کی 4 معتمد تفاسیر (ابن کثیر، جلالین، بیضاوی، عثمانی) دیکھیں"
+                            >
+                              <BookOpen className="w-4 h-4 text-stone-950" />
+                              <span>📖 تفاسیر دیکھیں (ابن کثیر، جلالین، بیضاوی، عثمانی)</span>
+                            </button>
+                          </div>
                         </div>
 
                         {/* Arabic Matn Box */}
@@ -3300,7 +3460,26 @@ ${urduToCopy}
                               fontWeight: 500
                             }}
                           >
-                            {renderClickableArabic(seg.arabicText, seg.arabicText, seg.urduTranslation)}
+                            {isRukuPlaying ? (
+                              splitTextIntoSentences(seg.arabicText, false).map((sent, sIdx) => {
+                                const isCurrent = sIdx === activeSentenceIndex;
+                                return (
+                                  <span
+                                    key={`ruku-ar-${sIdx}`}
+                                    className={`transition-all duration-300 inline ${
+                                      isCurrent
+                                        ? 'bg-amber-300 dark:bg-amber-400 text-stone-950 font-bold px-1.5 py-0.5 rounded-lg shadow-sm ring-2 ring-amber-400'
+                                        : ''
+                                    }`}
+                                  >
+                                    {renderClickableArabic(sent, seg.arabicText, seg.urduTranslation)}
+                                    {' '}
+                                  </span>
+                                );
+                              })
+                            ) : (
+                              renderClickableArabic(seg.arabicText, seg.arabicText, seg.urduTranslation)
+                            )}
                           </p>
                         </div>
 
@@ -3319,33 +3498,82 @@ ${urduToCopy}
                                 fontWeight: 500
                               }}
                             >
-                              {seg.urduTranslation}
+                              {isRukuPlaying && seg.urduTranslation ? (
+                                splitTextIntoSentences(seg.urduTranslation, true).map((sent, sIdx) => {
+                                  const isCurrent = sIdx === activeSentenceIndex;
+                                  return (
+                                    <span
+                                      key={`ruku-ur-${sIdx}`}
+                                      className={`transition-all duration-300 inline ${
+                                        isCurrent
+                                          ? 'bg-emerald-200 dark:bg-emerald-400 text-emerald-950 font-bold px-1.5 py-0.5 rounded-lg shadow-sm'
+                                          : ''
+                                      }`}
+                                    >
+                                      {sent}{' '}
+                                    </span>
+                                  );
+                                })
+                              ) : (
+                                seg.urduTranslation
+                              )}
                             </p>
                           </div>
                         )}
 
-                        {/* Individual Ayah Tafseer Badges (If multiple ayahs present) */}
+                        {/* Individual Ayah Tafseer Badges & Audio Controls (If multiple ayahs present) */}
                         {ayahs.length > 0 && (
                           <div className="pt-2 border-t border-gray-100 flex flex-wrap items-center gap-1.5">
                             <span className="text-xs font-bold text-amber-950 font-nastaliq pl-1">
-                              انفرادی آیات کی تفسیر:
+                              انفرادی آیات کی تفسیر و تلاوت:
                             </span>
-                            {ayahs.map(ayahNum => (
-                              <button
-                                key={ayahNum}
-                                type="button"
-                                onClick={() => {
-                                  const tEntry = getTafseerForAyah(currentPage + 1, ayahNum, rukuNum);
-                                  setActiveTafseer(tEntry);
-                                  setIsTafseerOpen(true);
-                                }}
-                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-amber-100 text-stone-800 hover:text-amber-950 font-bold font-nastaliq text-xs transition cursor-pointer border border-gray-200 hover:border-amber-300 active:scale-95 shadow-2xs"
-                                title={`آیت نمبر ${ayahNum} کی 4 معتمد تفاسیر دیکھیں`}
-                              >
-                                <BookOpen className="w-3 h-3 text-amber-700" />
-                                <span>آیت {ayahNum} 📖</span>
-                              </button>
-                            ))}
+                            {ayahs.map(ayahNum => {
+                              const aId = `quran-${currentPage + 1}-${ayahNum}`;
+                              const isThisAyahActive = activeItem?.id === aId && isAudioPlaying;
+                              return (
+                                <div key={ayahNum} className="inline-flex items-center rounded-lg border border-gray-200 overflow-hidden shadow-2xs">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (activeItem?.id === aId) {
+                                        toggleAudioPlay();
+                                      } else {
+                                        playQuranAyah({
+                                          surahNumber: currentPage + 1,
+                                          ayahNumber: ayahNum,
+                                          arabicText: seg.arabicText,
+                                          urduText: seg.urduTranslation,
+                                          surahNameUrdu: quranSurah?.titleUrdu,
+                                          surahNameArabic: quranSurah?.titleArabic,
+                                          totalAyahs: quranMeta?.ayahCount,
+                                        });
+                                      }
+                                    }}
+                                    className={`px-2 py-1 text-xs font-nastaliq font-bold flex items-center gap-1 transition cursor-pointer ${
+                                      isThisAyahActive
+                                        ? 'bg-amber-400 text-stone-950 font-black'
+                                        : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900'
+                                    }`}
+                                    title={`آیت ${ayahNum} سنیں`}
+                                  >
+                                    <Volume2 className="w-3 h-3 text-emerald-700" />
+                                    <span>آیت {ayahNum}</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const tEntry = getTafseerForAyah(currentPage + 1, ayahNum, rukuNum);
+                                      setActiveTafseer(tEntry);
+                                      setIsTafseerOpen(true);
+                                    }}
+                                    className="px-1.5 py-1 bg-stone-100 hover:bg-amber-100 text-stone-700 hover:text-amber-950 border-r border-gray-200 text-xs font-nastaliq transition cursor-pointer"
+                                    title={`آیت ${ayahNum} کی تفسیر`}
+                                  >
+                                    📖
+                                  </button>
+                                </div>
+                              );
+                            })}
                           </div>
                         )}
                       </div>
@@ -3387,35 +3615,88 @@ ${urduToCopy}
                             const matchedAyahNum = ayahs[vIdx] || (vIdx + 1);
                             const verseUrdu = verseTranslations[vIdx] || seg.urduTranslation;
                             const wordTokens = verseText.trim().split(/\s+/).filter(w => w.length > 0 && !/^[،۔؛:؟!]+$/.test(w));
+                            const verseCardId = `quran-${currentPage + 1}-${matchedAyahNum}`;
+                            const isThisVersePlaying = activeItem?.id === verseCardId && isAudioPlaying;
 
                             return (
                               <div
                                 key={vIdx}
-                                className="bg-white rounded-2xl border-2 border-emerald-100 p-4 sm:p-5 space-y-3.5 shadow-sm hover:border-emerald-300 transition"
+                                id={verseCardId}
+                                className={`rounded-2xl border-2 p-4 sm:p-5 space-y-3.5 transition-all ${
+                                  isThisVersePlaying
+                                    ? 'bg-amber-50/20 border-amber-500 ring-4 ring-amber-400 shadow-xl'
+                                    : 'bg-white border-emerald-100 shadow-sm hover:border-emerald-300'
+                                }`}
                               >
                                 {/* Verse Header */}
                                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 pb-2.5">
-                                  <div className="flex items-center gap-2">
+                                  <div className="flex items-center gap-2 flex-wrap">
                                     <span className="w-7 h-7 rounded-full bg-emerald-800 text-amber-300 font-bold font-mono text-xs flex items-center justify-center border border-amber-400">
                                       {matchedAyahNum}
                                     </span>
                                     <span className="font-nastaliq font-bold text-xs text-emerald-950">
                                       {quranSurah?.titleUrdu || 'سورۃ'} • آیت نمبر {matchedAyahNum}
                                     </span>
+                                    {isThisVersePlaying && (
+                                      <span className="inline-flex items-center gap-1.5 font-bold text-stone-950 bg-amber-400 border border-amber-500 px-2 py-0.5 rounded-full font-nastaliq text-[10px] shadow-sm animate-pulse">
+                                        <span className="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
+                                        <span>تلاوت جاری ہے...</span>
+                                      </span>
+                                    )}
                                   </div>
 
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      const tEntry = getTafseerForAyah(currentPage + 1, matchedAyahNum, rukuNum);
-                                      setActiveTafseer(tEntry);
-                                      setIsTafseerOpen(true);
-                                    }}
-                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 font-bold font-nastaliq text-xs transition cursor-pointer border border-amber-500 shadow-2xs active:scale-95"
-                                  >
-                                    <BookOpen className="w-3.5 h-3.5" />
-                                    <span>📖 آیت {matchedAyahNum} کی تفاسیر</span>
-                                  </button>
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    {/* Audio Recitation Button for This Ayah */}
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        if (activeItem?.id === verseCardId) {
+                                          toggleAudioPlay();
+                                        } else {
+                                          playQuranAyah({
+                                            surahNumber: currentPage + 1,
+                                            ayahNumber: matchedAyahNum,
+                                            arabicText: verseText,
+                                            urduText: verseUrdu,
+                                            surahNameUrdu: quranSurah?.titleUrdu,
+                                            surahNameArabic: quranSurah?.titleArabic,
+                                            totalAyahs: quranMeta?.ayahCount,
+                                          });
+                                        }
+                                      }}
+                                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold font-nastaliq transition cursor-pointer border shadow-2xs active:scale-95 ${
+                                        isThisVersePlaying
+                                          ? 'bg-amber-400 text-stone-950 border-amber-500 font-black ring-2 ring-amber-300'
+                                          : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-950 border-emerald-300'
+                                      }`}
+                                      title={`آیت نمبر ${matchedAyahNum} کی تلاوت سنیں`}
+                                    >
+                                      {isThisVersePlaying ? (
+                                        <>
+                                          <Pause className="w-3.5 h-3.5 fill-stone-950 text-stone-950" />
+                                          <span>تلاوت روکیں</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Volume2 className="w-3.5 h-3.5 text-emerald-700" />
+                                          <span>تلاوت سنیں 🔊</span>
+                                        </>
+                                      )}
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const tEntry = getTafseerForAyah(currentPage + 1, matchedAyahNum, rukuNum);
+                                        setActiveTafseer(tEntry);
+                                        setIsTafseerOpen(true);
+                                      }}
+                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 font-bold font-nastaliq text-xs transition cursor-pointer border border-amber-500 shadow-2xs active:scale-95"
+                                    >
+                                      <BookOpen className="w-3.5 h-3.5" />
+                                      <span>📖 تفاسیر</span>
+                                    </button>
+                                  </div>
                                 </div>
 
                                 {/* Arabic Verse */}
@@ -3429,7 +3710,26 @@ ${urduToCopy}
                                       lineHeight: `${Math.round(arabicFontSize * 1.55 * lineHeightScale)}px`
                                     }}
                                   >
-                                    {renderClickableArabic(verseText, verseText, verseUrdu)}
+                                    {isThisVersePlaying ? (
+                                      splitTextIntoSentences(verseText, false).map((sent, sIdx) => {
+                                        const isCurrent = sIdx === activeSentenceIndex;
+                                        return (
+                                          <span
+                                            key={`verse-ar-${sIdx}`}
+                                            className={`transition-all duration-300 inline ${
+                                              isCurrent
+                                                ? 'bg-amber-300 dark:bg-amber-400 text-stone-950 font-bold px-1.5 py-0.5 rounded-lg shadow-sm ring-2 ring-amber-400'
+                                                : ''
+                                            }`}
+                                          >
+                                            {renderClickableArabic(sent, verseText, verseUrdu)}
+                                            {' '}
+                                          </span>
+                                        );
+                                      })
+                                    ) : (
+                                      renderClickableArabic(verseText, verseText, verseUrdu)
+                                    )}
                                   </p>
                                 </div>
 
@@ -3446,7 +3746,25 @@ ${urduToCopy}
                                         fontWeight: 500
                                       }}
                                     >
-                                      {verseUrdu}
+                                      {isThisVersePlaying ? (
+                                        splitTextIntoSentences(verseUrdu, true).map((sent, sIdx) => {
+                                          const isCurrent = sIdx === activeSentenceIndex;
+                                          return (
+                                            <span
+                                              key={`verse-ur-${sIdx}`}
+                                              className={`transition-all duration-300 inline ${
+                                                isCurrent
+                                                  ? 'bg-emerald-200 dark:bg-emerald-400 text-emerald-950 font-bold px-1.5 py-0.5 rounded-lg shadow-sm'
+                                                  : ''
+                                              }`}
+                                            >
+                                              {sent}{' '}
+                                            </span>
+                                          );
+                                        })
+                                      ) : (
+                                        verseUrdu
+                                      )}
                                     </p>
                                   </div>
                                 )}
@@ -3484,18 +3802,67 @@ ${urduToCopy}
               /* Dars-e-Nizami & Structured Classical Reader (Page 1 Golden Standard) */
               <div className="space-y-6">
                 {/* 1. Standardized Unified Header for Card: Hadith/Page Number & Grade on Right, Action Toolbar on Left */}
-                <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-3.5 sm:p-4 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
-                  <div className="flex items-center gap-2">
+                <div 
+                  id={darsCardId}
+                  className={`border rounded-2xl p-3.5 sm:p-4 flex flex-wrap items-center justify-between gap-2 shadow-2xs transition-all ${
+                    isDarsPlaying
+                      ? 'bg-amber-50/20 border-amber-500 ring-4 ring-amber-400 shadow-xl'
+                      : 'bg-emerald-50/70 border-emerald-200/80'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-bold text-emerald-950 font-nastaliq text-xs sm:text-sm bg-white px-3 py-1 rounded-xl border border-emerald-200 shadow-2xs">
                       {isChunkedBook ? `حدیث شریف نمبر: ${(currentPage + 1).toLocaleString('ur-PK')}` : `صفحہ نمبر: ${(currentPage + 1).toLocaleString('ur-PK')}`}
                     </span>
                     <span className="font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-full font-nastaliq text-[11px]">
                       {isChunkedBook ? 'إسناده صحيح / حسن' : 'نسخۂ معتمد'}
                     </span>
+                    {isDarsPlaying && (
+                      <span className="inline-flex items-center gap-1.5 font-bold text-stone-950 bg-amber-400 border border-amber-500 px-2.5 py-0.5 rounded-full font-nastaliq text-[11px] shadow-sm animate-pulse">
+                        <span className="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
+                        <span>🔊 صوتی قراءت جاری ہے...</span>
+                      </span>
+                    )}
                   </div>
 
                   {/* Unified Action Toolbar */}
                   <div className="flex items-center gap-1.5 flex-wrap">
+                    {/* Audio Recitation Button */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (activeItem?.id === darsCardId) {
+                          toggleAudioPlay();
+                        } else {
+                          playHadith({
+                            bookSlug: slug,
+                            bookTitle: book?.title_ur || 'کتاب شریف',
+                            hadithNumber: currentPage + 1,
+                            arabicText: parsedDarsPage.matn || '',
+                            urduText: parsedDarsPage.urduTranslation || pipelineAnalysis?.urduTranslation || '',
+                          });
+                        }
+                      }}
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] font-bold font-nastaliq transition cursor-pointer border shadow-2xs ${
+                        isDarsPlaying
+                          ? 'bg-amber-400 text-stone-950 border-amber-500 font-black ring-2 ring-amber-300'
+                          : 'bg-white hover:bg-emerald-50 text-emerald-900 border-emerald-300'
+                      }`}
+                      title="اس درسی صفحہ کی صوتی قراءت سنیں"
+                    >
+                      {isDarsPlaying ? (
+                        <>
+                          <Pause className="w-3.5 h-3.5 text-stone-950 fill-stone-950" />
+                          <span>قراءت روکیں</span>
+                        </>
+                      ) : (
+                        <>
+                          <Volume2 className="w-3.5 h-3.5 text-emerald-700" />
+                          <span>سنیں (قراءت)</span>
+                        </>
+                      )}
+                    </button>
+
                     {/* Tashkeel Toggle */}
                     <button
                       type="button"
@@ -3670,7 +4037,26 @@ ${urduToCopy}
                           fontWeight: 500
                         }}
                       >
-                        {renderClickableArabic(displayDarsMatn, parsedDarsPage.matn, parsedDarsPage.urduTranslation || pipelineAnalysis?.urduTranslation)}
+                        {isDarsPlaying ? (
+                          splitTextIntoSentences(displayDarsMatn, false).map((sent, sIdx) => {
+                            const isCurrent = sIdx === activeSentenceIndex;
+                            return (
+                              <span
+                                key={`dars-matn-${sIdx}`}
+                                className={`transition-all duration-300 inline ${
+                                  isCurrent
+                                    ? 'bg-amber-300 dark:bg-amber-400 text-stone-950 font-bold px-1.5 py-0.5 rounded-lg shadow-sm ring-2 ring-amber-400'
+                                    : ''
+                                }`}
+                              >
+                                {renderClickableArabic(sent, parsedDarsPage.matn, parsedDarsPage.urduTranslation || pipelineAnalysis?.urduTranslation)}
+                                {' '}
+                              </span>
+                            );
+                          })
+                        ) : (
+                          renderClickableArabic(displayDarsMatn, parsedDarsPage.matn, parsedDarsPage.urduTranslation || pipelineAnalysis?.urduTranslation)
+                        )}
                       </p>
                     )}
                     <div className="pt-2 border-t border-amber-200/40 flex items-center justify-between text-[11px] font-nastaliq text-amber-900/80">
@@ -3716,7 +4102,25 @@ ${urduToCopy}
                           fontWeight: 500
                         }}
                       >
-                        {parsedDarsPage.urduTranslation || pipelineAnalysis?.urduTranslation}
+                        {isDarsPlaying && (parsedDarsPage.urduTranslation || pipelineAnalysis?.urduTranslation) ? (
+                          splitTextIntoSentences(parsedDarsPage.urduTranslation || pipelineAnalysis?.urduTranslation || '', true).map((sent, sIdx) => {
+                            const isCurrent = sIdx === activeSentenceIndex;
+                            return (
+                              <span
+                                key={`dars-ur-${sIdx}`}
+                                className={`transition-all duration-300 inline ${
+                                  isCurrent
+                                    ? 'bg-emerald-200 dark:bg-emerald-400 text-emerald-950 font-bold px-1.5 py-0.5 rounded-lg shadow-sm'
+                                    : ''
+                                }`}
+                              >
+                                {sent}{' '}
+                              </span>
+                            );
+                          })
+                        ) : (
+                          parsedDarsPage.urduTranslation || pipelineAnalysis?.urduTranslation
+                        )}
                       </p>
                     </div>
                   )}

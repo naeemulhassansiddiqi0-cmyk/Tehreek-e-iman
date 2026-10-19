@@ -30,7 +30,9 @@ import {
   HardDrive,
   DownloadCloud,
   Search,
-  ExternalLink
+  ExternalLink,
+  Volume2,
+  Pause
 } from 'lucide-react';
 import { ExportPrintModal } from './ExportPrintModal';
 import { saveBookOffline, removeBookOffline, isBookSavedOffline } from '../../utils/offlineStorage';
@@ -41,6 +43,7 @@ import { getTranslationSourceInfo, translateArabicFiqhToUrdu, translateParagraph
 import { GlobalComments } from '../GlobalComments';
 import { TafseerModal } from './TafseerModal';
 import { getTafseerForAyah, TafseerEntry } from '../../services/tafseerService';
+import { useAudioSync, splitTextIntoSentences } from '../../context/AudioSyncContext';
 
 interface ReaderViewProps {
   selectedBook: Book;
@@ -80,6 +83,15 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
   const [directHadithInput, setDirectHadithInput] = useState('');
   const [activeTafseer, setActiveTafseer] = useState<TafseerEntry | null>(null);
   const [isTafseerOpen, setIsTafseerOpen] = useState(false);
+
+  // Audio Sync & Text Highlighting Hook
+  const { 
+    activeItem, 
+    isPlaying: isAudioPlaying, 
+    playHadith, 
+    togglePlay: toggleAudioPlay, 
+    activeSentenceIndex 
+  } = useAudioSync();
 
   // Default to Full Width (Stacked Mode) so Arabic Matn has expansive room and crystal-clear presentation
   const [isDualPane, setIsDualPane] = useState(false);
@@ -1573,20 +1585,69 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                       <div className="space-y-6">
                         {(arabicParas.length > 0 ? arabicParas : [segment.arabicText]).map((arPara, pIdx) => {
                           const paraUrdu = getParaUrduTranslation(pIdx, arPara);
+                          const paraId = `reader-para-${activeChapterIndex}-${pIdx}`;
+                          const isParaPlaying = activeItem?.id === paraId && isAudioPlaying;
                           return (
-                            <div key={pIdx} className="space-y-3">
+                            <div key={pIdx} id={paraId} className="space-y-3">
                               {/* 1. Arabic Matn Paragraph Card */}
-                              <div className={`${getMatnBoxClass()} rounded-3xl p-5 sm:p-7 space-y-3 transition-all border shadow-xs`}>
+                              <div className={`${getMatnBoxClass()} rounded-3xl p-5 sm:p-7 space-y-3 transition-all border shadow-xs ${
+                                isParaPlaying
+                                  ? 'ring-4 ring-amber-400 border-amber-500 shadow-xl bg-amber-50/15'
+                                  : ''
+                              }`}>
                                 <div className="flex items-center justify-between border-b border-stone-200/80 dark:border-stone-800 pb-2">
                                   <div className="flex items-center gap-2">
                                     <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-amber-400 animate-pulse"></span>
                                     <span className="text-xs text-emerald-950 dark:text-emerald-300 font-bold font-arabic">
                                       عربی عبارت (فقرہ {pIdx + 1})
                                     </span>
+                                    {isParaPlaying && (
+                                      <span className="inline-flex items-center gap-1.5 font-bold text-stone-950 bg-amber-400 border border-amber-500 px-2 py-0.5 rounded-full font-nastaliq text-[10px] shadow-sm animate-pulse">
+                                        <span className="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
+                                        <span>صوتی قراءت جاری ہے...</span>
+                                      </span>
+                                    )}
                                   </div>
-                                  <span className="text-[11px] text-stone-600 dark:text-stone-400 font-nastaliq">
-                                    لغت و تحقیق کے لیے کسی بھی لفظ پر کلک کریں
-                                  </span>
+                                  <div className="flex items-center gap-2">
+                                    {/* Audio Recitation Button */}
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        if (activeItem?.id === paraId) {
+                                          toggleAudioPlay();
+                                        } else {
+                                          playHadith({
+                                            bookSlug: selectedBook.id,
+                                            bookTitle: selectedBook.title,
+                                            hadithNumber: pIdx + 1,
+                                            arabicText: arPara,
+                                            urduText: paraUrdu,
+                                          });
+                                        }
+                                      }}
+                                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-bold font-nastaliq transition cursor-pointer border shadow-2xs ${
+                                        isParaPlaying
+                                          ? 'bg-amber-400 text-stone-950 border-amber-500 font-black ring-2 ring-amber-300'
+                                          : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-950 border-emerald-300'
+                                      }`}
+                                      title="اس عبارت کی صوتی قراءت سنیں"
+                                    >
+                                      {isParaPlaying ? (
+                                        <>
+                                          <Pause className="w-3.5 h-3.5 fill-stone-950 text-stone-950" />
+                                          <span>قراءت روکیں</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Volume2 className="w-3.5 h-3.5 text-emerald-700" />
+                                          <span>سنیں 🔊</span>
+                                        </>
+                                      )}
+                                    </button>
+                                    <span className="text-[11px] text-stone-600 dark:text-stone-400 font-nastaliq hidden sm:inline">
+                                      لغت و تحقیق کے لیے کسی بھی لفظ پر کلک کریں
+                                    </span>
+                                  </div>
                                 </div>
 
                                 {/* Clickable Words */}
@@ -1657,7 +1718,25 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                                   dir="rtl"
                                   className="urdu-text whitespace-pre-line select-text font-bold"
                                 >
-                                  {paraUrdu}
+                                  {isParaPlaying && paraUrdu ? (
+                                    splitTextIntoSentences(paraUrdu, true).map((sent, sIdx) => {
+                                      const isCurrent = sIdx === activeSentenceIndex;
+                                      return (
+                                        <span
+                                          key={`para-ur-${sIdx}`}
+                                          className={`transition-all duration-300 inline ${
+                                            isCurrent
+                                              ? 'bg-emerald-200 dark:bg-emerald-400 text-emerald-950 font-bold px-1.5 py-0.5 rounded-lg shadow-sm'
+                                              : ''
+                                          }`}
+                                        >
+                                          {sent}{' '}
+                                        </span>
+                                      );
+                                    })
+                                  ) : (
+                                    paraUrdu
+                                  )}
                                 </p>
                               </div>
                             </div>

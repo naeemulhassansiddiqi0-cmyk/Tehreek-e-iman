@@ -25,6 +25,8 @@ import { Headphones, Mic2 } from 'lucide-react';
 import { SearchCategoryFilter, GlobalSearchResult } from './services/globalSearchService';
 import { LanguageProvider, usePortalLanguage } from './context/LanguageContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { AudioSyncProvider } from './context/AudioSyncContext';
+import { AudioSyncFloatingBar } from './components/AudioPlayer/AudioSyncFloatingBar';
 
 function AppContent() {
   const { t, isRTL } = usePortalLanguage();
@@ -665,7 +667,10 @@ export function App() {
   return (
     <ThemeProvider>
       <LanguageProvider>
-        <AppContent />
+        <AudioSyncProvider>
+          <AppContent />
+          <AudioSyncFloatingBar />
+        </AudioSyncProvider>
       </LanguageProvider>
     </ThemeProvider>
   );
