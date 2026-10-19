@@ -31,7 +31,8 @@ import {
   Trash2,
   Volume2,
   Pause,
-  Award
+  Award,
+  Download
 } from "lucide-react";
 import { UrduStyler } from "@/components/UrduStyler";
 import { FontSizeControlModal } from "@/components/Reader/FontSizeControlModal";
@@ -63,6 +64,7 @@ import { muslimChapters } from "@/data/muslimData";
 import { abudawoodChapters, tirmidhiChapters, nasaiChapters, ibnmajahChapters } from "@/data/allHadithBooksData";
 import { BookmarksHistoryModal } from "@/components/Reader/BookmarksHistoryModal";
 import { QuizModal } from "@/components/Quiz/QuizModal";
+import { PageExportModal, PageExportData } from "@/components/Reader/PageExportModal";
 import { ALL_QUIZZES, QuizModule } from "@/data/quizData";
 import { 
   saveReadingHistory, 
@@ -1197,6 +1199,7 @@ export default function BookDetailPage({ slugProp }: { slugProp?: string } = {})
   const [isBookmarksModalOpen, setIsBookmarksModalOpen] = useState<boolean>(false);
   const [bookmarkFeedbackToast, setBookmarkFeedbackToast] = useState<string | null>(null);
   const [isQuizModalOpen, setIsQuizModalOpen] = useState<boolean>(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
   const [copiedPageRef, setCopiedPageRef] = useState<boolean>(false);
   const [activeTafseer, setActiveTafseer] = useState<TafseerEntry | null>(null);
   const [isTafseerOpen, setIsTafseerOpen] = useState<boolean>(false);
@@ -2084,6 +2087,60 @@ ${urduToCopy}
     );
   }, [slug, currentPage, parsedDarsPage, isQuran]);
 
+  const pageExportData = useMemo<PageExportData>(() => {
+    const pageNum = currentPage + 1;
+    const title = book?.title_ur || book?.title || (slug === 'quran' ? 'قرآن مجید' : slug);
+    const author = book?.author;
+    const category = book?.category || (slug === 'quran' ? 'قرآن' : isHadith ? 'حدیث' : undefined);
+
+    if (isHadith && currentHadiths && currentHadiths.length > 0) {
+      const hadithsList = currentHadiths.map((h, hIdx) => {
+        const hadithNum = h.hadithnumber || h.number || (currentPage * PER_PAGE + hIdx + 1);
+        const arabText = h.arab || h.text || '';
+        return {
+          hadithNum,
+          arabicText: arabText,
+          urduText: h.urdu || undefined,
+          tashreeh: undefined
+        };
+      });
+
+      return {
+        bookTitle: title,
+        bookAuthor: author,
+        bookCategory: category,
+        bookSlug: slug,
+        pageNumber: pageNum,
+        totalSections: totalPages,
+        chapterTitleAr: bannerAr,
+        chapterTitleUr: bannerUr,
+        referenceUrl: typeof window !== 'undefined' ? window.location.href : `https://tehreek-e-iman.pages.dev/books/${slug}?page=${pageNum}`,
+        isHadith: true,
+        hadiths: hadithsList,
+        studentNotes: pageNotes || undefined
+      };
+    }
+
+    return {
+      bookTitle: title,
+      bookAuthor: author,
+      bookCategory: category,
+      bookSlug: slug,
+      pageNumber: pageNum,
+      totalSections: totalPages,
+      chapterTitleAr: bannerAr,
+      chapterTitleUr: bannerUr,
+      referenceUrl: typeof window !== 'undefined' ? window.location.href : `https://tehreek-e-iman.pages.dev/books/${slug}?page=${pageNum}`,
+      isHadith: false,
+      arabicMatn: parsedDarsPage?.matn || undefined,
+      urduTranslation: parsedDarsPage?.urduTranslation || pipelineAnalysis?.urduTranslation || undefined,
+      tashreeh: parsedDarsPage?.tashreeh || pipelineAnalysis?.tashreeh || undefined,
+      iraab: parsedDarsPage?.iraab || pipelineAnalysis?.iraab || undefined,
+      hawashi: parsedDarsPage?.hawashi || pipelineAnalysis?.hawashi || undefined,
+      studentNotes: pageNotes || undefined
+    };
+  }, [book, slug, currentPage, totalPages, bannerAr, bannerUr, isHadith, currentHadiths, parsedDarsPage, pipelineAnalysis, pageNotes, PER_PAGE]);
+
   const handleShare = () => {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(window.location.href);
@@ -2671,6 +2728,17 @@ ${urduToCopy}
               <span className="hidden sm:inline">امتحانی کوئز</span>
             </button>
           )}
+
+          {/* Download & Export PDF/Text Modal Button */}
+          <button
+            type="button"
+            onClick={() => setIsExportModalOpen(true)}
+            className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-slate-700 text-stone-700 dark:text-stone-200 transition cursor-pointer text-xs flex items-center gap-1.5 font-nastaliq font-bold shadow-2xs"
+            title="موجودہ صفحہ یا احادیث کو پی ڈی ایف / ٹیکسٹ فائل میں ڈاؤن لوڈ کریں"
+          >
+            <Download className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            <span className="hidden sm:inline">ڈاؤن لوڈ / پی ڈی ایف</span>
+          </button>
 
           {/* Current Page Badge */}
           <div className="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-emerald-800 text-white rounded-xl text-xs font-bold font-nastaliq shadow-xs flex items-center gap-1.5">
@@ -4206,6 +4274,17 @@ ${urduToCopy}
                       <FileEdit className="w-3 h-3 text-indigo-700" />
                       <span>{pageNotes ? 'علمی نوٹس (1)' : 'نوٹ شامل کریں'}</span>
                     </button>
+
+                    {/* Offline PDF & Text Export Button */}
+                    <button
+                      type="button"
+                      onClick={() => setIsExportModalOpen(true)}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold font-nastaliq bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-200 transition cursor-pointer shadow-2xs"
+                      title="اس درسی صفحہ کو پی ڈی ایف یا ٹیکسٹ فائل میں ڈاؤن لوڈ کریں"
+                    >
+                      <Download className="w-3 h-3 text-emerald-700" />
+                      <span>ڈاؤن لوڈ / پی ڈی ایف</span>
+                    </button>
                   </div>
                 </div>
 
@@ -4754,6 +4833,13 @@ ${urduToCopy}
           <span className="font-bold">{bookmarkFeedbackToast}</span>
         </div>
       )}
+
+      {/* Page Export Modal (Phase 12) */}
+      <PageExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        exportData={pageExportData}
+      />
 
       </div>
     </ErrorBoundary>
