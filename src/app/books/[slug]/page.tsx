@@ -58,6 +58,7 @@ import { getBukhariTarjamahInfo } from "@/services/bukhariTarajimService";
 import { safeName, safeRank } from "@/utils/safeName";
 import { WordLookupContextInfo } from "@/types";
 import { getDarsiAnalysisSync, segmentSanadAndMatn, stripTashkeel, normalizeArabic } from "@/services/darsiPipelineService";
+import { getAuthenticHadithSync } from "@/services/classicalHadithLookupService";
 import { getTafseerForAyah, extractAyahNumbers, TafseerEntry } from "@/services/tafseerService";
 import { quranChapters, QURAN_SURAHS_CANONICAL } from "@/data/quranData";
 import { bukhariChapters } from "@/data/bukhariData";
@@ -653,7 +654,7 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
           </div>
         </div>
         {(() => {
-          let urduText = hadith.urdu || analysis?.urduTranslation || '';
+          let urduText = hadith.urdu || getAuthenticHadithSync(slug, hadithNum)?.urduTranslation || analysis?.urduTranslation || '';
           if (hadithNum === 1 && (slug || '').toLowerCase().includes('bukhari')) {
             if (urduText.startsWith('ہم سے حمیدی') || urduText.startsWith('کو حمیدی')) {
               urduText = urduText.replace(/^(?:ہم سے حمیدی نے بیان کیا، کہا ہم سے سفیان نے|کو حمیدی نے یہ حدیث بیان کی|ہم سے حمیدی عبد اللہ بن زبیر نے بیان کیا)/, 'ہم کو حمیدی نے یہ حدیث بیان کی');

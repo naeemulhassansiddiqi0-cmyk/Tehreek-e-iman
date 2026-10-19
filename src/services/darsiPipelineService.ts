@@ -5,6 +5,7 @@
 import { comprehensiveLexicon } from './lexiconService';
 import { ComparativeFiqhData } from '../components/Reader/ComparativeFiqhBox';
 import { TakhreejData, getTakhreejReferences } from './takhreejService';
+import { getAuthenticHadithSync } from './classicalHadithLookupService';
 
 export interface WordAnalysis {
   arabic: string;
@@ -940,10 +941,13 @@ export function getDarsiAnalysisSync(
   if (existingTranslation && existingTranslation.trim().length > 10 && !isGenericTemplate) {
     urduTranslation = existingTranslation.trim();
   } else {
-    // Build literal faithful translation directly from authentic Matn tokens
-    const translatedTokens = wordByWord.map(w => w.urdu).filter(u => u && u.length > 0);
-    urduTranslation = translatedTokens.join(' ').replace(/\s+/g, ' ').trim();
-    if (!urduTranslation.endsWith('۔')) urduTranslation += '۔';
+    // Look up directly from authentic classical repository — ZERO AI/synthetic tokens
+    const classicalMatch = getAuthenticHadithSync(bookId, hadithNumber);
+    if (classicalMatch?.urduTranslation) {
+      urduTranslation = classicalMatch.urduTranslation.trim();
+    } else {
+      urduTranslation = existingTranslation?.trim() || '';
+    }
   }
 
   // 6. Context-Aware Darsi Nahwi Tarkeeb & Comparative Fiqhi Schools (المذاهب الأربعة)

@@ -1,4 +1,5 @@
 import { BookChapter, BookSegment } from '../types';
+import { getAuthenticHadithSync } from './classicalHadithLookupService';
 
 export interface HadithApiResult {
   hadithnumber: number;
@@ -489,8 +490,9 @@ export function createAcademicHadithChapter(
   else if (bookId === 'nasai') authorSanad = "أَبُو عَبْدِ الرَّحْمَنِ أَحْمَدُ بْنُ شُعَيْبٍ النَّسَائِيُّ";
   else if (bookId === 'ibnmajah') authorSanad = "أَبُو عَبْدِ اللَّهِ مُحَمَّدُ بْنُ يَزِيدَ ابْنُ مَاجَهْ";
 
-  const defaultAr = arabicText || `حَدَّثَنَا الإِمَامُ ${authorSanad} رَحِمَهُ اللَّهُ تَعَالَى قَالَ: حَدَّثَنَا مُسَدَّدٌ قَالَ: حَدَّثَنَا يَحْيَى عَنْ شُعْبَةَ عَنْ قَتَادَةَ عَنْ أَنَسٍ رَضِيَ اللَّهُ عَنْهُ عَنِ النَّبِيِّ ﷺ قَالَ: «إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ، وَخَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ». [حَدِيثُ رَقْمِ ${hadithNumber}]`;
-  const defaultUr = urduText || `[حدیث مبارکہ نمبر ${hadithNumber}]: رسول اللہ ﷺ کا ارشادِ گرامی۔ (نوٹ: جامعہ کے مستند ذخیرۂ حدیث سے متن و ترجمہ باقاعدہ محفوظ اور منسلک ہے)۔`;
+  const classical = getAuthenticHadithSync(bookId, hadithNumber);
+  const defaultAr = arabicText || classical?.arabicText || `أَخْرَجَهُ الإِمَامُ ${authorSanad} رَحِمَهُ اللَّهُ فِي صَحِيحِهِ بِرَقْمِ [${hadithNumber}].`;
+  const defaultUr = urduText || classical?.urduTranslation || '';
 
   const segment: BookSegment = {
     id: `${bookId}_h_${hadithNumber}`,
