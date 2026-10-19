@@ -242,6 +242,8 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isTransitioningRef = useRef(false);
+  const isAdvancingRef = useRef(false);
+  const currentIndexRef = useRef<number>(-1);
   const activeItemRef = useRef<AudioSyncItem | null>(null);
   const playlistRef = useRef<AudioSyncItem[]>([]);
   const autoPlayNextRef = useRef<boolean>(true);
@@ -270,6 +272,7 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       const handlePlaying = () => {
         setIsLoading(false);
         setIsPlaying(true);
+        isAdvancingRef.current = false;
       };
       const handlePause = () => {
         if (!isTransitioningRef.current) {
@@ -314,13 +317,20 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         console.warn('Audio playback error:', e);
         setIsLoading(false);
         setIsPlaying(false);
+        isAdvancingRef.current = false;
       };
 
+      // Single, protected ended listener: debounced to guarantee exactly ONE index advance per verse completion
       const handleEnded = () => {
         setIsPlaying(false);
-        if (autoPlayNextRef.current) {
-          playNextRef.current();
-        }
+        if (!autoPlayNextRef.current) return;
+        if (isAdvancingRef.current) return; // Prevent double invocation!
+        isAdvancingRef.current = true;
+        setTimeout(() => {
+          isAdvancingRef.current = false;
+        }, 400);
+
+        playNextRef.current();
       };
 
       audio.addEventListener('waiting', handleWaiting);
@@ -331,7 +341,6 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       audio.addEventListener('durationchange', handleDurationChange);
       audio.addEventListener('error', handleError);
       audio.addEventListener('ended', handleEnded);
-      audio.onended = handleEnded;
 
       return () => {
         audio.removeEventListener('waiting', handleWaiting);
@@ -342,7 +351,6 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         audio.removeEventListener('durationchange', handleDurationChange);
         audio.removeEventListener('error', handleError);
         audio.removeEventListener('ended', handleEnded);
-        audio.onended = null;
         audio.pause();
         audio.src = '';
       };
@@ -390,9 +398,20 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const ayahNum = item.itemNumber || 1;
     setActiveAyahNumber(ayahNum);
     activeAyahNumberRef.current = ayahNum;
+
+    // Track active index precisely in active playlist
+    const currentList = (newPlaylist && newPlaylist.length > 0) ? newPlaylist : playlistRef.current;
+    if (currentList && currentList.length > 0) {
+      const idx = currentList.findIndex(it => it.id === item.id);
+      currentIndexRef.current = idx !== -1 ? idx : (item.itemNumber ? item.itemNumber - 1 : 0);
+    } else {
+      currentIndexRef.current = item.itemNumber ? item.itemNumber - 1 : 0;
+    }
+
     setFloatingBarOpen(true);
     setIsLoading(true);
     isTransitioningRef.current = true;
+    isAdvancingRef.current = false;
 
     // Determine Audio Source
     let audioUrl = item.audioUrl;
@@ -407,14 +426,6 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     const audio = audioRef.current;
     if (audioUrl && audio) {
-      // Explicit onended handler assigned on every track to guarantee automatic advancement
-      audio.onended = () => {
-        setIsPlaying(false);
-        if (autoPlayNextRef.current) {
-          playNextRef.current();
-        }
-      };
-
       audio.src = audioUrl;
       audio.playbackRate = playbackRateRef.current;
       audio.load();
@@ -446,20 +457,25 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     const currentPlaylist = playlistRef.current;
 
-    // 1. Advance in current playlist queue
+    // 1. Advance in current playlist queue: step by EXACTLY +1
     if (currentPlaylist && currentPlaylist.length > 0) {
-      const curIdx = currentPlaylist.findIndex(it => it.id === currentItem.id);
-      if (curIdx !== -1 && curIdx < currentPlaylist.length - 1) {
-        const nextItem = currentPlaylist[curIdx + 1];
-        playItem(nextItem);
+      let curIdx = currentIndexRef.current;
+      if (curIdx < 0 || curIdx >= currentPlaylist.length || currentPlaylist[curIdx]?.id !== currentItem.id) {
+        curIdx = currentPlaylist.findIndex(it => it.id === currentItem.id);
+      }
+      const nextIdx = (curIdx !== -1 ? curIdx : 0) + 1;
+      if (nextIdx < currentPlaylist.length) {
+        currentIndexRef.current = nextIdx;
+        playItem(currentPlaylist[nextIdx]);
         return;
       }
     }
 
-    // 2. Fallback for Quran Ayahs: Auto-advance to next Ayah in Surah
+    // 2. Fallback for Quran Ayahs: Auto-advance to next Ayah in Surah (step by EXACTLY +1)
     if (currentItem.type === 'quran' && currentItem.surahNumber) {
       const totalAyahs = currentItem.totalItems || 999;
-      const nextAyah = (currentItem.itemNumber || 1) + 1;
+      const currentNum = currentItem.itemNumber || 1;
+      const nextAyah = currentNum + 1;
       if (nextAyah <= totalAyahs) {
         const reciter = selectedReciterRef.current;
         const nextItem: AudioSyncItem = {
@@ -476,10 +492,11 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       }
     }
 
-    // 3. Fallback for Hadith: advance to next hadith if numbered
+    // 3. Fallback for Hadith: advance to next hadith if numbered (step by EXACTLY +1)
     if (currentItem.type === 'hadith' && currentItem.itemNumber && currentItem.bookSlug) {
       const totalHadiths = currentItem.totalItems || 9999;
-      const nextNum = (currentItem.itemNumber || 1) + 1;
+      const currentNum = currentItem.itemNumber || 1;
+      const nextNum = currentNum + 1;
       if (nextNum <= totalHadiths) {
         const nextItem: AudioSyncItem = {
           ...currentItem,
@@ -505,11 +522,16 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     const currentPlaylist = playlistRef.current;
 
-    // 1. If we have a playlist, move backwards
+    // 1. Move backwards in playlist: step by EXACTLY -1
     if (currentPlaylist && currentPlaylist.length > 0) {
-      const curIdx = currentPlaylist.findIndex(it => it.id === currentItem.id);
-      if (curIdx > 0) {
-        playItem(currentPlaylist[curIdx - 1]);
+      let curIdx = currentIndexRef.current;
+      if (curIdx < 0 || curIdx >= currentPlaylist.length || currentPlaylist[curIdx]?.id !== currentItem.id) {
+        curIdx = currentPlaylist.findIndex(it => it.id === currentItem.id);
+      }
+      const prevIdx = (curIdx !== -1 ? curIdx : 1) - 1;
+      if (prevIdx >= 0 && prevIdx < currentPlaylist.length) {
+        currentIndexRef.current = prevIdx;
+        playItem(currentPlaylist[prevIdx]);
         return;
       }
     }
