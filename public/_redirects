@@ -1,6 +1,1 @@
-/assets/*  /index.html  404
-/naats/*   /naats/:splat  200
-/audio/*   /audio/:splat  200
-/quran/*   /quran/:splat  200
-/data/*    /data/:splat   200
-/*         /index.html    200
+/*    /index.html   200

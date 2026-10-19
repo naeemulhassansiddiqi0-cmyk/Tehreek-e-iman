@@ -297,7 +297,7 @@ export default function HomePage() {
                       </span>
                     </div>
 
-                    {/* Book Name in Noto Nastaliq */}
+                    {/* Book Name in Jameel Noori Nastaleeq */}
                     <h3 className="font-bold font-nastaliq text-base sm:text-lg text-stone-900 group-hover:text-emerald-800 transition-colors leading-snug line-clamp-1">
                       {book.title_ur}
                     </h3>

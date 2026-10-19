@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Search, BookOpen, Clock, GraduationCap, X } from 'lucide-react';
+import { BookOpen, Clock, GraduationCap, Scale, Heart, Headphones, Mic2, Menu, X, ChevronDown } from 'lucide-react';
 import { TehreekImanLogo } from './TehreekImanLogo';
 import { AppTab } from '../types';
+import { GlobalSearchInput } from './Search/GlobalSearchInput';
+import { GlobalSearchResult, SearchCategoryFilter } from '../services/globalSearchService';
 
 interface NavbarProps {
   activeTab: AppTab;
@@ -16,9 +18,12 @@ interface NavbarProps {
   userName?: string;
   setUserName?: (name: string) => void;
   setCustomLogoSrc?: (src: string) => void;
-  onOpenSearch?: () => void;
+  onOpenSearch?: (query?: string, category?: SearchCategoryFilter) => void;
   onOpenKharjiBooks?: () => void;
   onOpenAdmin?: () => void;
+  onOpenQuranAudio?: () => void;
+  onOpenNaatPlayer?: () => void;
+  onSelectSearchResult?: (result: GlobalSearchResult) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -27,121 +32,363 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSearchChange,
   searchQuery = '',
   customLogoSrc = '/tehreek-iman-logo.jpg',
+  onOpenSearch,
+  onOpenQuranAudio,
+  onOpenNaatPlayer,
+  onSelectSearchResult
 }) => {
-  const [internalQuery, setInternalQuery] = useState(searchQuery);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
 
-  const handleSearch = (val: string) => {
-    setInternalQuery(val);
-    if (onSearchChange) {
-      onSearchChange(val);
+  const handleSelectResult = (result: GlobalSearchResult) => {
+    if (onSelectSearchResult) {
+      onSelectSearchResult(result);
+    } else if (typeof window !== 'undefined') {
+      if (result.sourceType === 'external' && result.externalLink) {
+        window.open(result.externalLink, '_blank', 'noopener,noreferrer');
+      } else {
+        const targetUrl = `/books/${result.bookSlug}${result.pageNumber ? `?page=${result.pageNumber}` : ''}`;
+        window.history.pushState({}, '', targetUrl);
+        window.dispatchEvent(new PopStateEvent('popstate'));
+        window.dispatchEvent(new CustomEvent('tehreek:navigate', { detail: { url: targetUrl } }));
+        window.scrollTo(0, 0);
+      }
     }
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between py-2 sm:py-2.5 min-h-[5.5rem] sm:min-h-[6rem] gap-3 sm:gap-6">
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-200/90 shadow-xs" dir="rtl">
+      <div className="max-w-7xl mx-auto px-3 sm:px-5 lg:px-8">
+        
+        {/* Main Desktop & Tablet Row */}
+        <div className="flex items-center justify-between py-2 sm:py-2.5 gap-2 sm:gap-4">
           
-          {/* Right: Logo & Name "تحریک ایمان" مع بانی و سرپرست */}
+          {/* 1. Right: Brand Logo & Title */}
           <div
             onClick={() => setActiveTab('dashboard')}
-            className="flex items-center gap-3 sm:gap-4 cursor-pointer select-none shrink-0 py-1"
+            className="flex items-center gap-2 sm:gap-3 cursor-pointer select-none shrink-0 py-0.5"
             title="تحریکِ ایمان — بانی و سرپرست: حضرت مولانا محمد نعیم الحسن صدیقی دامت برکاتہم العالیہ"
           >
             <div className="shrink-0 flex items-center justify-center">
               <div className="hidden sm:block">
-                <TehreekImanLogo size={74} customImgSrc={customLogoSrc} />
+                <TehreekImanLogo size={68} customImgSrc={customLogoSrc} />
               </div>
               <div className="sm:hidden">
-                <TehreekImanLogo size={58} customImgSrc={customLogoSrc} />
+                <TehreekImanLogo size={46} customImgSrc={customLogoSrc} />
               </div>
             </div>
             <div className="flex flex-col justify-center">
-              <span className="font-nastaliq text-2xl sm:text-3xl font-black text-emerald-900 tracking-tight leading-tight">
+              <span className="font-nastaliq text-xl sm:text-2xl lg:text-3xl font-black text-emerald-900 tracking-tight leading-tight">
                 تحریکِ ایمان
               </span>
-              <span className="font-nastaliq text-xs sm:text-sm font-bold text-amber-900 leading-tight mt-1 flex flex-wrap items-center gap-1">
+              <span className="font-nastaliq text-[10px] sm:text-xs font-bold text-amber-900 leading-tight mt-0.5 flex flex-wrap items-center gap-1">
                 <span className="text-emerald-800 font-bold">بانی و سرپرست:</span>
-                <span className="text-stone-800">حضرت مولانا محمد نعیم الحسن صدیقی دامت برکاتہم العالیہ</span>
+                <span className="text-stone-800 hidden xs:inline">حضرت مولانا محمد نعیم الحسن صدیقی</span>
+                <span className="text-stone-800 xs:hidden">مولانا نعیم الحسن صدیقی</span>
               </span>
             </div>
           </div>
 
-          {/* Center: Search Bar with Urdu placeholder */}
-          <div className="flex-1 max-w-xl mx-auto">
-            <div className="relative">
-              <Search className="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-              <input
-                type="text"
-                value={internalQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-                placeholder="کتاب، مصنف یا موضوع تلاش کریں..."
-                className="w-full pr-11 pl-10 py-2.5 bg-gray-50 hover:bg-gray-100/70 focus:bg-white text-stone-900 placeholder:text-gray-400 text-sm rounded-2xl border border-gray-200 focus:border-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 transition-all font-nastaliq"
-              />
-              {internalQuery && (
-                <button
-                  type="button"
-                  onClick={() => handleSearch('')}
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-stone-700 p-1 rounded-full transition"
-                  title="تلاش صاف کریں"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
+          {/* 2. Center: Prominent, Spacious Global Search Input (Desktop & Tablet) */}
+          <div className="hidden lg:flex flex-1 max-w-xl xl:max-w-2xl min-w-[260px] mx-2 xl:mx-6">
+            <GlobalSearchInput
+              initialQuery={searchQuery}
+              onQueryChange={onSearchChange}
+              onSelectResult={handleSelectResult}
+              onOpenFullModal={(q, cat) => {
+                if (onOpenSearch) onOpenSearch(q, cat);
+              }}
+              placeholder="147 کتب، احادیث، تفاسیر، فقہ و حواشی میں تلاش فرمائیں..."
+            />
           </div>
 
-          {/* Left: Clean Navigation Tabs */}
-          <nav className="hidden md:flex items-center gap-1.5 shrink-0">
+          {/* 3. Left: Audio Pills & Consolidated Nav Items */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            
+            {/* Audio Quick Triggers */}
+            {(onOpenQuranAudio || onOpenNaatPlayer) && (
+              <div className="flex items-center gap-1 shrink-0">
+                {onOpenQuranAudio && (
+                  <button
+                    type="button"
+                    onClick={onOpenQuranAudio}
+                    className="px-2 sm:px-2.5 py-1.5 rounded-full bg-gradient-to-r from-emerald-950 via-[#0a2318] to-emerald-950 text-amber-300 border border-amber-400/80 hover:border-amber-300 hover:scale-105 active:scale-95 transition-all cursor-pointer font-nastaliq font-bold shadow-xs flex items-center gap-1 text-[11px] sm:text-xs"
+                    title="القرآن الکریم - 114 سورتیں مع تلاوتِ قراء"
+                  >
+                    <Headphones className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span className="hidden sm:inline">تلاوتِ قرآن</span>
+                    <span className="sm:hidden">قرآن</span>
+                  </button>
+                )}
+                {onOpenNaatPlayer && (
+                  <button
+                    type="button"
+                    onClick={onOpenNaatPlayer}
+                    className="px-2 sm:px-2.5 py-1.5 rounded-full bg-gradient-to-r from-emerald-950 via-[#0a2318] to-emerald-950 text-emerald-200 border border-emerald-400/80 hover:border-emerald-300 hover:scale-105 active:scale-95 transition-all cursor-pointer font-nastaliq font-bold shadow-xs flex items-center gap-1 text-[11px] sm:text-xs"
+                    title="حمد و نعت و کلامِ اکابر"
+                  >
+                    <Mic2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span className="hidden sm:inline">حمد و نعت</span>
+                    <span className="sm:hidden">نعت</span>
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Desktop Navigation (Adaptive: Full on XL, Grouped on LG) */}
+            <nav className="hidden lg:flex items-center gap-1 shrink-0 whitespace-nowrap">
+              <button
+                type="button"
+                onClick={() => setActiveTab('dashboard')}
+                className={`px-2.5 py-1.5 rounded-xl font-nastaliq font-bold transition-all text-xs cursor-pointer ${
+                  activeTab === 'dashboard'
+                    ? 'bg-emerald-800 text-white shadow-xs'
+                    : 'text-stone-700 hover:bg-gray-100'
+                }`}
+              >
+                کتب خانہ
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('reader')}
+                className={`px-2.5 py-1.5 rounded-xl font-nastaliq font-bold transition-all flex items-center gap-1 text-xs cursor-pointer ${
+                  activeTab === 'reader'
+                    ? 'bg-emerald-800 text-white shadow-xs'
+                    : 'text-stone-700 hover:bg-gray-100'
+                }`}
+              >
+                <BookOpen className="w-3 h-3" />
+                <span>مطالعہ</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('ahkam-shariat')}
+                className={`px-2.5 py-1.5 rounded-xl font-nastaliq font-bold transition-all flex items-center gap-1 text-xs cursor-pointer ${
+                  activeTab === 'ahkam-shariat'
+                    ? 'bg-emerald-800 text-white shadow-xs'
+                    : 'text-stone-700 hover:bg-gray-100'
+                }`}
+                title="احکامِ شریعت و فقہی رہنمائی"
+              >
+                <Scale className="w-3 h-3 text-amber-500" />
+                <span>احکامِ شریعت</span>
+              </button>
+
+              {/* XL-Only Direct Tabs */}
+              <button
+                type="button"
+                onClick={() => setActiveTab('islah-aamal')}
+                className={`hidden xl:flex items-center gap-1 px-2.5 py-1.5 rounded-xl font-nastaliq font-bold transition-all text-xs cursor-pointer ${
+                  activeTab === 'islah-aamal'
+                    ? 'bg-emerald-800 text-white shadow-xs'
+                    : 'text-stone-700 hover:bg-gray-100'
+                }`}
+                title="اصلاحِ اعمال و روزمرہ محاسبۂ نفس"
+              >
+                <Heart className="w-3 h-3 text-rose-500" />
+                <span>اصلاحِ اعمال</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('prayer-times')}
+                className={`hidden xl:flex items-center gap-1 px-2.5 py-1.5 rounded-xl font-nastaliq font-bold transition-all text-xs cursor-pointer ${
+                  activeTab === 'prayer-times'
+                    ? 'bg-emerald-800 text-white shadow-xs'
+                    : 'text-stone-700 hover:bg-gray-100'
+                }`}
+              >
+                <Clock className="w-3 h-3" />
+                <span>اوقاتِ نماز</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('exams')}
+                className={`hidden xl:flex items-center gap-1 px-2.5 py-1.5 rounded-xl font-nastaliq font-bold transition-all text-xs cursor-pointer ${
+                  activeTab === 'exams'
+                    ? 'bg-emerald-800 text-white shadow-xs'
+                    : 'text-stone-700 hover:bg-gray-100'
+                }`}
+              >
+                <GraduationCap className="w-3 h-3" />
+                <span>امتحانی مرکز</span>
+              </button>
+
+              {/* LG-Only "More" Dropdown to prevent squishing search bar */}
+              <div className="xl:hidden relative">
+                <button
+                  type="button"
+                  onClick={() => setMoreMenuOpen(prev => !prev)}
+                  className={`px-2 py-1.5 rounded-xl font-nastaliq font-bold transition-all flex items-center gap-1 text-xs cursor-pointer ${
+                    activeTab === 'islah-aamal' || activeTab === 'prayer-times' || activeTab === 'exams'
+                      ? 'bg-emerald-800 text-white shadow-xs'
+                      : 'text-stone-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <span>مزید</span>
+                  <ChevronDown className="w-3 h-3" />
+                </button>
+
+                {moreMenuOpen && (
+                  <div 
+                    onClick={() => setMoreMenuOpen(false)}
+                    className="absolute left-0 mt-1.5 w-44 bg-white rounded-xl shadow-xl border border-gray-200 py-1.5 z-50 animate-fadeIn"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('islah-aamal')}
+                      className={`w-full px-3 py-2 text-right font-nastaliq text-xs flex items-center gap-2 hover:bg-emerald-50 ${
+                        activeTab === 'islah-aamal' ? 'text-emerald-800 font-bold bg-emerald-50' : 'text-stone-700'
+                      }`}
+                    >
+                      <Heart className="w-3.5 h-3.5 text-rose-500" />
+                      <span>اصلاحِ اعمال</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('prayer-times')}
+                      className={`w-full px-3 py-2 text-right font-nastaliq text-xs flex items-center gap-2 hover:bg-emerald-50 ${
+                        activeTab === 'prayer-times' ? 'text-emerald-800 font-bold bg-emerald-50' : 'text-stone-700'
+                      }`}
+                    >
+                      <Clock className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>اوقاتِ نماز</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('exams')}
+                      className={`w-full px-3 py-2 text-right font-nastaliq text-xs flex items-center gap-2 hover:bg-emerald-50 ${
+                        activeTab === 'exams' ? 'text-emerald-800 font-bold bg-emerald-50' : 'text-stone-700'
+                      }`}
+                    >
+                      <GraduationCap className="w-3.5 h-3.5 text-amber-600" />
+                      <span>امتحانی مرکز</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </nav>
+
+            {/* Mobile Menu Hamburger Button (< lg) */}
             <button
-              onClick={() => setActiveTab('dashboard')}
-              className={`px-4 py-2 rounded-2xl text-sm font-nastaliq font-bold transition-all ${
-                activeTab === 'dashboard'
-                  ? 'bg-emerald-800 text-white shadow-xs'
-                  : 'text-stone-700 hover:bg-gray-100'
-              }`}
+              type="button"
+              onClick={() => setMobileMenuOpen(prev => !prev)}
+              className="lg:hidden p-2 rounded-xl text-stone-700 hover:text-emerald-900 hover:bg-stone-100 transition cursor-pointer"
+              title="مینو"
             >
-              کتب خانہ
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
 
-            <button
-              onClick={() => setActiveTab('reader')}
-              className={`px-4 py-2 rounded-2xl text-sm font-nastaliq font-bold transition-all flex items-center gap-1.5 ${
-                activeTab === 'reader'
-                  ? 'bg-emerald-800 text-white shadow-xs'
-                  : 'text-stone-700 hover:bg-gray-100'
-              }`}
-            >
-              <BookOpen className="w-4 h-4" />
-              <span>مطالعہ</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('prayer-times')}
-              className={`px-4 py-2 rounded-2xl text-sm font-nastaliq font-bold transition-all flex items-center gap-1.5 ${
-                activeTab === 'prayer-times'
-                  ? 'bg-emerald-800 text-white shadow-xs'
-                  : 'text-stone-700 hover:bg-gray-100'
-              }`}
-            >
-              <Clock className="w-4 h-4" />
-              <span>اوقاتِ نماز</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('exams')}
-              className={`px-4 py-2 rounded-2xl text-sm font-nastaliq font-bold transition-all flex items-center gap-1.5 ${
-                activeTab === 'exams'
-                  ? 'bg-emerald-800 text-white shadow-xs'
-                  : 'text-stone-700 hover:bg-gray-100'
-              }`}
-            >
-              <GraduationCap className="w-4 h-4" />
-              <span>امتحانی مرکز</span>
-            </button>
-          </nav>
-
+          </div>
         </div>
+
+        {/* Dedicated Mobile & Tablet Full-Width Search Row (< lg) */}
+        <div className="lg:hidden pb-2.5 pt-0.5">
+          <GlobalSearchInput
+            initialQuery={searchQuery}
+            onQueryChange={onSearchChange}
+            onSelectResult={handleSelectResult}
+            onOpenFullModal={(q, cat) => {
+              if (onOpenSearch) onOpenSearch(q, cat);
+            }}
+            placeholder="147 کتب، احادیث، تفاسیر و فقہ میں تلاش کریں..."
+          />
+        </div>
+
+        {/* Mobile Navigation Drawer Overlay */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden border-t border-gray-100 py-3 bg-stone-50/95 rounded-2xl mb-2 px-2 shadow-inner animate-fadeIn">
+            <div className="grid grid-cols-2 gap-1.5 font-nastaliq text-xs">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('dashboard');
+                  setMobileMenuOpen(false);
+                }}
+                className={`p-2.5 rounded-xl font-bold transition flex items-center gap-2 ${
+                  activeTab === 'dashboard' ? 'bg-emerald-800 text-white shadow-xs' : 'bg-white text-stone-800 hover:bg-emerald-50'
+                }`}
+              >
+                <BookOpen className="w-3.5 h-3.5 text-emerald-600" />
+                <span>کتب خانہ</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('reader');
+                  setMobileMenuOpen(false);
+                }}
+                className={`p-2.5 rounded-xl font-bold transition flex items-center gap-2 ${
+                  activeTab === 'reader' ? 'bg-emerald-800 text-white shadow-xs' : 'bg-white text-stone-800 hover:bg-emerald-50'
+                }`}
+              >
+                <BookOpen className="w-3.5 h-3.5 text-amber-600" />
+                <span>مطالعہ</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('ahkam-shariat');
+                  setMobileMenuOpen(false);
+                }}
+                className={`p-2.5 rounded-xl font-bold transition flex items-center gap-2 ${
+                  activeTab === 'ahkam-shariat' ? 'bg-emerald-800 text-white shadow-xs' : 'bg-white text-stone-800 hover:bg-emerald-50'
+                }`}
+              >
+                <Scale className="w-3.5 h-3.5 text-amber-500" />
+                <span>احکامِ شریعت</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('islah-aamal');
+                  setMobileMenuOpen(false);
+                }}
+                className={`p-2.5 rounded-xl font-bold transition flex items-center gap-2 ${
+                  activeTab === 'islah-aamal' ? 'bg-emerald-800 text-white shadow-xs' : 'bg-white text-stone-800 hover:bg-emerald-50'
+                }`}
+              >
+                <Heart className="w-3.5 h-3.5 text-rose-500" />
+                <span>اصلاحِ اعمال</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('prayer-times');
+                  setMobileMenuOpen(false);
+                }}
+                className={`p-2.5 rounded-xl font-bold transition flex items-center gap-2 ${
+                  activeTab === 'prayer-times' ? 'bg-emerald-800 text-white shadow-xs' : 'bg-white text-stone-800 hover:bg-emerald-50'
+                }`}
+              >
+                <Clock className="w-3.5 h-3.5 text-emerald-600" />
+                <span>اوقاتِ نماز</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('exams');
+                  setMobileMenuOpen(false);
+                }}
+                className={`p-2.5 rounded-xl font-bold transition flex items-center gap-2 ${
+                  activeTab === 'exams' ? 'bg-emerald-800 text-white shadow-xs' : 'bg-white text-stone-800 hover:bg-emerald-50'
+                }`}
+              >
+                <GraduationCap className="w-3.5 h-3.5 text-amber-600" />
+                <span>امتحانی مرکز</span>
+              </button>
+            </div>
+          </div>
+        )}
+
       </div>
     </header>
   );

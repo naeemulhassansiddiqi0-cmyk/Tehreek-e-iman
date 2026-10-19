@@ -173,7 +173,7 @@ export const UrduStyler: React.FC<UrduStylerProps> = ({
               boxSizing: 'border-box',
               position: 'sticky',
               top: '80px',
-              fontFamily: "'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', system-ui, sans-serif"
+              fontFamily: "'Jameel Noori Nastaleeq', 'Urdu Nastaleeq', 'Nafees', system-ui, sans-serif"
             }}
           >
           {/* Header */}

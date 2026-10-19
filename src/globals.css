@@ -1,19 +1,32 @@
 @import url('https://fonts.cdnfonts.com/css/jameel-noori-nastaleeq');
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Scheherazade+New:wght@400;700&display=swap');
+
+@font-face {
+  font-family: 'Jameel Noori Nastaleeq';
+  font-style: normal;
+  font-weight: 100 900;
+  src: local('Jameel Noori Nastaleeq'), local('Jameel Noori Nastaliq'), local('JameelNooriNastaleeq'), local('Urdu Nastaleeq'), url('https://fonts.cdnfonts.com/s/149204/JameelNooriNastaleeqRegular.woff') format('woff');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Urdu Nastaleeq';
+  font-style: normal;
+  font-weight: 100 900;
+  src: local('Jameel Noori Nastaleeq'), local('Jameel Noori Nastaliq'), local('Urdu Nastaleeq'), local('Nafees Web Nasta\'liq'), local('Nafees'), url('https://fonts.cdnfonts.com/s/149204/JameelNooriNastaleeqRegular.woff') format('woff');
+  font-display: swap;
+}
 
 :root {
   --urdu-font-size: 21px;
   --urdu-line-height: 34px;
 }
 
-html, body, * {
-  font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif !important;
-  font-feature-settings: normal !important;
-  font-stretch: normal !important;
-  font-variation-settings: normal !important;
-  text-rendering: optimizeLegibility !important;
+body {
+  font-family: 'Jameel Noori Nastaleeq', 'Urdu Nastaleeq', 'Nafees', serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 @layer base {
@@ -33,19 +46,16 @@ html, body, * {
 }
 
 .urdu-text, .urdu, [lang="ur"] {
-  font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif !important;
-  font-size: var(--urdu-font-size, 22px) !important;
-  line-height: var(--urdu-line-height, 2.2) !important;
-  font-feature-settings: normal !important;
-  font-stretch: normal !important;
-  font-variation-settings: normal !important;
-  text-rendering: optimizeLegibility !important;
+  font-family: 'Jameel Noori Nastaleeq', 'Urdu Nastaleeq', 'Nafees', serif;
+  font-size: var(--urdu-font-size, 22px);
+  line-height: var(--urdu-line-height, 2.2);
+  text-rendering: optimizeLegibility;
 }
 
 .font-nastaliq {
-  font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif !important;
+  font-family: 'Jameel Noori Nastaleeq', 'Urdu Nastaleeq', 'Nafees', serif;
 }
 
-.arabic-text, .arabic-text *, .font-arabic, .font-arabic *, .font-amiri, .font-amiri *, [lang="ar"], [lang="ar"] * {
-  font-family: 'Amiri', 'Traditional Arabic', serif !important;
+.arabic-text, .font-arabic, .font-amiri, [lang="ar"] {
+  font-family: 'Amiri Quran', 'Amiri', 'Traditional Arabic', serif;
 }

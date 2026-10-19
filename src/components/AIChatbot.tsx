@@ -509,7 +509,7 @@ ${citationBlock}
         <div
           dir="rtl"
           className="fixed inset-x-2 bottom-16 sm:inset-x-auto sm:bottom-20 sm:right-5 z-50 w-auto sm:w-[460px] max-h-[85vh] sm:max-h-[680px] h-[620px] flex flex-col bg-white rounded-2xl shadow-2xl border border-emerald-200 overflow-hidden animate-fadeIn"
-          style={{ fontFamily: "'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif" }}
+          style={{ fontFamily: "'Jameel Noori Nastaleeq', 'Urdu Nastaleeq', 'Nafees', serif" }}
         >
           {/* 1. Header with Official Branding & Founder's Name */}
           <div className="bg-gradient-to-l from-emerald-950 via-emerald-900 to-teal-950 text-white px-4 py-3 flex items-center justify-between shadow-md border-b border-amber-500/30">

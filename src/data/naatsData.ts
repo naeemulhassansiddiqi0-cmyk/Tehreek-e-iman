@@ -1,4 +1,5 @@
 import naatsJson from './naats.json';
+import { CLASSICAL_QASIDAS } from './classicalQasidasData';
 
 export interface NaatItem {
   id: number;
@@ -7,10 +8,17 @@ export interface NaatItem {
   category?: string;
   fileName: string;
   src?: string;
+  audioUrl?: string;
   type?: string;
+  theme?: string;
+  poet?: string;
+  couplets?: {
+    arabic: string;
+    urdu: string;
+  }[];
 }
 
-export const naatsData: NaatItem[] = (naatsJson as any[]).map(item => {
+const localNaats: NaatItem[] = (naatsJson as any[]).map(item => {
   return {
     id: item.id,
     title: item.title,
@@ -21,4 +29,20 @@ export const naatsData: NaatItem[] = (naatsJson as any[]).map(item => {
     type: 'local'
   };
 });
+
+const classicalItems: NaatItem[] = CLASSICAL_QASIDAS.map(q => ({
+  id: q.id,
+  title: q.title,
+  artist: `${q.reciter} (${q.poet})`,
+  category: q.category,
+  fileName: `classical-${q.id}.mp3`,
+  src: q.audioUrl,
+  audioUrl: q.audioUrl,
+  type: 'classical',
+  theme: q.theme,
+  poet: q.poet,
+  couplets: q.couplets
+}));
+
+export const naatsData: NaatItem[] = [...classicalItems, ...localNaats];
 

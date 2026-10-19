@@ -1,4 +1,4 @@
-export type AppTab = 'dashboard' | 'reader' | 'ai-tutor' | 'exams' | 'notes' | 'flashcards' | 'prayer-times';
+export type AppTab = 'dashboard' | 'reader' | 'ai-tutor' | 'exams' | 'notes' | 'flashcards' | 'prayer-times' | 'ahkam-shariat' | 'islah-aamal';
 
 export type AIMode = 
   | 'darulifta_fatwa'      // ڈیجیٹل دار الافتاء و باقاعدہ شرعی فتویٰ مع نصوص و مراجع

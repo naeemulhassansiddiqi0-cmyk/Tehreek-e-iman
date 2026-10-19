@@ -39,6 +39,8 @@ import { searchInsideBook } from '../../services/databaseService';
 import { hasFiqhFullText, loadFiqhFullText, convertFullTextToChapters, getFiqhFullTextSlug } from '../../services/fiqhFullTextService';
 import { getTranslationSourceInfo, translateArabicFiqhToUrdu, translateParagraph, isUrduText, isSameAsArabic } from '../../services/fiqhUrduTranslator';
 import { GlobalComments } from '../GlobalComments';
+import { TafseerModal } from './TafseerModal';
+import { getTafseerForAyah, TafseerEntry } from '../../services/tafseerService';
 
 interface ReaderViewProps {
   selectedBook: Book;
@@ -76,6 +78,8 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
   const [isFetchingHadith, setIsFetchingHadith] = useState(false);
   const [fetchNotice, setFetchNotice] = useState<string | null>(null);
   const [directHadithInput, setDirectHadithInput] = useState('');
+  const [activeTafseer, setActiveTafseer] = useState<TafseerEntry | null>(null);
+  const [isTafseerOpen, setIsTafseerOpen] = useState(false);
 
   // Default to Full Width (Stacked Mode) so Arabic Matn has expansive room and crystal-clear presentation
   const [isDualPane, setIsDualPane] = useState(false);
@@ -1624,7 +1628,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                               {/* 2. Dedicated Urdu Translation Box for this specific Paragraph */}
                               <div 
                                 style={{
-                                  fontFamily: "'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif",
+                                  fontFamily: "'Jameel Noori Nastaleeq', 'Urdu Nastaleeq', 'Nafees', serif",
                                   fontSize: '20px',
                                   color: '#14532d',
                                   background: '#f0fdf4',
@@ -1745,8 +1749,24 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                     </div>
                   )}
 
-                  {/* Actions Toolbar */}
+                    {/* Actions Toolbar */}
                   <div className="flex flex-wrap gap-2 pt-2">
+                    {isQuran && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const tEntry = getTafseerForAyah(activeChapterIndex + 1, undefined, safeSegmentIndex + 1);
+                          setActiveTafseer(tEntry);
+                          setIsTafseerOpen(true);
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-stone-950 text-xs font-bold shadow-sm transition-transform active:scale-95 cursor-pointer font-nastaliq"
+                        title="اس رکوع کی 4 معتمد تفاسیر (ابن کثیر، جلالین، بیضاوی، عثمانی) دیکھیں"
+                      >
+                        <BookOpen className="w-3.5 h-3.5 text-stone-950" />
+                        <span>📖 تفاسیر دیکھیں</span>
+                      </button>
+                    )}
+
                     <button
                       onClick={() => onSendToAI(segment.arabicText, selectedBook.title)}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-900 to-emerald-800 hover:from-emerald-800 hover:to-emerald-700 text-white text-xs font-semibold shadow-sm transition-transform active:scale-95"
@@ -1917,7 +1937,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                         ) : (
                           <div 
                             style={currentLang === 'ur' ? {
-                              fontFamily: "'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif",
+                              fontFamily: "'Jameel Noori Nastaleeq', 'Urdu Nastaleeq', 'Nafees', serif",
                               color: '#14532d',
                               background: '#f0fdf4',
                               padding: '16px',
@@ -1944,9 +1964,25 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                         <h4 className="text-xs font-bold text-emerald-900 dark:text-emerald-300 mb-1 font-nastaliq">
                           جامع درسی تشریح و دلائلِ ائمہ و فتاویٰ:
                         </h4>
-                        <p className="urdu-text text-sm text-stone-700 dark:text-stone-300 leading-loose text-justify">
-                          {segment.tashreeh}
-                        </p>
+                        <div className="urdu-text text-sm text-stone-700 dark:text-stone-300 leading-loose text-justify space-y-1">
+                          {(segment.tashreeh || '').split('\n').map((tLine, tIdx) => {
+                            const parts = tLine.split(/(\*\*[^*]+?\*\*)/g);
+                            return (
+                              <p key={tIdx}>
+                                {parts.map((p, pIdx) => {
+                                  if (p.startsWith('**') && p.endsWith('**')) {
+                                    return (
+                                      <strong key={pIdx} className="font-bold text-emerald-950 dark:text-emerald-300 px-0.5">
+                                        {p.slice(2, -2).trim()}
+                                      </strong>
+                                    );
+                                  }
+                                  return p.replace(/\*\*/g, '');
+                                })}
+                              </p>
+                            );
+                          })}
+                        </div>
                       </div>
 
                       {/* Classical Hawashi */}
@@ -2316,6 +2352,15 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
         onClose={() => setIsOfflineManagerOpen(false)}
         onSelectBook={onSelectBook}
       />
+
+      {/* Tafseer Classical Modal */}
+      {isTafseerOpen && (
+        <TafseerModal
+          isOpen={isTafseerOpen}
+          onClose={() => setIsTafseerOpen(false)}
+          entry={activeTafseer}
+        />
+      )}
 
       {/* Floating Book Reader Auto-Scroll Controls Dock */}
       <FloatingReaderControls

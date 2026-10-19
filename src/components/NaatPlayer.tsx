@@ -8,7 +8,12 @@ import {
   VolumeX, 
   CheckCircle2,
   ListMusic,
-  Search
+  Search,
+  BookOpen,
+  Copy,
+  Sparkles,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { naatsData, NaatItem } from '../data/naatsData';
 import { TehreekImanLogo } from './TehreekImanLogo';
@@ -20,6 +25,7 @@ interface NaatPlayerProps {
 
 const categories = [
   { id: 'سب کلام', label: 'سب کلام', icon: '✨' },
+  { id: 'کلاسیکی کلام (دف و بلا موسیقی)', label: 'کلاسیکی کلام (دف و بلا موسیقی)', icon: '📜' },
   { id: 'مدارس و طلباء', label: 'مدارس و طلباء', icon: '🎓' },
   { id: 'صوفیانہ کلام', label: 'صوفیانہ کلام', icon: '📿' },
   { id: 'حمد و مناجات', label: 'حمد و مناجات', icon: '🤲' },
@@ -31,6 +37,8 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [redToastMsg, setRedToastMsg] = useState<string | null>(null);
+  const [showLyrics, setShowLyrics] = useState<boolean>(true);
+  const [copiedLyrics, setCopiedLyrics] = useState<boolean>(false);
 
   // Category Filtering & Search State
   const [selectedCategory, setSelectedCategory] = useState<string>('سب کلام');
@@ -39,6 +47,7 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
   // Category counts
   const categoryCounts: Record<string, number> = {
     'سب کلام': naatsData.length,
+    'کلاسیکی کلام (دف و بلا موسیقی)': naatsData.filter(n => n.category === 'کلاسیکی کلام (دف و بلا موسیقی)').length,
     'مدارس و طلباء': naatsData.filter(n => n.category === 'مدارس و طلباء').length,
     'صوفیانہ کلام': naatsData.filter(n => n.category === 'صوفیانہ کلام').length,
     'حمد و مناجات': naatsData.filter(n => n.category === 'حمد و مناجات').length,
@@ -145,7 +154,13 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
     setTimeout(() => setRedToastMsg(null), 4000);
   };
 
-  // DIRECT PLAY LOGIC - USE EXACT FILENAME - ROBUST PLAYBACK & ERROR RECOVERY
+  // DIRECT PLAY LOGIC - USE EXACT FILENAME OR DIRECT URL - ROBUST PLAYBACK & ERROR RECOVERY
+  const getAudioUrl = (naat: NaatItem) => {
+    if (naat.audioUrl) return naat.audioUrl;
+    if (naat.src && naat.src.startsWith('http')) return naat.src;
+    return `/naats/${naat.fileName}`;
+  };
+
   const handleSelectNaat = (naat: NaatItem) => {
     setCurrentNaat(naat);
     setCurrentTime(0);
@@ -154,7 +169,7 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
 
     if (!audioRef.current) return;
 
-    const url = `/naats/${naat.fileName}`;
+    const url = getAudioUrl(naat);
     console.log('PLAYING URL:', url);
     audioRef.current.src = url;
     audioRef.current.load();
@@ -175,19 +190,23 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
             return;
           }
           console.error('Audio play error:', err);
-          // Try fallback URL with encoding
-          const encoded = `/naats/${encodeURIComponent(naat.fileName)}`;
-          if (audioRef.current && audioRef.current.src !== encoded) {
-            audioRef.current.src = encoded;
-            audioRef.current.load();
-            audioRef.current.play()
-              .then(() => setIsPlaying(true))
-              .catch((err2: any) => {
-                if (err2.name !== 'AbortError' && err2.name !== 'NotAllowedError') {
-                  console.error('Audio fallback failed:', err2);
-                  showRedToast(`چلانے میں دشواری: ${naat.title}`);
-                }
-              });
+          // Try fallback URL with encoding for local tracks
+          if (!naat.audioUrl) {
+            const encoded = `/naats/${encodeURIComponent(naat.fileName)}`;
+            if (audioRef.current && audioRef.current.src !== encoded) {
+              audioRef.current.src = encoded;
+              audioRef.current.load();
+              audioRef.current.play()
+                .then(() => setIsPlaying(true))
+                .catch((err2: any) => {
+                  if (err2.name !== 'AbortError' && err2.name !== 'NotAllowedError') {
+                    console.error('Audio fallback failed:', err2);
+                    showRedToast(`چلانے میں دشواری: ${naat.title}`);
+                  }
+                });
+            }
+          } else {
+            showRedToast(`چلانے میں دشواری: ${naat.title}`);
           }
         });
     }
@@ -216,8 +235,8 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      const targetSrc = `/naats/${currentNaat.fileName}`;
-      if (!audioRef.current.src || (!audioRef.current.src.includes(currentNaat.fileName) && !audioRef.current.src.includes(encodeURIComponent(currentNaat.fileName)))) {
+      const targetSrc = getAudioUrl(currentNaat);
+      if (!audioRef.current.src || !audioRef.current.src.includes(currentNaat.fileName)) {
         audioRef.current.src = targetSrc;
         audioRef.current.load();
       }
@@ -347,7 +366,7 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
         style={{ 
           transform: `translate(${position.x}px, ${position.y}px)`,
           cursor: isDragging ? 'grabbing' : 'auto',
-          fontFamily: "'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif" 
+          fontFamily: "'Jameel Noori Nastaleeq', 'Urdu Nastaleeq', 'Nafees', serif" 
         }}
         className="relative w-full max-w-2xl bg-gradient-to-b from-[#064e3b] via-[#043328] to-[#022c22] rounded-[24px] border border-yellow-400/30 shadow-2xl max-h-[92vh] flex flex-col my-auto overflow-hidden text-amber-50 select-none transition-transform duration-75"
       >
@@ -618,6 +637,65 @@ export const NaatPlayer: React.FC<NaatPlayerProps> = ({ isOpen, onClose }) => {
                 />
               </div>
             </div>
+
+            {/* SYNCHRONIZED / SCROLLABLE LYRICS DRAWER (کلام و اشعار مع اردو مفہوم و اعراب) */}
+            {currentNaat.couplets && currentNaat.couplets.length > 0 && (
+              <div className="mt-3 bg-emerald-950/70 border border-amber-400/30 rounded-xl overflow-hidden shadow-inner text-right">
+                <div 
+                  onClick={() => setShowLyrics(!showLyrics)}
+                  className="flex items-center justify-between p-2.5 px-3 bg-emerald-900/60 cursor-pointer hover:bg-emerald-800/60 transition border-b border-amber-400/20"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="p-1 rounded-lg bg-amber-400/20 text-amber-300">
+                      <BookOpen className="w-4 h-4" />
+                    </span>
+                    <span className="text-xs font-nastaliq font-bold text-amber-200">
+                      کلام و اشعار مع اعراب و اردو ترجمہ ({currentNaat.couplets.length} اشعار)
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const fullText = currentNaat.couplets?.map(c => `${c.arabic}\n${c.urdu}`).join('\n\n') || '';
+                        navigator.clipboard.writeText(`${currentNaat.title}\n\n${fullText}`);
+                        setCopiedLyrics(true);
+                        setTimeout(() => setCopiedLyrics(false), 2500);
+                      }}
+                      className="px-2 py-0.5 rounded-md bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 text-[10px] font-nastaliq flex items-center gap-1 border border-amber-400/30 transition cursor-pointer"
+                    >
+                      <Copy className="w-3 h-3" />
+                      <span>{copiedLyrics ? 'کاپی ہوگیا!' : 'اشعار کاپی کریں'}</span>
+                    </button>
+                    <span className="text-amber-400/80">
+                      {showLyrics ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </span>
+                  </div>
+                </div>
+
+                {showLyrics && (
+                  <div className="p-3 max-h-56 overflow-y-auto custom-scrollbar space-y-2.5 bg-black/20">
+                    {currentNaat.theme && (
+                      <div className="text-[11px] font-nastaliq text-emerald-300 bg-emerald-900/40 p-1.5 px-2 rounded-lg border border-emerald-700/30 flex items-center gap-1">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                        <span>موضوع: {currentNaat.theme}</span>
+                      </div>
+                    )}
+                    {currentNaat.couplets.map((couplet, cIdx) => (
+                      <div key={cIdx} className="p-2 rounded-lg bg-emerald-950/60 border border-emerald-800/40 hover:border-amber-400/40 transition">
+                        <div className="font-arabic text-sm sm:text-base text-amber-100 font-bold leading-relaxed text-right dir-rtl">
+                          {couplet.arabic}
+                        </div>
+                        <div className="font-nastaliq text-xs text-amber-300/90 leading-relaxed mt-1 border-t border-emerald-900/60 pt-1 text-right dir-rtl">
+                          {couplet.urdu}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* 2. CATEGORY TABS SELECTOR (مدارس، صوفیانہ، حمد، نعت) */}

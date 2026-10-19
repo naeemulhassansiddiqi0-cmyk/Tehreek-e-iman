@@ -12,7 +12,6 @@ import { AdminPanelModal } from './components/Admin/AdminPanelModal';
 import { PrayerTimesView } from './components/PrayerTimes/PrayerTimesView';
 import { SacredAudioPlayer } from './components/AudioPlayer/SacredAudioPlayer';
 import { NaatPlayer } from './components/NaatPlayer';
-import { NaatPlayerButton } from './components/NaatPlayerButton';
 import { AIChatbot as Chatbot } from './components/AIChatbot';
 import { booksDatabase } from './data/booksData';
 import { Book, AppTab } from './types';
@@ -20,12 +19,17 @@ import { TehreekImanLogo } from './components/TehreekImanLogo';
 import { formatTextWithTehreekLogo, formatHtmlWithTehreekLogo } from './utils/clipboardHelper';
 import BookDetailPage from './app/books/[slug]/page';
 import SourcesAndLicensesPage from './app/sources-and-licenses/page';
+import { AhkamShariatView } from './components/AhkamShariat/AhkamShariatView';
+import { IslahAamalView } from './components/IslahAamal/IslahAamalView';
+import { Headphones, Mic2 } from 'lucide-react';
+import { SearchCategoryFilter, GlobalSearchResult } from './services/globalSearchService';
 
 export function App() {
   const [currentPath, setCurrentPath] = useState<string>(() => typeof window !== 'undefined' ? window.location.pathname : '/');
   const [activeTab, setActiveTab] = useState<AppTab>('dashboard');
   const [selectedBook, setSelectedBook] = useState<Book>(booksDatabase[0]);
   const [isNaatPlayerOpen, setIsNaatPlayerOpen] = useState(false);
+  const [isQuranAudioOpen, setIsQuranAudioOpen] = useState(false);
   const [apiKey, setApiKey] = useState<string>(() => {
     try {
       return localStorage.getItem('tehreek_gemini_api_key') || localStorage.getItem('madrasa_gemini_api_key') || '';
@@ -44,18 +48,41 @@ export function App() {
   const [kharjiModalInitialBook, setKharjiModalInitialBook] = useState<Book | null>(null);
   const [highlightSegmentId, setHighlightSegmentId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchModalInitialQuery, setSearchModalInitialQuery] = useState<string>('');
+  const [searchModalInitialCategory, setSearchModalInitialCategory] = useState<SearchCategoryFilter>('all');
+
+  const navigateTo = (path: string) => {
+    if (typeof window !== 'undefined') {
+      window.history.pushState({}, '', path);
+      setCurrentPath(path.split('?')[0]);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+      window.dispatchEvent(new CustomEvent('tehreek:navigate', { detail: { url: path } }));
+      window.scrollTo(0, 0);
+    }
+  };
 
   useEffect(() => {
     const handlePopState = () => {
       setCurrentPath(window.location.pathname);
     };
+    const handleTehreekNav = (e: any) => {
+      if (e?.detail?.url) {
+        const p = e.detail.url.split('?')[0];
+        setCurrentPath(p);
+      } else {
+        setCurrentPath(window.location.pathname);
+      }
+    };
     window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    window.addEventListener('tehreek:navigate', handleTehreekNav);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('tehreek:navigate', handleTehreekNav);
+    };
   }, []);
 
   const handleChatbotSelectBook = (slug: string) => {
-    window.history.pushState({}, '', `/books/${slug}`);
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    navigateTo(`/books/${slug}`);
   };
 
   const handleOpenKharjiBooks = (book?: Book) => {
@@ -183,6 +210,16 @@ export function App() {
         desc = 'مطالعہ کے دوران کتب پر اپنے ذاتی نوٹس لکھیں جو آف لائن ڈیوائس میں خودکار محفوظ رہتے ہیں۔';
         url.searchParams.set('tab', 'notes');
         url.searchParams.delete('book');
+      } else if (activeTab === 'ahkam-shariat') {
+        title = 'احکامِ شریعت و فقہی رہنمائی (سہ سطحی: عوام، طلبہ، علماء) | تحریکِ ایمان';
+        desc = 'طہارت، نماز، روزہ، زکوٰۃ، بیوع اور نکاح کے مدلل شرعی احکام، تقابلِ مذاہبِ اربعہ اور امہات المراجع۔';
+        url.searchParams.set('tab', 'ahkam-shariat');
+        url.searchParams.delete('book');
+      } else if (activeTab === 'islah-aamal') {
+        title = 'اصلاحِ اعمال و روزمرہ محاسبۂ نفس (محاسبہ چارٹ) | تحریکِ ایمان';
+        desc = 'پانچوں فرض نمازیں باجماعت، سنن، نوافل، تلاوت، اور مسنون اذکار کا انٹرایکٹو چارٹ مع نصیحتِ اکابر۔';
+        url.searchParams.set('tab', 'islah-aamal');
+        url.searchParams.delete('book');
       }
 
       // Update document title
@@ -286,6 +323,15 @@ export function App() {
     setActiveTab('reader');
   };
 
+  const handleSelectGlobalSearchResult = (result: GlobalSearchResult) => {
+    if (result.sourceType === 'external' && result.externalLink) {
+      window.open(result.externalLink, '_blank', 'noopener,noreferrer');
+    } else {
+      const targetUrl = `/books/${result.bookSlug}${result.pageNumber ? `?page=${result.pageNumber}` : ''}`;
+      navigateTo(targetUrl);
+    }
+  };
+
   const handleAddNote = (content: string, title?: string) => {
     const newNote: NoteItem = {
       id: 'note_' + Date.now(),
@@ -300,16 +346,57 @@ export function App() {
     setNotes(prev => prev.filter(n => n.id !== id));
   };
 
-  const isBookDetail = (currentPath.startsWith('/books/') && currentPath.length > 7) || 
+  const isQuranRoute = currentPath === '/quran' || currentPath.startsWith('/quran?') || currentPath.startsWith('/quran/');
+  const isBookDetail = isQuranRoute ||
+                       (currentPath.startsWith('/books/') && currentPath.length > 7) || 
                        (currentPath.startsWith('/book/') && currentPath.length > 6);
   if (isBookDetail) {
+    let extractedSlug = '';
+    if (isQuranRoute) {
+      extractedSlug = 'quran';
+    } else {
+      const match = currentPath.match(/\/(?:books|book)\/([^/?#]+)/i);
+      extractedSlug = match && match[1] ? decodeURIComponent(match[1]) : '';
+    }
     return (
       <div dir="rtl" className="min-h-screen bg-white">
-        <BookDetailPage key={currentPath} />
+        <BookDetailPage key={currentPath} slugProp={extractedSlug} />
         <Chatbot 
           onSelectBook={handleChatbotSelectBook} 
           apiKey={apiKey} 
           onSaveToNotes={(content) => handleAddNote(content, 'علمی اتالیق استفسار')}
+        />
+        {/* Sleek Floating Audio Bar (Bottom-Left) */}
+        <div className="fixed bottom-4 left-4 z-40 flex items-center gap-1.5 p-1 bg-stone-900/90 backdrop-blur-md border border-amber-400/50 rounded-full shadow-2xl">
+          <button
+            type="button"
+            onClick={() => setIsQuranAudioOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-950 to-[#0a2318] text-amber-300 hover:text-amber-200 border border-amber-400/60 font-nastaliq font-bold text-xs transition active:scale-95 cursor-pointer shadow-xs"
+            title="القرآن الکریم - تلاوت سنیں"
+          >
+            <Headphones className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden sm:inline">تلاوتِ قرآن</span>
+            <span className="sm:hidden">قرآن</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsNaatPlayerOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-950 to-[#0a2318] text-emerald-300 hover:text-emerald-200 border border-emerald-400/60 font-nastaliq font-bold text-xs transition active:scale-95 cursor-pointer shadow-xs"
+            title="حمد و نعت و کلامِ اکابر"
+          >
+            <Mic2 className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="hidden sm:inline">حمد و نعت</span>
+            <span className="sm:hidden">نعت</span>
+          </button>
+        </div>
+        <SacredAudioPlayer
+          isOpen={isQuranAudioOpen}
+          onClose={() => setIsQuranAudioOpen(false)}
+          onOpen={() => setIsQuranAudioOpen(true)}
+        />
+        <NaatPlayer 
+          isOpen={isNaatPlayerOpen} 
+          onClose={() => setIsNaatPlayerOpen(false)} 
         />
       </div>
     );
@@ -347,9 +434,16 @@ export function App() {
         setUserName={setUserName}
         customLogoSrc={customLogoSrc}
         setCustomLogoSrc={setCustomLogoSrc}
-        onOpenSearch={() => setIsSearchOpen(true)}
+        onOpenSearch={(query, category) => {
+          if (query) setSearchModalInitialQuery(query);
+          if (category) setSearchModalInitialCategory(category);
+          setIsSearchOpen(true);
+        }}
+        onSelectSearchResult={handleSelectGlobalSearchResult}
         onOpenKharjiBooks={() => handleOpenKharjiBooks()}
         onOpenAdmin={() => setIsAdminOpen(true)}
+        onOpenQuranAudio={() => setIsQuranAudioOpen(true)}
+        onOpenNaatPlayer={() => setIsNaatPlayerOpen(true)}
       />
 
       {/* Main Body Content according to Active Tab */}
@@ -358,13 +452,19 @@ export function App() {
           <Dashboard
             searchQuery={searchQuery}
             onSelectBook={(book) => {
-              if (book && (book.slug || book.id)) {
-                window.location.href = `/books/${book.slug || book.id}`;
+              const slug = typeof book === 'string' ? book : (book?.slug || book?.id);
+              if (slug) {
+                navigateTo(`/books/${slug}`);
                 return;
               }
               if (book && book.chapters) {
                 setSelectedBook(book);
                 setActiveTab('reader');
+              }
+            }}
+            onSelectPublicBook={(book) => {
+              if (book?.slug) {
+                navigateTo(`/books/${book.slug}`);
               }
             }}
             setActiveTab={setActiveTab}
@@ -434,6 +534,18 @@ export function App() {
             onBackToDashboard={() => setActiveTab('dashboard')}
           />
         )}
+
+        {activeTab === 'ahkam-shariat' && (
+          <AhkamShariatView
+            onBackToDashboard={() => setActiveTab('dashboard')}
+          />
+        )}
+
+        {activeTab === 'islah-aamal' && (
+          <IslahAamalView
+            onBackToDashboard={() => setActiveTab('dashboard')}
+          />
+        )}
       </main>
 
       {/* 1000 Kharji Books In-Place Popup Explorer Modal */}
@@ -457,6 +569,8 @@ export function App() {
       <SearchModal
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
+        initialQuery={searchModalInitialQuery}
+        initialCategory={searchModalInitialCategory}
         onSelectResult={handleSelectSearchResult}
       />
 
@@ -470,26 +584,49 @@ export function App() {
         }}
       />
 
-      {/* Smart AI Chatbot - Single Premium Floating Chatbot */}
+      {/* Smart AI Chatbot - Single Premium Floating Chatbot (Kept as only floating button in bottom-right) */}
       <Chatbot 
         onSelectBook={handleChatbotSelectBook} 
         apiKey={apiKey}
         onSaveToNotes={(content) => handleAddNote(content, 'علمی اتالیق استفسار')}
       />
 
-      {/* Global Naat & Hamd Player Button (Fixed Top-24 Left-6: بائیں اوپر) */}
-      {!isNaatPlayerOpen && (
-        <NaatPlayerButton onClick={() => setIsNaatPlayerOpen(true)} />
-      )}
-
       {/* Global Sacred Quran & Hadith Audio Recitation Player */}
-      <SacredAudioPlayer />
+      <SacredAudioPlayer
+        isOpen={isQuranAudioOpen}
+        onClose={() => setIsQuranAudioOpen(false)}
+        onOpen={() => setIsQuranAudioOpen(true)}
+      />
 
       {/* Global Hybrid Naat & Hamd Player (100 Naats) */}
       <NaatPlayer 
         isOpen={isNaatPlayerOpen} 
         onClose={() => setIsNaatPlayerOpen(false)} 
       />
+
+      {/* Sleek Floating Audio Bar (Bottom-Left) */}
+      <div className="fixed bottom-4 left-4 z-40 flex items-center gap-1.5 p-1 bg-stone-900/90 backdrop-blur-md border border-amber-400/50 rounded-full shadow-2xl">
+        <button
+          type="button"
+          onClick={() => setIsQuranAudioOpen(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-950 to-[#0a2318] text-amber-300 hover:text-amber-200 border border-amber-400/60 font-nastaliq font-bold text-xs transition active:scale-95 cursor-pointer shadow-xs"
+          title="القرآن الکریم - تلاوت سنیں"
+        >
+          <Headphones className="w-3.5 h-3.5 text-amber-400" />
+          <span className="hidden sm:inline">تلاوتِ قرآن</span>
+          <span className="sm:hidden">قرآن</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setIsNaatPlayerOpen(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-950 to-[#0a2318] text-emerald-300 hover:text-emerald-200 border border-emerald-400/60 font-nastaliq font-bold text-xs transition active:scale-95 cursor-pointer shadow-xs"
+          title="حمد و نعت و کلامِ اکابر"
+        >
+          <Mic2 className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="hidden sm:inline">حمد و نعت</span>
+          <span className="sm:hidden">نعت</span>
+        </button>
+      </div>
 
       {/* Footer with Tehreek-e-Iman Branding & Founder attribution */}
       <footer className="border-t border-stone-200 dark:border-stone-800 py-8 bg-stone-100/60 dark:bg-stone-900/60">

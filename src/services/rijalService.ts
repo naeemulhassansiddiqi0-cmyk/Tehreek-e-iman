@@ -1253,8 +1253,9 @@ export function lookupNarrator(text: string): NarratorInfo | null {
 
   // Check known patterns or database keys
   for (const [key, info] of Object.entries(RIJAL_DATABASE)) {
+    if (!info) continue;
     const cleanKey = key.replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g, '').trim();
-    if (clean === cleanKey || clean === info.name || clean === info.fullName) {
+    if (clean === cleanKey || clean === info?.name || clean === info?.fullName) {
       return info;
     }
   }
@@ -1278,9 +1279,12 @@ export function detectNarrators(sanadText: string): NarratorInfo[] {
   const seen = new Set<string>();
 
   for (const seg of segments) {
-    if (seg.type === 'narrator' && seg.narrator && !seen.has(seg.narrator.name)) {
-      seen.add(seg.narrator.name);
-      found.push(seg.narrator);
+    if (seg.type === 'narrator' && seg.narrator) {
+      const name = seg.narrator?.name || seg.text || '';
+      if (name && !seen.has(name)) {
+        seen.add(name);
+        found.push(seg.narrator);
+      }
     }
   }
   return found;

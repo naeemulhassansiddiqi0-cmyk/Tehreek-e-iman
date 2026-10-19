@@ -9,9 +9,7 @@ export default {
     extend: {
       fontFamily: {
         amiri: ['Amiri', 'serif'],
-        scheherazade: ['"Scheherazade New"', 'serif'],
-        nastaliq: ['"Noto Nastaliq Urdu"', '"Jameel Noori Nastaliq"', 'serif'],
-        lateef: ['Lateef', 'cursive', 'serif'],
+        nastaliq: ['"Jameel Noori Nastaleeq"', '"Urdu Nastaleeq"', 'Nafees', 'serif'],
         sans: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
       },
       colors: {
