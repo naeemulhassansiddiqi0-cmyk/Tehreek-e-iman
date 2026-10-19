@@ -42,14 +42,17 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const root = document.documentElement;
       if (t === 'dark') {
         root.classList.add('dark');
+        root.classList.remove('light-mode');
         root.classList.remove('parchment-mode');
         root.style.colorScheme = 'dark';
       } else if (t === 'parchment') {
         root.classList.remove('dark');
+        root.classList.remove('light-mode');
         root.classList.add('parchment-mode');
         root.style.colorScheme = 'light';
       } else {
         root.classList.remove('dark');
+        root.classList.add('light-mode');
         root.classList.remove('parchment-mode');
         root.style.colorScheme = 'light';
       }

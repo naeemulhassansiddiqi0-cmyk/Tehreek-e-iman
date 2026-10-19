@@ -67,6 +67,157 @@ html, body {
   text-rendering: optimizeLegibility;
 }
 
+/* ==========================================================================
+   HIGH-CONTRAST LIGHT MODE TYPOGRAPHY & VISIBILITY RULES (CRITICAL FIX)
+   ========================================================================== */
+html:not(.dark),
+html.light-mode {
+  color-scheme: light;
+}
+
+html:not(.dark) body,
+html.light-mode body {
+  background-color: #ffffff;
+  color: #111827;
+}
+
+/* Ensure all Urdu Nastaliq text in Light Mode is crisp, high-contrast dark (#111827) */
+html:not(.dark) .urdu-text,
+html:not(.dark) .urdu,
+html:not(.dark) [lang="ur"],
+html.light-mode .urdu-text,
+html.light-mode .urdu,
+html.light-mode [lang="ur"] {
+  color: #111827;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Ensure all Arabic Naskh text in Light Mode is razor-sharp deep black (#0f172a) */
+html:not(.dark) .arabic-naskh,
+html:not(.dark) .arabic-text,
+html:not(.dark) .font-arabic,
+html:not(.dark) .font-amiri,
+html:not(.dark) .iraab-text,
+html:not(.dark) .takhreej-text,
+html:not(.dark) [lang="ar"],
+html:not(.dark) .arabic-matn,
+html:not(.dark) .arabic-sanad,
+html.light-mode .arabic-naskh,
+html.light-mode .arabic-text,
+html.light-mode .font-arabic,
+html.light-mode .font-amiri,
+html.light-mode .iraab-text,
+html.light-mode .takhreej-text,
+html.light-mode [lang="ar"],
+html.light-mode .arabic-matn,
+html.light-mode .arabic-sanad {
+  color: #0f172a;
+  font-weight: 600;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Overwrite any washed-out grey classes in Light Mode inside cards, analysis boxes, and sidebars */
+html:not(.dark) .text-stone-700,
+html:not(.dark) .text-stone-800,
+html:not(.dark) .text-gray-700,
+html:not(.dark) .text-gray-800,
+html.light-mode .text-stone-700,
+html.light-mode .text-stone-800,
+html.light-mode .text-gray-700,
+html.light-mode .text-gray-800 {
+  color: #111827 !important;
+}
+
+html:not(.dark) .text-stone-600,
+html:not(.dark) .text-gray-600,
+html.light-mode .text-stone-600,
+html.light-mode .text-gray-600 {
+  color: #1f2937 !important;
+}
+
+html:not(.dark) .text-stone-500,
+html:not(.dark) .text-gray-500,
+html.light-mode .text-stone-500,
+html.light-mode .text-gray-500 {
+  color: #334155 !important;
+}
+
+html:not(.dark) .text-stone-400,
+html:not(.dark) .text-gray-400,
+html.light-mode .text-stone-400,
+html.light-mode .text-gray-400 {
+  color: #475569 !important;
+}
+
+/* High contrast for headings and titles in Light Mode */
+html:not(.dark) h1,
+html:not(.dark) h2,
+html:not(.dark) h3,
+html:not(.dark) h4,
+html:not(.dark) h5,
+html:not(.dark) h6,
+html.light-mode h1,
+html.light-mode h2,
+html.light-mode h3,
+html.light-mode h4,
+html.light-mode h5,
+html.light-mode h6 {
+  color: #0f172a !important;
+}
+
+/* High-contrast text inside all cards, boxes, and sidebars in Light Mode */
+html:not(.dark) .bg-white p,
+html:not(.dark) .bg-stone-50 p,
+html:not(.dark) .bg-emerald-50 p,
+html:not(.dark) .bg-emerald-50\/30 p,
+html:not(.dark) .bg-emerald-50\/40 p,
+html:not(.dark) .bg-emerald-50\/50 p,
+html:not(.dark) .bg-emerald-50\/60 p,
+html:not(.dark) .bg-amber-50 p,
+html:not(.dark) .bg-amber-50\/30 p,
+html:not(.dark) .bg-amber-50\/40 p,
+html:not(.dark) .bg-amber-50\/50 p,
+html:not(.dark) .bg-indigo-50 p,
+html:not(.dark) .bg-indigo-50\/30 p,
+html:not(.dark) .bg-indigo-50\/40 p,
+html.light-mode .bg-white p,
+html.light-mode .bg-stone-50 p,
+html.light-mode .bg-emerald-50 p,
+html.light-mode .bg-emerald-50\/30 p,
+html.light-mode .bg-emerald-50\/40 p,
+html.light-mode .bg-emerald-50\/50 p,
+html.light-mode .bg-emerald-50\/60 p,
+html.light-mode .bg-amber-50 p,
+html.light-mode .bg-amber-50\/30 p,
+html.light-mode .bg-amber-50\/40 p,
+html.light-mode .bg-amber-50\/50 p,
+html.light-mode .bg-indigo-50 p,
+html.light-mode .bg-indigo-50\/30 p,
+html.light-mode .bg-indigo-50\/40 p {
+  color: #111827 !important;
+}
+
+/* Modals, Dropdowns & Analysis boxes in Light Mode */
+html:not(.dark) .modal-content,
+html:not(.dark) [role="dialog"],
+html.light-mode .modal-content,
+html.light-mode [role="dialog"] {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+}
+
+html:not(.dark) select,
+html:not(.dark) input,
+html:not(.dark) textarea,
+html.light-mode select,
+html.light-mode input,
+html.light-mode textarea {
+  color: #111827 !important;
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
 /* Deep Slate / Emerald Dark Mode Palette (Phase 7: #0f172a, #1e293b) */
 html.dark {
   color-scheme: dark;

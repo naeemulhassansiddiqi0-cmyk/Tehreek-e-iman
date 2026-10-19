@@ -237,27 +237,27 @@ export const AdvancedTakhreejBox: React.FC<AdvancedTakhreejBoxProps> = ({
 
           {/* Chain Pivot & Sanad Summary (مدار الإسناد) */}
           <div className="bg-white/95 rounded-xl p-3.5 border border-stone-200/90 shadow-2xs space-y-2">
-            <div className="flex items-center justify-between border-b border-stone-100 pb-1.5">
-              <span className="text-xs font-bold text-stone-800 font-nastaliq flex items-center gap-1.5">
-                <BookmarkCheck className="w-3.5 h-3.5 text-emerald-700" />
+            <div className="flex items-center justify-between border-b border-stone-200 dark:border-slate-700 pb-1.5">
+              <span className="text-xs font-bold text-stone-900 dark:text-stone-100 font-nastaliq flex items-center gap-1.5">
+                <BookmarkCheck className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                 <span>مدارِ اسناد اور شواہد کی حیثیت (Chain Pivot):</span>
               </span>
-              <span className="text-[10px] font-bold font-nastaliq text-stone-500 bg-stone-100 px-2 py-0.5 rounded-md">
+              <span className="text-[10px] font-bold font-nastaliq text-stone-600 dark:text-stone-300 bg-stone-100 dark:bg-slate-700 px-2 py-0.5 rounded-md">
                 تحقیقِ اسناد
               </span>
             </div>
 
             <div className="space-y-1.5 select-text">
               <div 
-                className="p-2 bg-stone-50 rounded-lg border border-stone-200/70 text-right font-arabic text-stone-900 text-xs sm:text-sm leading-relaxed"
-                style={{ fontFamily: "'Amiri', serif" }}
+                className="p-2 bg-stone-100 dark:bg-slate-900 rounded-lg border border-stone-200/90 dark:border-slate-700 text-right font-arabic text-stone-950 dark:text-amber-200 text-xs sm:text-sm leading-relaxed font-semibold"
+                style={{ fontFamily: "'Amiri', serif", color: '#0f172a' }}
               >
                 <strong>مدار الرواية:</strong> {data.chainPivotArabic}
               </div>
-              <p className="font-nastaliq text-xs text-stone-700 leading-[2.3] pr-1">
+              <p className="font-nastaliq text-xs sm:text-sm text-stone-950 dark:text-stone-100 leading-[2.3] pr-1 font-medium" style={{ color: '#111827' }}>
                 {data.chainPivotUrdu}
               </p>
-              <p className="font-nastaliq text-xs font-bold text-emerald-950 bg-emerald-50/80 p-2 rounded-lg border border-emerald-200 leading-relaxed">
+              <p className="font-nastaliq text-xs font-bold text-emerald-950 dark:text-emerald-200 bg-emerald-50/90 dark:bg-emerald-950/70 p-2.5 rounded-lg border border-emerald-300 dark:border-emerald-700 leading-relaxed">
                 💡 <strong>خلاصۂ حکم و تخریج:</strong> {data.takhreejSummary}
               </p>
             </div>

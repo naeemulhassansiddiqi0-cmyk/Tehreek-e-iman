@@ -454,12 +454,13 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
             </span>
           </div>
           <p
-            className="font-arabic text-stone-800 text-right select-text leading-relaxed"
+            className="font-arabic text-stone-900 dark:text-amber-200 text-right select-text leading-relaxed font-semibold"
             dir="rtl"
             style={{ 
               fontFamily: "'Amiri Quran', 'Amiri', 'Traditional Arabic', serif",
               fontSize: `${Math.round(arabicFontSize * 0.85)}px`, 
               fontWeight: 600,
+              color: '#0f172a',
               lineHeight: `${Math.round(arabicFontSize * 1.55 * (lineHeightScale || 1))}px` 
             }}
           >
@@ -545,13 +546,13 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
           }
           return (
             <p
-              className="urdu-text text-right select-text pr-1 font-nastaliq"
+              className="urdu-text text-stone-950 dark:text-stone-100 text-right select-text pr-1 font-nastaliq font-medium"
               dir="rtl"
               style={{ 
                 fontSize: `${urduFontSize}px`, 
                 lineHeight: `${Math.round(urduFontSize * 1.85 * (lineHeightScale || 1))}px`, 
-                fontWeight: 500, 
-                color: '#1f2937' 
+                fontWeight: 600, 
+                color: '#111827' 
               }}
             >
               {urduText || (loading ? 'ترجمہ کا تجزیہ جاری ہے...' : 'متنِ مبارک کے مطابق سلیس ترجمہ')}
@@ -764,14 +765,14 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
                 )}
 
                 {/* Hawashi & Takhrij */}
-                <div className="bg-amber-50/40 rounded-xl p-3.5 border border-amber-200/60 shadow-2xs space-y-1.5">
-                  <h4 className="text-xs font-bold text-amber-950 font-nastaliq flex items-center gap-1.5">
+                <div className="bg-amber-50/60 dark:bg-slate-800/80 rounded-xl p-3.5 border border-amber-200/80 dark:border-amber-700/60 shadow-2xs space-y-1.5">
+                  <h4 className="text-xs font-bold text-amber-950 dark:text-amber-200 font-nastaliq flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-amber-600"></span>
                     <span>حواشی، تخریج و درسی فوائد:</span>
                   </h4>
-                  <div className="arabic-naskh text-sm sm:text-base leading-[2.3] text-stone-700 space-y-1.5 pr-1 select-text" dir="rtl">
+                  <div className="arabic-naskh text-sm sm:text-base leading-[2.3] text-stone-900 dark:text-amber-200 space-y-1.5 pr-1 select-text font-medium" dir="rtl">
                     {analysis.hawashi.map((hw, hwidx) => (
-                      <p key={hwidx}>{hw}</p>
+                      <p key={hwidx} style={{ color: '#0f172a' }}>{hw}</p>
                     ))}
                   </div>
                 </div>

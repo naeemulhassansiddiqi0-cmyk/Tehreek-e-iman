@@ -117,16 +117,16 @@ export const DailyLifeTakeawayBox: React.FC<DailyLifeTakeawayBoxProps> = ({
       {isExpanded && (
         <div className="space-y-3 pt-1 animate-fadeIn">
           {/* Key Lessons List */}
-          <div className="space-y-2 bg-white/90 p-3 sm:p-4 rounded-xl border border-amber-200/80 shadow-2xs">
-            <h4 className="text-xs font-bold text-amber-950 font-nastaliq flex items-center gap-1.5 border-b border-amber-100 pb-1.5">
-              <Compass className="w-4 h-4 text-amber-700" />
+          <div className="space-y-2 bg-white/95 dark:bg-slate-800/95 p-3 sm:p-4 rounded-xl border border-amber-200/80 dark:border-slate-700 shadow-2xs">
+            <h4 className="text-xs font-bold text-amber-950 dark:text-amber-200 font-nastaliq flex items-center gap-1.5 border-b border-amber-100 dark:border-slate-700 pb-1.5">
+              <Compass className="w-4 h-4 text-amber-700 dark:text-amber-400" />
               <span>عملی نکات و کردار سازی (Personal & Moral Reform):</span>
             </h4>
 
-            <ul className="space-y-2 text-stone-800 pr-1">
+            <ul className="space-y-2 text-stone-950 dark:text-stone-100 pr-1">
               {points.map((point, pIdx) => (
-                <li key={pIdx} className="flex items-start gap-2.5 text-xs sm:text-sm font-nastaliq leading-[2.3]">
-                  <span className="w-5 h-5 rounded-full bg-amber-100 border border-amber-300 text-amber-900 flex items-center justify-center text-[10px] font-bold shrink-0 mt-1 font-mono">
+                <li key={pIdx} className="flex items-start gap-2.5 text-xs sm:text-sm font-nastaliq leading-[2.3] text-stone-950 dark:text-stone-100 font-medium" style={{ color: '#111827' }}>
+                  <span className="w-5 h-5 rounded-full bg-amber-100 dark:bg-amber-900/60 border border-amber-300 dark:border-amber-700 text-amber-950 dark:text-amber-200 flex items-center justify-center text-[10px] font-bold shrink-0 mt-1 font-mono">
                     {pIdx + 1}
                   </span>
                   <span className="flex-1 select-text">
@@ -138,15 +138,15 @@ export const DailyLifeTakeawayBox: React.FC<DailyLifeTakeawayBoxProps> = ({
           </div>
 
           {/* Practical Daily Habit / Nuskha */}
-          <div className="bg-gradient-to-r from-amber-100/90 via-amber-50 to-emerald-50/80 rounded-xl p-3 sm:p-3.5 border border-amber-300 shadow-2xs flex items-start gap-2.5">
+          <div className="bg-gradient-to-r from-amber-100/90 via-amber-50 to-emerald-50/80 dark:from-amber-950/50 dark:via-slate-800 dark:to-emerald-950/50 rounded-xl p-3 sm:p-3.5 border border-amber-300 dark:border-amber-700 shadow-2xs flex items-start gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-amber-600 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
               <Sparkles className="w-4 h-4 text-amber-100" />
             </div>
             <div className="space-y-0.5 flex-1 select-text">
-              <span className="text-[11px] font-bold font-nastaliq text-amber-950 block">
+              <span className="text-[11px] font-bold font-nastaliq text-amber-950 dark:text-amber-200 block">
                 🌱 روزمرہ عملی نسخہ (مجرب معمول برائے تزکیۂ نفس):
               </span>
-              <p className="font-nastaliq font-bold text-xs sm:text-sm text-stone-800 leading-[2.3]">
+              <p className="font-nastaliq font-bold text-xs sm:text-sm text-stone-950 dark:text-stone-100 leading-[2.3]" style={{ color: '#111827' }}>
                 {practicalHabit}
               </p>
             </div>

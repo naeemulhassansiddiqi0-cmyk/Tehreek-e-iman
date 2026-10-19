@@ -148,20 +148,20 @@ export const ComparativeFiqhBox: React.FC<ComparativeFiqhBoxProps> = ({
         <div className="space-y-4 animate-fadeIn">
           
           {/* Issue Header Card: مسئلہ و خلاصۂ نزاع */}
-          <div className="bg-white/95 rounded-xl p-3.5 border border-emerald-200/80 shadow-2xs space-y-2">
+          <div className="bg-white/95 dark:bg-slate-800/90 rounded-xl p-3.5 border border-emerald-200/80 dark:border-emerald-700/60 shadow-2xs space-y-2">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-950 font-nastaliq bg-emerald-100/80 px-2.5 py-1 rounded-lg border border-emerald-200">
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-950 dark:text-emerald-200 font-nastaliq bg-emerald-100/90 dark:bg-emerald-900/60 px-2.5 py-1 rounded-lg border border-emerald-300 dark:border-emerald-700">
                 <Sparkles className="w-3.5 h-3.5 text-amber-600" />
                 <span>محلِ نزاع و بنیادی فقہی نکتہ:</span>
               </span>
-              <span className="text-[11px] font-nastaliq text-stone-500">
+              <span className="text-[11px] font-nastaliq text-stone-600 dark:text-stone-300 font-medium">
                 اصولِ فقہ و قواعدِ کلیہ کی روشنی میں
               </span>
             </div>
-            <h4 className="font-nastaliq font-bold text-sm sm:text-base text-stone-900 pr-1 leading-relaxed">
+            <h4 className="font-nastaliq font-bold text-sm sm:text-base text-stone-950 dark:text-stone-100 pr-1 leading-relaxed">
               {data.issueTitle}
             </h4>
-            <p className="font-nastaliq text-xs sm:text-sm text-stone-700 pr-1 leading-[2.3] bg-stone-50/70 p-2.5 rounded-lg border border-stone-200/60">
+            <p className="font-nastaliq text-xs sm:text-sm text-stone-900 dark:text-stone-200 pr-1 leading-[2.3] bg-stone-100/90 dark:bg-slate-700/50 p-2.5 rounded-lg border border-stone-200 dark:border-slate-600 font-medium" style={{ color: '#111827' }}>
               {data.coreConflict}
             </p>
           </div>
@@ -292,29 +292,29 @@ export const ComparativeFiqhBox: React.FC<ComparativeFiqhBoxProps> = ({
                     </div>
 
                     {/* Section 1: شرعی حکم و فتویٰ */}
-                    <div className="bg-white/90 p-3 rounded-xl border border-black/5 space-y-1">
-                      <div className="flex items-center gap-1 text-[11px] font-bold font-nastaliq text-stone-800">
+                    <div className="bg-white/95 dark:bg-slate-800/95 p-3 rounded-xl border border-stone-200 dark:border-slate-700 space-y-1 shadow-2xs">
+                      <div className="flex items-center gap-1 text-[11px] font-bold font-nastaliq text-stone-900 dark:text-stone-100">
                         <Award className="w-3.5 h-3.5 text-amber-600 shrink-0" />
                         <span>مذہب کے مطابق معتمد شرعی حکم:</span>
                       </div>
-                      <p className="font-nastaliq text-xs sm:text-sm text-stone-800 leading-[2.3] pr-1">
+                      <p className="font-nastaliq text-xs sm:text-sm text-stone-950 dark:text-stone-100 leading-[2.3] pr-1 font-medium" style={{ color: '#111827' }}>
                         {school.ruling}
                       </p>
                     </div>
 
                     {/* Section 2: دلائل و اصولی استدلال */}
-                    <div className="bg-white/70 p-3 rounded-xl border border-black/5 space-y-1">
-                      <div className="flex items-center gap-1 text-[11px] font-bold font-nastaliq text-stone-800">
+                    <div className="bg-white/95 dark:bg-slate-800/95 p-3 rounded-xl border border-stone-200 dark:border-slate-700 space-y-1 shadow-2xs">
+                      <div className="flex items-center gap-1 text-[11px] font-bold font-nastaliq text-stone-900 dark:text-stone-100">
                         <ShieldCheck className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
                         <span>اصولی دلیل، قیاس و وجہِ استدلال:</span>
                       </div>
-                      <p className="font-nastaliq text-xs sm:text-sm text-stone-700 leading-[2.3] pr-1">
+                      <p className="font-nastaliq text-xs sm:text-sm text-stone-950 dark:text-stone-100 leading-[2.3] pr-1 font-medium" style={{ color: '#111827' }}>
                         {school.dalailAndUsul}
                       </p>
                       {school.quranSunnahQuote && (
                         <div 
-                          className="mt-2 p-2 bg-stone-50 rounded-lg border border-stone-200/70 text-right select-text font-arabic text-stone-900 text-xs sm:text-sm leading-relaxed"
-                          style={{ fontFamily: "'Amiri Quran', 'Amiri', 'Traditional Arabic', serif" }}
+                          className="mt-2 p-2 bg-stone-100 dark:bg-slate-900/80 rounded-lg border border-stone-200 dark:border-slate-700 text-right select-text font-arabic text-stone-950 dark:text-amber-200 text-xs sm:text-sm leading-relaxed font-semibold"
+                          style={{ fontFamily: "'Amiri Quran', 'Amiri', 'Traditional Arabic', serif", color: '#0f172a' }}
                         >
                           {school.quranSunnahQuote}
                         </div>
@@ -328,21 +328,21 @@ export const ComparativeFiqhBox: React.FC<ComparativeFiqhBoxProps> = ({
 
           {/* 4. Synthesis & Reconciliatory Summary (خلاصۂ تطبیق و ترجیح) */}
           {data.synthesisNote && (
-            <div className="bg-gradient-to-r from-amber-50 via-white to-emerald-50 rounded-2xl p-4 border-2 border-amber-400/80 shadow-2xs space-y-2">
-              <div className="flex items-center justify-between border-b border-amber-200/70 pb-2">
+            <div className="bg-gradient-to-r from-amber-50 via-white to-emerald-50 dark:from-slate-800 dark:via-slate-800 dark:to-emerald-950/50 rounded-2xl p-4 border-2 border-amber-400/80 dark:border-amber-600 shadow-2xs space-y-2">
+              <div className="flex items-center justify-between border-b border-amber-200/70 dark:border-amber-700 pb-2">
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 rounded-lg bg-amber-600 text-white flex items-center justify-center text-xs font-bold shadow-2xs">
                     ⚖️
                   </div>
-                  <h4 className="font-bold font-nastaliq text-xs sm:text-sm text-amber-950">
+                  <h4 className="font-bold font-nastaliq text-xs sm:text-sm text-amber-950 dark:text-amber-200">
                     باہمی تطبیق، اصولِ جمع اور درسی ترجیح (Synthesis & Scholarly Harmony):
                   </h4>
                 </div>
-                <span className="text-[10px] font-bold font-nastaliq text-amber-900 bg-amber-100/90 px-2 py-0.5 rounded-md border border-amber-300">
+                <span className="text-[10px] font-bold font-nastaliq text-amber-950 dark:text-amber-200 bg-amber-100/90 dark:bg-amber-950/70 px-2 py-0.5 rounded-md border border-amber-300 dark:border-amber-700">
                   خلاصۂ فقہاء
                 </span>
               </div>
-              <p className="font-nastaliq text-xs sm:text-sm text-stone-800 leading-[2.3] pr-1 select-text">
+              <p className="font-nastaliq text-xs sm:text-sm text-stone-950 dark:text-stone-100 leading-[2.3] pr-1 select-text font-medium" style={{ color: '#111827' }}>
                 {data.synthesisNote}
               </p>
             </div>

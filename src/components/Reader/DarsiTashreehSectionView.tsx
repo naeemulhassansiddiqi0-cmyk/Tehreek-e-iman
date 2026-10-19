@@ -502,13 +502,13 @@ export const DarsiTashreehSectionView: React.FC<DarsiTashreehSectionViewProps> =
               {(viewMode === 'both' || viewMode === 'arabic') && item.arabic && item.arabic !== item.urdu && (
                 <div className="pt-0.5">
                   <p 
-                    className="arabic-naskh text-stone-800 text-right select-text pr-1"
+                    className="arabic-naskh text-stone-900 dark:text-amber-200 text-right select-text pr-1 font-semibold"
                     dir="rtl"
                     style={{ 
                       fontFamily: "'Amiri Quran', 'Amiri', 'Traditional Arabic', serif",
                       fontSize: isHeading ? '1.35rem' : '1.25rem', 
                       lineHeight: '2.2',
-                      fontWeight: isHeading ? 700 : 500
+                      fontWeight: isHeading ? 700 : 600
                     }}
                   >
                     {item.arabic}
@@ -518,21 +518,21 @@ export const DarsiTashreehSectionView: React.FC<DarsiTashreehSectionViewProps> =
 
               {/* Urdu Scholarly Translation & Breakdown (shown in 'both' or 'urdu' mode) */}
               {(viewMode === 'both' || viewMode === 'urdu') && item.urdu && (
-                <div className="bg-emerald-50/60 rounded-xl p-3 border border-emerald-200/70 space-y-1.5 transition-colors">
-                  <div className="flex items-center gap-1.5 font-bold font-nastaliq text-emerald-950 text-xs">
+                <div className="bg-emerald-50/80 dark:bg-emerald-950/60 rounded-xl p-3 border border-emerald-300 dark:border-emerald-700 space-y-1.5 transition-colors">
+                  <div className="flex items-center gap-1.5 font-bold font-nastaliq text-emerald-950 dark:text-emerald-300 text-xs">
                     <Sparkles className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
-                    <span className="bg-emerald-100/80 px-2 py-0.5 rounded text-[11px] font-bold text-emerald-900">
+                    <span className="bg-emerald-100/90 dark:bg-emerald-900/60 px-2 py-0.5 rounded text-[11px] font-bold text-emerald-950 dark:text-emerald-200">
                       سلیس اردو تشریح و فقہی حکم:
                     </span>
                   </div>
                   <p 
-                    className="font-nastaliq text-stone-800 text-right select-text pr-1"
+                    className="font-nastaliq text-stone-950 dark:text-stone-100 text-right select-text pr-1 font-medium"
                     dir="rtl"
                     style={{ 
-                      fontSize: '1.15rem', 
+                      fontSize: '1.2rem', 
                       lineHeight: '2.3',
-                      fontWeight: 500,
-                      color: '#1f2937'
+                      fontWeight: 600,
+                      color: '#111827'
                     }}
                   >
                     {item.urdu}
