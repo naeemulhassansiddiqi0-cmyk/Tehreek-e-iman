@@ -60,6 +60,13 @@ import { quranChapters, QURAN_SURAHS_CANONICAL } from "@/data/quranData";
 import { bukhariChapters } from "@/data/bukhariData";
 import { muslimChapters } from "@/data/muslimData";
 import { abudawoodChapters, tirmidhiChapters, nasaiChapters, ibnmajahChapters } from "@/data/allHadithBooksData";
+import { BookmarksHistoryModal } from "@/components/Reader/BookmarksHistoryModal";
+import { 
+  saveReadingHistory, 
+  getReadingHistory, 
+  isBookmarked as isBookmarkedService, 
+  toggleBookmark as toggleBookmarkService 
+} from "@/services/bookmarkHistoryService";
 
 interface HadithItem {
   hadithnumber?: number;
@@ -205,7 +212,6 @@ function HadithCardDarsiView({
   
   // Student Notes & Bookmarking in LocalStorage
   const noteKey = `tehreek_notes_${slug}_${hadithNum}`;
-  const bmKey = `tehreek_bm_${slug}_${hadithNum}`;
   const [localNotes, setLocalNotes] = useState<string>('');
   const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
   const [noteSavedFeedback, setNoteSavedFeedback] = useState<boolean>(false);
@@ -219,20 +225,28 @@ function HadithCardDarsiView({
       if (typeof window !== 'undefined') {
         const savedNote = localStorage.getItem(noteKey);
         if (savedNote) setLocalNotes(savedNote);
-        const savedBm = localStorage.getItem(bmKey);
-        if (savedBm === 'true') setIsBookmarked(true);
+        setIsBookmarked(isBookmarkedService(slug, hadithNum));
       }
     } catch {}
-  }, [noteKey, bmKey]);
+  }, [noteKey, slug, hadithNum]);
+
+  useEffect(() => {
+    const handleBmUpdate = () => {
+      setIsBookmarked(isBookmarkedService(slug, hadithNum));
+    };
+    window.addEventListener('tehreek_bookmarks_updated', handleBmUpdate);
+    return () => window.removeEventListener('tehreek_bookmarks_updated', handleBmUpdate);
+  }, [slug, hadithNum]);
 
   const toggleBookmark = () => {
-    const next = !isBookmarked;
-    setIsBookmarked(next);
-    try {
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(bmKey, next ? 'true' : 'false');
-      }
-    } catch {}
+    const added = toggleBookmarkService({
+      bookSlug: slug,
+      bookTitle: bookTitle || 'حدیث کی کتاب',
+      pageNumber: hadithNum,
+      chapterTitle: `حدیث نمبر ${hadithNum.toLocaleString('ur-PK')}`,
+      snippet: arabText ? arabText.slice(0, 100) : (hadith.urdu ? hadith.urdu.slice(0, 100) : undefined)
+    });
+    setIsBookmarked(added);
   };
 
   const handleSaveNote = () => {
@@ -1026,7 +1040,7 @@ export default function BookDetailPage({ slugProp }: { slugProp?: string } = {})
       .catch(() => {});
   }, [isChunkedBook]);
 
-  // Pagination state: 0-indexed (initializes from ?page= or ?p= query param if present)
+  // Pagination state: 0-indexed (initializes from ?page=, ?p= or reading history if present)
   const [currentPage, setCurrentPage] = useState<number>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -1036,6 +1050,12 @@ export default function BookDetailPage({ slugProp }: { slugProp?: string } = {})
           const num = parseInt(p, 10);
           if (!isNaN(num) && num > 0) return num - 1;
         }
+        // Check reading history for this book to resume
+        const allHistory = getReadingHistory();
+        const saved = allHistory.find(h => h.bookSlug === slug);
+        if (saved && saved.pageNumber > 0) {
+          return saved.pageNumber - 1;
+        }
       } catch {
         // ignore
       }
@@ -1043,7 +1063,7 @@ export default function BookDetailPage({ slugProp }: { slugProp?: string } = {})
     return 0;
   });
 
-  // Sync currentPage from URL when slug changes
+  // Sync currentPage from URL or reading history when slug changes
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -1055,6 +1075,17 @@ export default function BookDetailPage({ slugProp }: { slugProp?: string } = {})
             setCurrentPage(num - 1);
             return;
           }
+        }
+        const allHistory = getReadingHistory();
+        const saved = allHistory.find(h => h.bookSlug === slug);
+        if (saved && saved.pageNumber > 0) {
+          setCurrentPage(saved.pageNumber - 1);
+          if (saved.scrollPosition && saved.scrollPosition > 0) {
+            setTimeout(() => {
+              window.scrollTo({ top: saved.scrollPosition, behavior: 'smooth' });
+            }, 350);
+          }
+          return;
         }
         setCurrentPage(0);
       } catch {}
@@ -1160,6 +1191,8 @@ export default function BookDetailPage({ slugProp }: { slugProp?: string } = {})
   const [showPageNotes, setShowPageNotes] = useState<boolean>(false);
   const [pageNotes, setPageNotes] = useState<string>('');
   const [isPageBookmarked, setIsPageBookmarked] = useState<boolean>(false);
+  const [isBookmarksModalOpen, setIsBookmarksModalOpen] = useState<boolean>(false);
+  const [bookmarkFeedbackToast, setBookmarkFeedbackToast] = useState<string | null>(null);
   const [copiedPageRef, setCopiedPageRef] = useState<boolean>(false);
   const [activeTafseer, setActiveTafseer] = useState<TafseerEntry | null>(null);
   const [isTafseerOpen, setIsTafseerOpen] = useState<boolean>(false);
@@ -1275,20 +1308,35 @@ export default function BookDetailPage({ slugProp }: { slugProp?: string } = {})
         const pNum = currentPage + 1;
         const savedNote = localStorage.getItem(`tehreek_notes_${slug || 'book'}_p${pNum}`);
         setPageNotes(savedNote || '');
-        const savedBm = localStorage.getItem(`tehreek_bm_${slug || 'book'}_p${pNum}`);
-        setIsPageBookmarked(savedBm === 'true');
+        setIsPageBookmarked(isBookmarkedService(slug || 'book', pNum));
       }
     } catch {}
   }, [slug, currentPage]);
 
+  useEffect(() => {
+    const handleBmUpdate = () => {
+      setIsPageBookmarked(isBookmarkedService(slug || 'book', currentPage + 1));
+    };
+    window.addEventListener('tehreek_bookmarks_updated', handleBmUpdate);
+    return () => window.removeEventListener('tehreek_bookmarks_updated', handleBmUpdate);
+  }, [slug, currentPage]);
+
   const togglePageBookmark = () => {
-    const next = !isPageBookmarked;
-    setIsPageBookmarked(next);
-    try {
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(`tehreek_bm_${slug || 'book'}_p${currentPage + 1}`, next ? 'true' : 'false');
-      }
-    } catch {}
+    const pageNum = currentPage + 1;
+    const title = book?.title_ur || book?.title || (slug === 'quran' ? 'قرآن مجید' : slug);
+    const chTitle = currentChapter?.titleUr || currentChapter?.titleAr || `صفحہ ${pageNum.toLocaleString('ur-PK')}`;
+    const snippet = parsedDarsPage?.matn ? parsedDarsPage.matn.slice(0, 120) : undefined;
+
+    const added = toggleBookmarkService({
+      bookSlug: slug || 'book',
+      bookTitle: title,
+      pageNumber: pageNum,
+      chapterTitle: chTitle,
+      snippet
+    });
+    setIsPageBookmarked(added);
+    setBookmarkFeedbackToast(added ? 'صفحہ بُک مارکس میں محفوظ کر لیا گیا!' : 'صفحہ بُک مارکس سے ہٹا دیا گیا');
+    setTimeout(() => setBookmarkFeedbackToast(null), 2500);
   };
 
   const handleCopyPageWithRef = () => {
@@ -2014,6 +2062,56 @@ ${urduToCopy}
     }
   };
 
+  // Auto-save Reading History (Phase 10)
+  useEffect(() => {
+    if (!slug) return;
+    const pageNum = currentPage + 1;
+    const total = totalPages || 1;
+    const title = book?.title_ur || book?.title || (slug === 'quran' ? 'قرآن مجید' : slug);
+    const category = book?.category || (slug === 'quran' ? 'قرآن' : isHadith ? 'حدیث' : undefined);
+    const chapterName = bannerUr || currentChapter?.titleUr || currentChapter?.titleAr;
+    const preview = parsedDarsPage?.matn ? parsedDarsPage.matn.slice(0, 140) : undefined;
+
+    saveReadingHistory({
+      bookSlug: slug,
+      bookTitle: title,
+      category,
+      pageNumber: pageNum,
+      totalSections: total,
+      chapterTitle: chapterName,
+      previewText: preview,
+      scrollPosition: typeof window !== 'undefined' ? window.scrollY : 0,
+    });
+  }, [slug, currentPage, totalPages, book, currentChapter, bannerUr, parsedDarsPage, isHadith]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !slug) return;
+    let scrollTimeout: ReturnType<typeof setTimeout>;
+    const handleScroll = () => {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        const pageNum = currentPage + 1;
+        const total = totalPages || 1;
+        const title = book?.title_ur || book?.title || (slug === 'quran' ? 'قرآن مجید' : slug);
+        saveReadingHistory({
+          bookSlug: slug,
+          bookTitle: title,
+          category: book?.category,
+          pageNumber: pageNum,
+          totalSections: total,
+          chapterTitle: bannerUr || currentChapter?.titleUr || currentChapter?.titleAr,
+          scrollPosition: window.scrollY,
+        });
+      }, 800);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      clearTimeout(scrollTimeout);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [slug, currentPage, totalPages, book, currentChapter, bannerUr]);
+
   // ─── Roman Urdu ↔ Arabic/Urdu Dictionary ─────────────────────────────────
   const ROMAN_URDU_MAP: Record<string, string[]> = {
     // عقائد و کلمات
@@ -2518,6 +2616,17 @@ ${urduToCopy}
           >
             {copied ? <Check className="w-3.5 h-3.5 text-emerald-700" /> : <Share2 className="w-3.5 h-3.5" />}
             <span className="hidden sm:inline font-nastaliq">{copied ? 'کاپی ہو گیا' : 'شیئر'}</span>
+          </button>
+
+          {/* Bookmarks & Reading History Modal Button */}
+          <button
+            type="button"
+            onClick={() => setIsBookmarksModalOpen(true)}
+            className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl border border-amber-300/80 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:border-amber-700/60 dark:hover:bg-amber-900/60 text-amber-900 dark:text-amber-200 transition cursor-pointer text-xs flex items-center gap-1.5 font-nastaliq font-bold shadow-2xs"
+            title="محفوظ شدہ بُک مارکس اور مطالعہ کی تاریخ (ہسٹری)"
+          >
+            <BookMarked className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+            <span className="hidden sm:inline">بُک مارکس و تاریخ</span>
           </button>
 
           {/* Current Page Badge */}
@@ -4557,6 +4666,28 @@ ${urduToCopy}
           onClose={() => setIsTafseerOpen(false)}
           entry={activeTafseer}
         />
+      )}
+
+      {/* Bookmarks & Reading History Modal (Phase 10) */}
+      <BookmarksHistoryModal
+        isOpen={isBookmarksModalOpen}
+        onClose={() => setIsBookmarksModalOpen(false)}
+        currentBookSlug={slug}
+        onNavigateToPage={(targetSlug, pageNum) => {
+          if (targetSlug === slug) {
+            goToPage(pageNum);
+          } else {
+            window.location.href = `/books/${targetSlug}?page=${pageNum}`;
+          }
+        }}
+      />
+
+      {/* Bookmark Toast Feedback */}
+      {bookmarkFeedbackToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-stone-900/95 dark:bg-stone-950 text-amber-300 border border-amber-500/60 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-2.5 font-nastaliq text-sm backdrop-blur-md animate-fadeIn">
+          <BookmarkCheck className="w-4 h-4 text-amber-400 shrink-0" />
+          <span className="font-bold">{bookmarkFeedbackToast}</span>
+        </div>
       )}
 
       </div>

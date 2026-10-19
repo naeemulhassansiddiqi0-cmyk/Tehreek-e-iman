@@ -1,10 +1,17 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import Link from 'next/link';
 import { BookOpen, ExternalLink, Sparkles, BookMarked, Search, GraduationCap, Layers } from 'lucide-react';
 import { publicDomainBooks, modernBooks, BookCategoryTitle } from '../data/publicDomainBooks';
 import { NaatPlayer } from '../components/NaatPlayer';
 import { WIFAQ_DARJAT, getDarjaForBookSlug } from '../data/wifaqCurriculum';
+import { BookmarksHistoryModal } from '../components/Reader/BookmarksHistoryModal';
+import { 
+  getLastRead, 
+  ReadingHistoryEntry, 
+  formatTimeAgoUrdu 
+} from '../services/bookmarkHistoryService';
 
 const CATEGORY_CHIPS: { id: BookCategoryTitle | 'all'; title_ur: string }[] = [
   { id: 'all', title_ur: 'تمام کتب' },
@@ -24,6 +31,15 @@ export default function HomePage() {
   const [selectedDarjaId, setSelectedDarjaId] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showNaatPlayer, setShowNaatPlayer] = useState(false);
+  const [lastRead, setLastRead] = useState<ReadingHistoryEntry | null>(null);
+  const [isBookmarksModalOpen, setIsBookmarksModalOpen] = useState(false);
+
+  useEffect(() => {
+    setLastRead(getLastRead());
+    const handleUpdate = () => setLastRead(getLastRead());
+    window.addEventListener('tehreek_history_updated', handleUpdate);
+    return () => window.removeEventListener('tehreek_history_updated', handleUpdate);
+  }, []);
 
   // FIX CRITICAL BUG: Guaranteed deduplication: 1 book = 1 card only
   const uniquePublicBooks = useMemo(() => {
@@ -91,9 +107,22 @@ export default function HomePage() {
         
         {/* Top: Header, Search, and Curriculum Mode Toggle */}
         <div className="flex flex-col items-center gap-4 text-center">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-800 text-xs font-semibold">
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-            <span>مکتبہ شاملہ طرز — کتبِ علومِ اسلامیہ مع وفاق المدارس نصاب</span>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-800 text-xs font-semibold">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <span>مکتبہ شاملہ طرز — کتبِ علومِ اسلامیہ مع وفاق المدارس نصاب</span>
+            </div>
+
+            {/* Bookmarks & History Modal Trigger */}
+            <button
+              type="button"
+              onClick={() => setIsBookmarksModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 text-xs font-nastaliq font-bold shadow-2xs transition cursor-pointer"
+              title="محفوظ شدہ بُک مارکس اور مطالعہ کی تاریخ دیکھیں"
+            >
+              <BookMarked className="w-3.5 h-3.5 text-amber-600" />
+              <span>میرے محفوظ شدہ بُک مارکس و تاریخ</span>
+            </button>
           </div>
 
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black font-nastaliq text-emerald-900 leading-relaxed">
@@ -114,6 +143,47 @@ export default function HomePage() {
               className="w-full pr-10 pl-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-nastaliq focus:outline-none focus:ring-2 focus:ring-emerald-700/20"
             />
           </div>
+
+          {/* Resume Reading Banner (جہاں سے چھوڑا تھا وہیں سے مطالعہ جاری رکھیں) */}
+          {lastRead && (
+            <div className="w-full max-w-2xl bg-gradient-to-r from-emerald-950 via-[#0d3b28] to-emerald-950 text-white rounded-2xl p-4 sm:p-5 border-2 border-amber-400/80 shadow-lg text-right relative overflow-hidden animate-fadeIn">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-400/10 rounded-full blur-2xl pointer-events-none" />
+              <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center shrink-0 shadow-inner mt-0.5">
+                    <BookMarked className="w-5 h-5 text-amber-300" />
+                  </div>
+                  <div className="space-y-1 text-right">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30 font-nastaliq">
+                        جہاں سے چھوڑا تھا وہیں سے پڑھیں
+                      </span>
+                      <span className="text-[11px] text-emerald-200 font-nastaliq">
+                        {formatTimeAgoUrdu(lastRead.lastReadAt)}
+                      </span>
+                    </div>
+                    <h3 className="text-base sm:text-lg font-bold font-nastaliq text-amber-100">
+                      {lastRead.bookTitle} {lastRead.chapterTitle ? `— ${lastRead.chapterTitle}` : ''}
+                    </h3>
+                    <p className="text-xs text-emerald-200 font-nastaliq">
+                      صفحہ نمبر: {(lastRead.pageNumber).toLocaleString('ur-PK')} از {(lastRead.totalSections).toLocaleString('ur-PK')}
+                      {lastRead.progressPercent !== undefined && ` (${(lastRead.progressPercent).toLocaleString('ur-PK')}٪ مطالعہ مکمل)`}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                  <Link
+                    href={`/books/${lastRead.bookSlug}?page=${lastRead.pageNumber}`}
+                    className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 font-nastaliq font-bold text-xs sm:text-sm flex items-center gap-1.5 shadow-md transition-transform hover:scale-105 cursor-pointer"
+                  >
+                    <span>مطالعہ جاری رکھیں</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* View Mode Switcher: Categories vs Wifaq ul Madaris Classes */}
           <div className="inline-flex items-center gap-1.5 p-1.5 bg-stone-100 rounded-2xl border border-stone-200 shadow-inner">
@@ -441,6 +511,12 @@ export default function HomePage() {
         <NaatPlayer 
           isOpen={showNaatPlayer} 
           onClose={() => setShowNaatPlayer(false)} 
+        />
+
+        {/* User Bookmarks & Reading History Modal */}
+        <BookmarksHistoryModal
+          isOpen={isBookmarksModalOpen}
+          onClose={() => setIsBookmarksModalOpen(false)}
         />
 
       </div>
