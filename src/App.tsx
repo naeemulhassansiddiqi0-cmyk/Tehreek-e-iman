@@ -22,6 +22,7 @@ import SourcesAndLicensesPage from './app/sources-and-licenses/page';
 import { AhkamShariatView } from './components/AhkamShariat/AhkamShariatView';
 import { IslahAamalView } from './components/IslahAamal/IslahAamalView';
 import { QuizCenterView } from './components/Quiz/QuizCenterView';
+import { ScholarlyForumView } from './components/Forum/ScholarlyForumView';
 import { Headphones, Mic2 } from 'lucide-react';
 import { SearchCategoryFilter, GlobalSearchResult } from './services/globalSearchService';
 import { LanguageProvider, usePortalLanguage } from './context/LanguageContext';
@@ -73,7 +74,7 @@ function AppContent() {
       try {
         const params = new URLSearchParams(window.location.search);
         const tabParam = params.get('tab') as AppTab | null;
-        if (tabParam && ['dashboard', 'reader', 'ai-tutor', 'exams', 'quiz', 'notes', 'flashcards', 'prayer-times', 'ahkam-shariat', 'islah-aamal'].includes(tabParam)) {
+        if (tabParam && ['dashboard', 'reader', 'ai-tutor', 'exams', 'quiz', 'forum', 'notes', 'flashcards', 'prayer-times', 'ahkam-shariat', 'islah-aamal'].includes(tabParam)) {
           setActiveTab(tabParam);
         }
       } catch {}
@@ -86,7 +87,7 @@ function AppContent() {
           const search = e.detail.url.includes('?') ? e.detail.url.split('?')[1] : '';
           const params = new URLSearchParams(search);
           const tabParam = params.get('tab') as AppTab | null;
-          if (tabParam && ['dashboard', 'reader', 'ai-tutor', 'exams', 'quiz', 'notes', 'flashcards', 'prayer-times', 'ahkam-shariat', 'islah-aamal'].includes(tabParam)) {
+          if (tabParam && ['dashboard', 'reader', 'ai-tutor', 'exams', 'quiz', 'forum', 'notes', 'flashcards', 'prayer-times', 'ahkam-shariat', 'islah-aamal'].includes(tabParam)) {
             setActiveTab(tabParam);
           }
         } catch {}
@@ -160,7 +161,7 @@ function AppContent() {
       const bookParam = params.get('book');
       const modalParam = params.get('modal');
 
-      if (tabParam && ['dashboard', 'reader', 'ai-tutor', 'exams', 'quiz', 'notes', 'flashcards', 'prayer-times', 'ahkam-shariat', 'islah-aamal'].includes(tabParam)) {
+      if (tabParam && ['dashboard', 'reader', 'ai-tutor', 'exams', 'quiz', 'forum', 'notes', 'flashcards', 'prayer-times', 'ahkam-shariat', 'islah-aamal'].includes(tabParam)) {
         setActiveTab(tabParam);
       }
 
@@ -240,6 +241,11 @@ function AppContent() {
         title = 'اصلاحِ اعمال و روزمرہ محاسبۂ نفس (محاسبہ چارٹ) | تحریکِ ایمان';
         desc = 'پانچوں فرض نمازیں باجماعت، سنن، نوافل، تلاوت، اور مسنون اذکار کا انٹرایکٹو چارٹ مع نصیحتِ اکابر۔';
         url.searchParams.set('tab', 'islah-aamal');
+        url.searchParams.delete('book');
+      } else if (activeTab === 'forum') {
+        title = 'علمی مباحث اور سوال و جواب (Scholarly Q&A Forum) | تحریکِ ایمان';
+        desc = 'درسِ نظامی کے طلبہ اور محققین کے لیے علمی و تحقیقی مباحث، حلِ عبارت، اور مصدقہ علماء و مفتیان کے مستند فتاویٰ و جوابات۔';
+        url.searchParams.set('tab', 'forum');
         url.searchParams.delete('book');
       }
 
@@ -572,6 +578,22 @@ function AppContent() {
         {activeTab === 'islah-aamal' && (
           <IslahAamalView
             onBackToDashboard={() => setActiveTab('dashboard')}
+          />
+        )}
+
+        {activeTab === 'forum' && (
+          <ScholarlyForumView
+            theme={theme}
+            onBackToDashboard={() => setActiveTab('dashboard')}
+            onNavigateToBook={(bookSlug, page) => {
+              const found = booksDatabase.find(b => b.id.toLowerCase() === bookSlug.toLowerCase());
+              if (found) {
+                setSelectedBook(found);
+                setActiveTab('reader');
+              } else {
+                navigateTo(`/books/${bookSlug}${page ? `?page=${page}` : ''}`);
+              }
+            }}
           />
         )}
       </main>

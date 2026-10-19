@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { BookOpen, ExternalLink, Sparkles, BookMarked, Award } from 'lucide-react';
+import { BookOpen, ExternalLink, Sparkles, BookMarked, Award, MessageSquare } from 'lucide-react';
 import { publicDomainBooks, modernBooks, PublicDomainBook, BookCategoryTitle } from '../data/publicDomainBooks';
 import { AppTab } from '../types';
 import { NaatPlayer } from './NaatPlayer';
@@ -208,6 +208,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
             >
               <Award className="w-3.5 h-3.5 text-amber-600" />
               <span>امتحانی کوئز سنٹر (MCQs)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('forum')}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-teal-50 hover:bg-teal-100 border border-teal-300 text-teal-900 text-xs font-nastaliq font-bold shadow-2xs transition cursor-pointer"
+              title="علمی مباحث اور سوال و جواب (فورم)"
+            >
+              <MessageSquare className="w-3.5 h-3.5 text-teal-600" />
+              <span>علمی مباحث و فورم (Q&A)</span>
             </button>
           </div>
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Clock, GraduationCap, Scale, Heart, Headphones, Mic2, Menu, X, ChevronDown, Award } from 'lucide-react';
+import { BookOpen, Clock, GraduationCap, Scale, Heart, Headphones, Mic2, Menu, X, ChevronDown, Award, MessageSquare } from 'lucide-react';
 import { TehreekImanLogo } from './TehreekImanLogo';
 import { AppTab } from '../types';
 import { GlobalSearchInput } from './Search/GlobalSearchInput';
@@ -281,13 +281,27 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span>{t('nav_quiz', 'امتحانی کوئز')}</span>
               </button>
 
+              <button
+                type="button"
+                onClick={() => setActiveTab('forum')}
+                className={`hidden xl:flex items-center gap-1 px-2.5 py-1.5 rounded-xl font-nastaliq font-bold transition-all text-xs cursor-pointer ${
+                  activeTab === 'forum'
+                    ? 'bg-emerald-800 text-white shadow-xs'
+                    : 'text-stone-700 hover:bg-gray-100'
+                }`}
+                title="علمی مباحث اور سوال و جواب (فورم)"
+              >
+                <MessageSquare className="w-3 h-3 text-teal-500" />
+                <span>{t('nav_forum', 'علمی فورم')}</span>
+              </button>
+
               {/* LG-Only "More" Dropdown to prevent squishing search bar */}
               <div className="xl:hidden relative">
                 <button
                   type="button"
                   onClick={() => setMoreMenuOpen(prev => !prev)}
                   className={`px-2 py-1.5 rounded-xl font-nastaliq font-bold transition-all flex items-center gap-1 text-xs cursor-pointer ${
-                    activeTab === 'islah-aamal' || activeTab === 'prayer-times' || activeTab === 'exams' || activeTab === 'quiz'
+                    activeTab === 'islah-aamal' || activeTab === 'prayer-times' || activeTab === 'exams' || activeTab === 'quiz' || activeTab === 'forum'
                       ? 'bg-emerald-800 text-white shadow-xs'
                       : 'text-stone-700 hover:bg-gray-100'
                   }`}
@@ -340,6 +354,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                     >
                       <Award className="w-3.5 h-3.5 text-amber-500" />
                       <span>امتحانی کوئز</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('forum')}
+                      className={`w-full px-3 py-2 text-right font-nastaliq text-xs flex items-center gap-2 hover:bg-emerald-50 ${
+                        activeTab === 'forum' ? 'text-emerald-800 font-bold bg-emerald-50' : 'text-stone-700'
+                      }`}
+                    >
+                      <MessageSquare className="w-3.5 h-3.5 text-teal-600" />
+                      <span>علمی فورم</span>
                     </button>
                   </div>
                 )}
@@ -512,6 +536,20 @@ export const Navbar: React.FC<NavbarProps> = ({
               >
                 <Award className="w-3.5 h-3.5 text-amber-500" />
                 <span>{t('nav_quiz', 'امتحانی کوئز')}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('forum');
+                  setMobileMenuOpen(false);
+                }}
+                className={`p-2.5 rounded-xl font-bold transition flex items-center gap-2 col-span-2 ${
+                  activeTab === 'forum' ? 'bg-emerald-800 text-white shadow-xs' : 'bg-white text-stone-800 hover:bg-emerald-50'
+                }`}
+              >
+                <MessageSquare className="w-3.5 h-3.5 text-teal-600" />
+                <span>{t('nav_forum', 'علمی مباحث اور سوال و جواب (فورم)')}</span>
               </button>
             </div>
           </div>
