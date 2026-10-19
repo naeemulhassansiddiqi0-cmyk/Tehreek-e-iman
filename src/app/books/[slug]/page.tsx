@@ -356,7 +356,8 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
   return (
     <div 
       id={hadithCardId}
-      className={`border rounded-2xl p-4 sm:p-6 space-y-4 transition-all bg-white shadow-2xs ${
+      data-hadith={hadithNum}
+      className={`border rounded-2xl p-4 sm:p-6 space-y-4 transition-all bg-white shadow-2xs scroll-mt-28 ${
         isThisAudioActive
           ? 'ring-4 ring-emerald-400 border-emerald-500 shadow-2xl bg-emerald-50/15'
           : 'border-gray-100/90 hover:border-emerald-200'
@@ -3469,7 +3470,9 @@ ${urduToCopy}
                       <div 
                         key={seg.id || sIdx}
                         id={rukuId}
-                        className={`bg-white rounded-3xl border-2 transition-all p-5 sm:p-7 space-y-4 shadow-md ${
+                        data-ayah={rukuAyah}
+                        data-ruku-id={rukuId}
+                        className={`bg-white rounded-3xl border-2 transition-all p-5 sm:p-7 space-y-4 shadow-md scroll-mt-28 ${
                           isRukuPlaying
                             ? 'ring-4 ring-amber-400 border-amber-500 shadow-2xl bg-amber-50/20'
                             : 'border-emerald-100/90 hover:border-emerald-300/80'
@@ -3639,12 +3642,19 @@ ${urduToCopy}
                                 (activeItem?.isFullSurah && activeItem.surahNumber === (currentPage + 1) && activeAyahNumber === ayahNum)
                               ) && isAudioPlaying;
                               return (
-                                <div key={ayahNum} className="inline-flex items-center rounded-lg border border-gray-200 overflow-hidden shadow-2xs">
+                                <div 
+                                  key={ayahNum} 
+                                  id={aId} 
+                                  data-ayah={ayahNum} 
+                                  data-ayah-id={aId} 
+                                  className="inline-flex items-center rounded-lg border border-gray-200 overflow-hidden shadow-2xs scroll-mt-28"
+                                >
                                   <button
                                     type="button"
                                     onClick={() => {
                                       if (activeItem?.id === aId) {
                                         toggleAudioPlay();
+                                      } else {
                                         playQuranAyah({
                                           surahNumber: currentPage + 1,
                                           ayahNumber: ayahNum,
@@ -3733,7 +3743,9 @@ ${urduToCopy}
                               <div
                                 key={vIdx}
                                 id={verseCardId}
-                                className={`rounded-2xl border-2 p-4 sm:p-5 space-y-3.5 transition-all ${
+                                data-ayah={matchedAyahNum}
+                                data-ayah-id={verseCardId}
+                                className={`rounded-2xl border-2 p-4 sm:p-5 space-y-3.5 transition-all scroll-mt-28 ${
                                   isThisVersePlaying
                                     ? 'bg-amber-50/20 border-amber-500 ring-4 ring-amber-400 shadow-xl'
                                     : 'bg-white border-emerald-100 shadow-sm hover:border-emerald-300'

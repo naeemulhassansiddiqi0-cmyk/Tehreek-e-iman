@@ -230,7 +230,18 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [isLoading, setIsLoading] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [playbackRate, setPlaybackRateState] = useState(1);
+  const [playbackRate, setPlaybackRateState] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('tehreek_audio_playback_rate');
+        if (saved) {
+          const val = parseFloat(saved);
+          if (!isNaN(val) && val > 0) return val;
+        }
+      } catch {}
+    }
+    return 1;
+  });
   const [selectedReciter, setSelectedReciter] = useState<string>('Alafasy_128kbps');
   const [audioMode, setAudioMode] = useState<AudioMode>('arabic');
   const [autoPlayNext, setAutoPlayNext] = useState(true);
@@ -248,7 +259,7 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const playlistRef = useRef<AudioSyncItem[]>([]);
   const autoPlayNextRef = useRef<boolean>(true);
   const selectedReciterRef = useRef<string>('Alafasy_128kbps');
-  const playbackRateRef = useRef<number>(1);
+  const playbackRateRef = useRef<number>(playbackRate);
   const activeAyahNumberRef = useRef<number>(1);
   const playNextRef = useRef<() => void>(() => {});
 
@@ -268,11 +279,19 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       audioRef.current = audio;
 
       const handleWaiting = () => setIsLoading(true);
-      const handleCanPlay = () => setIsLoading(false);
+      const handleCanPlay = () => {
+        setIsLoading(false);
+        if (audioRef.current) {
+          audioRef.current.playbackRate = playbackRateRef.current;
+        }
+      };
       const handlePlaying = () => {
         setIsLoading(false);
         setIsPlaying(true);
         isAdvancingRef.current = false;
+        if (audioRef.current) {
+          audioRef.current.playbackRate = playbackRateRef.current;
+        }
       };
       const handlePause = () => {
         if (!isTransitioningRef.current) {
@@ -357,21 +376,35 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }, []);
 
-  // Smooth Auto-scroll to active item or active verse
+  // Smooth Auto-scroll to active item or active verse with DOM paint synchronization
   useEffect(() => {
     if (!autoScroll || !activeItem) return;
-    try {
-      const targetId = activeItem.isFullSurah && activeItem.surahNumber
-        ? `quran-${activeItem.surahNumber}-${activeAyahNumber}`
-        : activeItem.id;
-      const el = document.getElementById(targetId) || document.getElementById(activeItem.id);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    const scrollTimer = setTimeout(() => {
+      try {
+        const targetAyah = activeItem.isFullSurah 
+          ? activeAyahNumber 
+          : (activeItem.itemNumber || activeAyahNumber);
+
+        const targetId = activeItem.surahNumber
+          ? `quran-${activeItem.surahNumber}-${targetAyah}`
+          : activeItem.id;
+
+        const el = document.getElementById(targetId)
+          || document.getElementById(activeItem.id)
+          || (targetAyah ? document.querySelector(`[data-ayah="${targetAyah}"]`) : null)
+          || (targetId ? document.querySelector(`[data-ayah-id="${targetId}"]`) : null);
+
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      } catch (e) {
+        console.warn('Auto-scroll error:', e);
       }
-    } catch {
-      // ignore
-    }
-  }, [activeItem?.id, activeAyahNumber, autoScroll, activeItem?.isFullSurah, activeItem?.surahNumber]);
+    }, 70);
+
+    return () => clearTimeout(scrollTimer);
+  }, [activeItem?.id, activeItem?.itemNumber, activeAyahNumber, autoScroll, activeItem?.isFullSurah, activeItem?.surahNumber]);
 
   const stopCurrentAudio = useCallback(() => {
     if (audioRef.current) {
@@ -426,9 +459,11 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     const audio = audioRef.current;
     if (audioUrl && audio) {
+      const currentSpeed = playbackRateRef.current;
+      audio.defaultPlaybackRate = currentSpeed;
       audio.src = audioUrl;
-      audio.playbackRate = playbackRateRef.current;
       audio.load();
+      audio.playbackRate = currentSpeed;
 
       const playPromise = audio.play();
       if (playPromise !== undefined) {
@@ -437,6 +472,9 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             isTransitioningRef.current = false;
             setIsPlaying(true);
             setIsLoading(false);
+            if (audioRef.current) {
+              audioRef.current.playbackRate = currentSpeed;
+            }
           })
           .catch(err => {
             console.warn('Audio play error:', err);
@@ -610,7 +648,14 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const setPlaybackRate = (rate: number) => {
     setPlaybackRateState(rate);
+    playbackRateRef.current = rate;
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('tehreek_audio_playback_rate', String(rate));
+      } catch {}
+    }
     if (audioRef.current) {
+      audioRef.current.defaultPlaybackRate = rate;
       audioRef.current.playbackRate = rate;
     }
   };
