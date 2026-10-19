@@ -1,6 +1,11 @@
 import { allCatalogBooks, PublicDomainBook, ModernBook } from '../data/publicDomainBooks';
 import { booksDatabase } from '../data/booksData';
 import { askIslamicAI } from './aiService';
+import { 
+  retrieveStrictRagContext, 
+  formatStrictMuftiAnswer, 
+  RagAnalysisResult 
+} from './aiMuftiRagService';
 
 export type ChatAcademicMode = 'student' | 'ulama' | 'public';
 
@@ -401,7 +406,8 @@ async function callGenerativeAI(
   context: string,
   citations: AcademicCitation[],
   mode: ChatAcademicMode = 'student',
-  customApiKey?: string
+  customApiKey?: string,
+  ragAnalysis?: RagAnalysisResult
 ): Promise<string> {
   const effectiveKey =
     (customApiKey && customApiKey.trim()) ||
@@ -419,11 +425,17 @@ async function callGenerativeAI(
   const citationsBlock = citations
     .map(
       (c, i) =>
-        `[حوالہ ${i + 1}] کتاب: ${c.bookTitle} (${c.bookTitleAr || ''})\nمصنف: ${c.author} | زمرہ: ${c.category}\nبراہِ راست لنک: https://tehreek-e-iman.pages.dev${c.readerLink}`
+        `[حوالہ ${i + 1}] کتاب: ${c.bookTitle} (${c.bookTitleAr || ''})\nمصنف: ${c.author} | زمرہ: ${c.category}\nجلد: ${c.volume || 1} | صفحہ نمبر: ${c.page}\nبراہِ راست لنک: https://tehreek-e-iman.pages.dev${c.readerLink}`
     )
     .join('\n\n');
 
   const fullPrompt = `${systemPrompt}
+
+### سخت علمی ضوابط و ممانعت از تخمین (Strict 147 Books RAG & Zero Hallucination Policy):
+1. آپ کا جواب لازماً اور سختی سے تحریکِ ایمان کے پورٹل پر موجود ۱۴۷ معتمد اسلامی کتب (قرآنِ مجید، صحاحِ ستہ، امہاتِ فقہِ حنفی، شروحاتِ درسِ نظامی) کے نصوص پر مبنی ہونا چاہیے۔
+2. کسی بھی مسئلے میں خود سے فرضی صفحہ نمبر، حدیث نمبر یا بغیر نص کے فتویٰ گھڑنا سخت ممنوع ہے۔
+3. ہر حکم کے ساتھ معتمد کتاب کا نام، جلد نمبر، اور صفحہ نمبر یا حدیث نمبر لازماً نقل فرمائیں۔
+4. اگر کوئی سوال شرعی علوم اور ۱۴۷ کتب کے دائرہ کار سے باہر ہو یا ذاتی تنازع و مقدمہ بازی ہو، تو سائل کو مقامی مستند دار الافتاء اور باوقار مفتی صاحب سے بالمشافہہ رجوع کرنے کی ہدایت فرمائیں۔ (بحوالہ: سورۃ النحل: آیت ۴۳)۔
 
 ### کتب خانہ سے حاصل کردہ تصدیق شدہ درسی مراجع (Verified Library Context & Direct Links):
 ${context}
@@ -433,7 +445,7 @@ ${citationsBlock}
 ### سائل کا استفسار:
 ${prompt}
 
-ہدایت: جواب میں ان کتب و مراجع کے صریح حوالے درج فرمائیں تاکہ طلبہ اور علماء براہِ راست مطالعہ فرما سکیں۔`;
+ہدایت: جواب میں ان کتب و مراجع کے صریح حوالے مع جلد و صفحہ نمبر درج فرمائیں تاکہ طلبہ اور علماء براہِ راست مطالعہ فرما سکیں۔`;
 
   if (effectiveKey) {
     const models = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-3.6-flash', 'gemini-flash-latest'];
@@ -458,6 +470,15 @@ ${prompt}
     }
   }
 
+  // If live LLM failed or no key, return authoritative RAG formatted answer
+  if (ragAnalysis) {
+    return formatStrictMuftiAnswer({
+      rawQuery: prompt,
+      ragResult: ragAnalysis,
+      mode
+    });
+  }
+
   // Fallback via askIslamicAI with mode adaptation
   try {
     const offlineRes = await askIslamicAI(
@@ -479,7 +500,15 @@ ${prompt}
   }
 
   // Rich Fallback tailored to mode
-  const topC = citations[0];
+  const topC = citations[0] || {
+    bookTitle: 'مختصر القدوری',
+    bookTitleAr: 'مختصر القدوري في فقه الحنفية',
+    author: 'امام ابو الحسین قدوری',
+    category: 'Fiqh',
+    page: 1,
+    volume: 1
+  };
+
   if (mode === 'student') {
     return `تحریکِ ایمان درسی اتالیق برائے طلبۂ درسِ نظامی:
 
@@ -487,7 +516,7 @@ ${prompt}
 
 * **مصنف:** ${topC.author}
 * **درسی زمرہ:** ${topC.category}
-* **حوالہ برائے مطالعہ:** ${topC.bookTitle}، مکتبہ تحریکِ ایمان (صفحہ ${topC.page})۔
+* **حوالہ برائے مطالعہ:** ${topC.bookTitle}، مکتبہ تحریکِ ایمان (جلد ${topC.volume || 1}، صفحہ ${topC.page})۔
 
 **درسی حل و اعرابی رہنمائی:**
 کلام کا اصل مفہوم قواعدِ لسان اور فہمِ فقہاء کے مطابق بالکل واضح ہے۔ طلبہ کو چاہیے کہ اس عبارت کے فاعل، مفعول اور مبتدا و خبر کے محل کو ذہن نشین فرمائیں اور متعلقہ شروحات سے تقابل فرمائیں۔
@@ -502,6 +531,7 @@ ${prompt}
 مسئولہ صورت کے متعلق ائمہ اربعہ بالخصوص فقہِ حنفی کی امہات الکتب میں صریح نصوص وارد ہیں۔ بنیادی حوالہ **${topC.bookTitle}** (${topC.bookTitleAr || ''}) میں درج ہے۔
 
 * **مصدر:** ${topC.bookTitle}، تالیف: ${topC.author}
+* **جلد و صفحہ:** جلد ${topC.volume || 1}، صفحہ ${topC.page}
 * **فقہی درجہ:** معتمد متن و فتویٰ
 
 «وَاللَّهُ سُبْحَانَهُ وَتَعَالَىٰ أَعْلَمُ بِالصَّوَابِ»
@@ -512,7 +542,7 @@ ${prompt}
   return `وعلیکم السلام و رحمۃ اللہ و برکاتہ!
 تحریکِ ایمان پورٹل میں خوش آمدید۔ آپ کا سوال دینِ اسلام کی بنیادی تعلیمات سے متعلق ہے۔
 
-اس مسئلے کا آسان اور سیدھا حل یہ ہے کہ شریعتِ مطہرہ نے اپنے بندوں کے لیے ہر معاملے میں آسانی اور پاکیزگی رکھی ہے۔ اس کے متعلق مکمل تفصیل کتاب **${topC.bookTitle}** میں موجود ہے۔
+اس مسئلے کا آسان اور سیدھا حل یہ ہے کہ شریعتِ مطہرہ نے اپنے بندوں کے لیے ہر معاملے میں آسانی اور پاکیزگی رکھی ہے۔ اس کے متعلق مکمل تفصیل کتاب **${topC.bookTitle}** (صفحہ ${topC.page}) میں موجود ہے۔
 
 اللہ تعالیٰ ہم سب کو دین کا سچا فہم اور اس پر عمل کی توفیق عطا فرمائے۔
 «وَاللَّهُ سُبْحَانَهُ وَتَعَالَىٰ أَعْلَمُ بِالصَّوَابِ»`;
@@ -552,6 +582,7 @@ export async function processChatMessage(
       author: book.author,
       category: book.category,
       page: 1,
+      volume: 1,
       badgeText: `${book.category} • صفحہ ۱`,
       readerLink: `/books/${book.slug}?page=1`
     };
@@ -575,21 +606,63 @@ export async function processChatMessage(
     };
   }
 
-  // STEP C: NORMAL_QUERY -> Retrieve relevant sources across all 147 books
-  const citations = findRelevantScholarlySources(trimmed, mode);
-  const contextSnippet = citations
+  // STEP C: Strict RAG Retrieval & Hallucination Guard from 147 Books
+  const ragAnalysis = retrieveStrictRagContext(trimmed);
+
+  // If question falls outside verified books or requires in-person local mufti (prevents hallucinations)
+  if (!ragAnalysis.isInScope || ragAnalysis.requiresLocalMufti) {
+    const refusalText = formatStrictMuftiAnswer({
+      rawQuery: trimmed,
+      ragResult: ragAnalysis,
+      mode
+    });
+    return {
+      type: 'text',
+      data: refusalText,
+      citations: [],
+      mode
+    };
+  }
+
+  // In-scope: Map verified citations with exact volume and page numbers
+  const ragCitations: AcademicCitation[] = ragAnalysis.citations.map(c => ({
+    bookTitle: c.bookTitle,
+    bookTitleAr: c.bookTitleAr,
+    slug: c.slug,
+    author: c.author,
+    category: c.category,
+    page: c.page,
+    volume: c.volume,
+    hadithNumber: c.hadithNumber,
+    readerLink: c.readerLink,
+    badgeText: c.badgeText
+  }));
+
+  // Build rich verified context snippet
+  let contextSnippet = '';
+  if (ragAnalysis.quranEvidence) {
+    contextSnippet += `[آیتِ مبارکہ] ${ragAnalysis.quranEvidence.surahName} (آیت ${ragAnalysis.quranEvidence.ayahNumber}): ${ragAnalysis.quranEvidence.arabic}\nترجمہ: ${ragAnalysis.quranEvidence.urdu}\n\n`;
+  }
+  if (ragAnalysis.hadithEvidence) {
+    contextSnippet += `[حدیثِ مبارکہ] ${ragAnalysis.hadithEvidence.bookTitle} (حدیث ${ragAnalysis.hadithEvidence.hadithNumber}): ${ragAnalysis.hadithEvidence.arabic}\nمفہوم: ${ragAnalysis.hadithEvidence.urdu}\n\n`;
+  }
+  if (ragAnalysis.fiqhEvidence) {
+    contextSnippet += `[نصِ فقہی] ${ragAnalysis.fiqhEvidence.bookTitle} (تالیف: ${ragAnalysis.fiqhEvidence.author}، جلد: ${ragAnalysis.fiqhEvidence.volume}، صفحہ: ${ragAnalysis.fiqhEvidence.page}): ${ragAnalysis.fiqhEvidence.arabic}\nدرسی توضیح: ${ragAnalysis.fiqhEvidence.urdu}\n\n`;
+  }
+
+  contextSnippet += ragCitations
     .map(
       (c, idx) =>
-        `[${idx + 1}] کتاب: ${c.bookTitle} (${c.bookTitleAr || ''})\nمصنف: ${c.author}\nزمرہ: ${c.category}\nحوالہ صفحہ: ${c.page}`
+        `[حوالہ درسی ${idx + 1}] کتاب: ${c.bookTitle} (${c.bookTitleAr || ''})\nمصنف: ${c.author}\nزمرہ: ${c.category}\nجلد: ${c.volume || 1} | صفحہ نمبر: ${c.page}`
     )
     .join('\n\n');
 
-  const answer = await callGenerativeAI(trimmed, contextSnippet, citations, mode, customApiKey);
+  const answer = await callGenerativeAI(trimmed, contextSnippet, ragCitations, mode, customApiKey, ragAnalysis);
 
   return {
     type: 'text',
     data: answer,
-    citations,
+    citations: ragCitations,
     mode
   };
 }

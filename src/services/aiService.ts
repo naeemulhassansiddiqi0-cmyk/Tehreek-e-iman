@@ -1,4 +1,8 @@
 import { AIMode, StudentLevel } from '../types';
+import { 
+  retrieveStrictRagContext, 
+  formatStrictMuftiAnswer 
+} from './aiMuftiRagService';
 
 export interface ChatMessage {
   id: string;
@@ -79,12 +83,17 @@ export const SYSTEM_PROMPT_ISLAMIC_SCHOLARLY = `
 6. **جدید معاملات پر فقہی تطبیق (Modern Financial & Medical Issues):**
    اگر سوال جدید مسائل (آن لائن کاروبار، کرپٹو کرنسی، بینکنگ، انشورنس، میڈیکل آپریشن، ٹرانسپلانٹیشن، خاندانی تنازعات) سے متعلق ہو تو جدید فقہی اکیڈمیز اور فقہی قواعد (الأمور بمقاصدها، المشقة تجلب التيسير، لا ضرر ولا ضرار) کے تحت مدلل رہنمائی فرمائیں۔
 
-7. **مہرِ فتویٰ و اختتام:**
+7. **سخت علمی ضوابط و ممانعت از تخمین (Strict 147 Books RAG & Zero Hallucination Policy):**
+   - آپ کی تمام تر تحقیقات پورٹل پر موجود ۱۴۷ معتمد درسی و فقہی کتب کے مصدقہ نصوص کے دائرے میں مقید ہیں۔
+   - کسی بھی مسئلے میں خود سے فرضی صفحہ نمبر، جلد نمبر یا بغیر نص کے فتویٰ گھڑنا سخت ممنوع ہے۔
+   - اگر سائل کا استفسار مکتبہ کی کتب کے دائرۂ نصوص سے ماورا، خالص غیر دینی، تخمیناتی، ذاتی قانونی مقدمہ بازی یا شخصی منافرت و تکفیر پر مبنی ہو، تو شرعی عذر پیش فرماتے ہوئے واضح الفاظ میں سائل کو اپنے قریبی مستند دار الافتاء اور باوقار مفتی صاحب سے بالمشافہہ رجوع کرنے کی ہدایت فرمائیں (بحوالہ: سورۃ النحل: آیت ۴۳)۔
+
+8. **مہرِ فتویٰ و اختتام:**
    جواب کے اختتام پر باوقار روایتی کلمۂ توثیق درج فرمائیں:
    «وَاللَّهُ سُبْحَانَهُ وَتَعَالَىٰ أَعْلَمُ بِالصَّوَابِ»
    (اور اللہ پاک ہی سب سے زیادہ درست علم رکھنے والا ہے)۔
    اور اس کے بعد یہ فائنل اختتامی سطر لازماً درج فرمائیں:
-   "نوٹ: یہ اے آئی مسئلے کی وضاحت میں معاون ہے، اس کی تصدیق کے لیے اپنے علاقے کے معتبر عالم دین اور مفتیان کرام سے رجوع فرمائیں۔"
+   "نوٹ: یہ علمی معاونت پورٹل کی ۱۴۷ معتمد کتب کے نصوص سے فراہم کی گئی ہے، کسی بھی نزاعی معاملے میں اپنے مقامی مستند دار الافتاء سے بالمشافہہ رجوع فرمائیں۔"
 `;
 
 export async function askIslamicAI(
@@ -95,6 +104,27 @@ export async function askIslamicAI(
   bookContext?: string,
   conversationHistory: ChatMessage[] = []
 ): Promise<AIResponse> {
+  // 0. Strict RAG Evaluation & Hallucination Guard across 147 Verified Books
+  const ragAnalysis = retrieveStrictRagContext(prompt);
+  if (!ragAnalysis.isInScope || ragAnalysis.requiresLocalMufti) {
+    const refusalText = formatStrictMuftiAnswer({
+      rawQuery: prompt,
+      ragResult: ragAnalysis,
+      mode: 'ulama'
+    });
+    return {
+      answer: refusalText,
+      references: [
+        "القرآن الکریم: {فَاسْأَلُوا أَهْلَ الذِّكْرِ إِن كُنتُمْ لَا تَعْلَمُونَ} [سورۃ النحل: ۴۳]",
+        "اصولِ افتاء: عدمِ تحریف و ممانعت از فتویٰ بغیر نص"
+      ],
+      tipsForExam: [
+        "فتویٰ میں احتیاط لازم ہے، نزاعی و غیر نصوصی امور میں بالمشافہہ رجوع واجب ہے",
+        "عدالتی تنازعات اور دو فریقین کے مقدمات میں یک طرفہ فتویٰ دینا شرعاً ممنوع ہے"
+      ]
+    };
+  }
+
   // Extract effective Gemini API key from explicit prop, localStorage, or environment variables
   const effectiveKey = 
     (apiKey && apiKey.trim()) ||
@@ -112,7 +142,21 @@ export async function askIslamicAI(
       'gemini-1.5-flash'
     ];
 
-    const modeInstruction = getModeInstruction(mode, level, bookContext);
+    let ragEvidencePrompt = '\n\n### مکتبہ کی ۱۴۷ معتمد کتب سے حاصل شدہ مصدقہ نصوص و مراجع:';
+    if (ragAnalysis.quranEvidence) {
+      ragEvidencePrompt += `\n* قرآنی آیت: {${ragAnalysis.quranEvidence.arabic}} [${ragAnalysis.quranEvidence.surahName}: آیت ${ragAnalysis.quranEvidence.ayahNumber}]`;
+    }
+    if (ragAnalysis.hadithEvidence) {
+      ragEvidencePrompt += `\n* حدیثِ مبارکہ: «${ragAnalysis.hadithEvidence.arabic}» [${ragAnalysis.hadithEvidence.bookTitle}: رقم ${ragAnalysis.hadithEvidence.hadithNumber}]`;
+    }
+    if (ragAnalysis.fiqhEvidence) {
+      ragEvidencePrompt += `\n* فقہی نص: «${ragAnalysis.fiqhEvidence.arabic}» [${ragAnalysis.fiqhEvidence.bookTitle}، مصنف: ${ragAnalysis.fiqhEvidence.author}، جلد: ${ragAnalysis.fiqhEvidence.volume}، صفحہ: ${ragAnalysis.fiqhEvidence.page}]`;
+    }
+    ragAnalysis.citations.forEach(c => {
+      ragEvidencePrompt += `\n* درسی مرجع: ${c.bookTitle} (جلد ${c.volume || 1}، صفحہ ${c.page}) — مصنف: ${c.author}`;
+    });
+
+    const modeInstruction = getModeInstruction(mode, level, bookContext) + ragEvidencePrompt;
     const historyContents = conversationHistory.slice(-10).map(msg => ({
       role: msg.role === 'user' ? 'user' : 'model',
       parts: [{ text: msg.content }]
@@ -125,7 +169,7 @@ export async function askIslamicAI(
       },
       {
         role: 'model',
-        parts: [{ text: 'سمعاً وطاعة۔ میں تحریکِ ایمان ڈیجیٹل دار الافتاء کا خادم و محقق ہوں اور قرآنِ حکیم، سنتِ رسول ﷺ اور فقہِ اسلامی کی معتمد کتب کی روشنی میں مدلل رہنمائی اور فتاویٰ پیش کرنے کا پابند ہوں۔' }]
+        parts: [{ text: 'سمعاً وطاعة۔ میں تحریکِ ایمان ڈیجیٹل دار الافتاء کا خادم و محقق ہوں اور قرآنِ حکیم، سنتِ رسول ﷺ اور فقہِ اسلامی کی ۱۴۷ معتمد کتب کی روشنی میں مدلل رہنمائی اور فتاویٰ پیش کرنے کا پابند ہوں۔' }]
       },
       ...historyContents,
       {
@@ -3014,6 +3058,23 @@ export function generateOfflineScholarlyResponse(
     return bestTopic.handler(rawPrompt, p, bookContext);
   }
 
-  // Universal Fallback: Dynamic Thematic Reasoner
+  // Universal Fallback: Strict Classical RAG Reasoner from 147 Verified Books
+  const ragAnalysis = retrieveStrictRagContext(rawPrompt);
+  if (ragAnalysis.isInScope && !ragAnalysis.requiresLocalMufti) {
+    const formattedAns = formatStrictMuftiAnswer({
+      rawQuery: rawPrompt,
+      ragResult: ragAnalysis
+    });
+    return {
+      answer: formattedAns,
+      references: ragAnalysis.citations.map(c => `${c.bookTitle} (جلد ${c.volume || 1}، صفحہ ${c.page})`),
+      tipsForExam: [
+        "مسئلے میں فقہِ حنفی کی امہات الکتب کا صفحہ و جلد نقل کرنا اعلیٰ علمی درجے کا مظہر ہے",
+        "قرآنی آیات اور احادیث کے مستند حوالے فتاویٰ کو پختہ بناتے ہیں"
+      ]
+    };
+  }
+
+  // Fallback: Dynamic Thematic Reasoner
   return generateDynamicScholarlyResponse(rawPrompt, bookContext);
 }
