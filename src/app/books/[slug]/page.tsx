@@ -33,6 +33,7 @@ import {
 import { UrduStyler } from "@/components/UrduStyler";
 import { FontSizeControlModal } from "@/components/Reader/FontSizeControlModal";
 import { ReaderZoomToolbar } from "@/components/Reader/ReaderZoomToolbar";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePortalLanguage } from "@/context/LanguageContext";
 import { GlobalComments } from "@/components/GlobalComments";
 import { WordLookupModal } from "@/components/Reader/WordLookupModal";
@@ -2228,7 +2229,7 @@ ${urduToCopy}
 
   return (
     <ErrorBoundary fallbackTitle={`کتاب «${book?.title_ur || book?.title || slug || 'مطالعہ'}» لوڈ کرنے میں دشواری`}>
-      <div dir="rtl" className="min-h-screen bg-white text-stone-900 flex flex-col selection:bg-emerald-100 selection:text-emerald-900 overflow-x-hidden w-full relative">
+      <div dir="rtl" className="min-h-screen bg-stone-50 dark:bg-slate-900 text-stone-900 dark:text-stone-100 flex flex-col selection:bg-emerald-100 dark:selection:bg-emerald-900/40 selection:text-emerald-900 dark:selection:text-emerald-200 overflow-x-hidden w-full relative">
         
         {/* Subtle Toast for Mobile Pinch-to-Zoom and Desktop Font Zoom */}
         {toastMessage && (
@@ -2237,15 +2238,15 @@ ${urduToCopy}
           </div>
         )}
 
-        {/* 1. Header (Clean White, same branding as homepage) */}
-        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-100 px-3 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between shadow-xs">
+        {/* 1. Header (Clean White / Dark Slate, same branding as homepage) */}
+        <header className="sticky top-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-gray-100 dark:border-slate-800 px-3 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between shadow-xs">
           <div className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/"
-              className="flex items-center gap-2 text-emerald-800 hover:text-emerald-900 font-nastaliq font-bold text-xs sm:text-base transition hover:-translate-x-0.5"
+              className="flex items-center gap-2 text-emerald-800 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-300 font-nastaliq font-bold text-xs sm:text-base transition hover:-translate-x-0.5"
               title="ہوم پیج پر واپس جائیں — تحریکِ ایمان"
             >
-              <ArrowRight className="w-4 h-4 text-emerald-800" />
+              <ArrowRight className="w-4 h-4 text-emerald-800 dark:text-emerald-400" />
               <img
                 src="/tehreek-iman-logo.jpg"
                 alt="تحریکِ ایمان"
@@ -2254,12 +2255,12 @@ ${urduToCopy}
               <span className="hidden sm:inline">تحریکِ ایمان</span>
               <span className="sm:hidden">واپس</span>
             </Link>
-            <span className="text-gray-300">|</span>
+            <span className="text-gray-300 dark:text-slate-700">|</span>
             <div className="flex items-center gap-2">
-              <h1 className="font-bold font-nastaliq text-stone-900 text-xs sm:text-lg truncate max-w-[140px] sm:max-w-md">
+              <h1 className="font-bold font-nastaliq text-stone-900 dark:text-stone-100 text-xs sm:text-lg truncate max-w-[140px] sm:max-w-md">
                 {book?.title_ur || book?.title || slug}
               </h1>
-              <span className="hidden md:inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-100 font-nastaliq">
+              <span className="hidden md:inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800 font-nastaliq">
                 {book?.category === 'Hadith' || isHadith ? 'حدیث شریف' : (book?.category || 'کتاب')}
               </span>
             </div>
@@ -2276,6 +2277,9 @@ ${urduToCopy}
             onResetAll={handleResetTypography}
             showLanguageSwitcher={true}
           />
+
+          {/* Dark / Light Theme Toggle */}
+          <ThemeToggle />
 
           {/* Tashkeel Toggle Button (Global for Madaris Students) */}
           <button

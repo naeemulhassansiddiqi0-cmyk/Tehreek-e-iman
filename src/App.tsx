@@ -24,6 +24,7 @@ import { IslahAamalView } from './components/IslahAamal/IslahAamalView';
 import { Headphones, Mic2 } from 'lucide-react';
 import { SearchCategoryFilter, GlobalSearchResult } from './services/globalSearchService';
 import { LanguageProvider, usePortalLanguage } from './context/LanguageContext';
+import { ThemeProvider } from './context/ThemeContext';
 
 function AppContent() {
   const { t, isRTL } = usePortalLanguage();
@@ -361,7 +362,7 @@ function AppContent() {
       extractedSlug = match && match[1] ? decodeURIComponent(match[1]) : '';
     }
     return (
-      <div dir="rtl" className="min-h-screen bg-white">
+      <div dir={isRTL ? 'rtl' : 'ltr'} className="min-h-screen bg-stone-50 dark:bg-slate-900 text-stone-900 dark:text-stone-100">
         <BookDetailPage key={currentPath} slugProp={extractedSlug} />
         <Chatbot 
           onSelectBook={handleChatbotSelectBook} 
@@ -662,9 +663,11 @@ function AppContent() {
 
 export function App() {
   return (
-    <LanguageProvider>
-      <AppContent />
-    </LanguageProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <AppContent />
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }
 

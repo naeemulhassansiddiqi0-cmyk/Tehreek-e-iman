@@ -5,6 +5,7 @@ import { AppTab } from '../types';
 import { GlobalSearchInput } from './Search/GlobalSearchInput';
 import { GlobalSearchResult, SearchCategoryFilter } from '../services/globalSearchService';
 import { usePortalLanguage } from '../context/LanguageContext';
+import { ThemeToggle } from './ThemeToggle';
 
 interface NavbarProps {
   activeTab: AppTab;
@@ -59,7 +60,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-200/90 shadow-xs" dir={isRTL ? 'rtl' : 'ltr'}>
+    <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-gray-200/90 dark:border-slate-800 shadow-xs" dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="max-w-7xl mx-auto px-3 sm:px-5 lg:px-8">
         
         {/* Main Desktop & Tablet Row */}
@@ -80,17 +81,17 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
             </div>
             <div className="flex flex-col justify-center">
-              <span className={`text-xl sm:text-2xl lg:text-3xl text-emerald-900 tracking-tight leading-tight ${
+              <span className={`text-xl sm:text-2xl lg:text-3xl text-emerald-900 dark:text-emerald-400 tracking-tight leading-tight ${
                 language === 'en' ? 'font-sans font-black' : language === 'ar' ? 'font-arabic font-bold' : 'font-nastaliq font-black'
               }`}>
                 {t('brand_title', 'تحریکِ ایمان')}
               </span>
-              <span className={`text-[10px] sm:text-xs text-amber-900 leading-tight mt-0.5 flex flex-wrap items-center gap-1 ${
+              <span className={`text-[10px] sm:text-xs text-amber-900 dark:text-amber-400 leading-tight mt-0.5 flex flex-wrap items-center gap-1 ${
                 language === 'en' ? 'font-sans' : language === 'ar' ? 'font-arabic' : 'font-nastaliq'
               }`}>
-                <span className="text-emerald-800 font-bold">{t('brand_patron_label', 'بانی و سرپرست:')}</span>
-                <span className="text-stone-800 hidden xs:inline">{t('brand_patron_short', 'حضرت مولانا محمد نعیم الحسن صدیقی')}</span>
-                <span className="text-stone-800 xs:hidden">مولانا نعیم الحسن صدیقی</span>
+                <span className="text-emerald-800 dark:text-emerald-400 font-bold">{t('brand_patron_label', 'بانی و سرپرست:')}</span>
+                <span className="text-stone-800 dark:text-stone-300 hidden xs:inline">{t('brand_patron_short', 'حضرت مولانا محمد نعیم الحسن صدیقی')}</span>
+                <span className="text-stone-800 dark:text-stone-300 xs:hidden">مولانا نعیم الحسن صدیقی</span>
               </span>
             </div>
           </div>
@@ -150,6 +151,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 EN
               </button>
             </div>
+
+            {/* Dark / Light Theme Toggle */}
+            <ThemeToggle />
 
             {/* Audio Quick Triggers */}
             {(onOpenQuranAudio || onOpenNaatPlayer) && (
@@ -346,10 +350,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Mobile Navigation Drawer Overlay */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-gray-100 py-3 bg-stone-50/95 rounded-2xl mb-2 px-2 shadow-inner animate-fadeIn">
+          <div className="lg:hidden border-t border-gray-100 dark:border-slate-800 py-3 bg-stone-50/95 dark:bg-slate-900/95 rounded-2xl mb-2 px-2 shadow-inner animate-fadeIn">
             {/* Mobile Language Switcher Row */}
-            <div className="flex items-center justify-between bg-white p-2 rounded-xl border border-stone-200 mb-2.5">
-              <span className="text-xs font-bold font-nastaliq text-stone-700">زبان (Language):</span>
+            <div className="flex items-center justify-between bg-white dark:bg-slate-800 p-2 rounded-xl border border-stone-200 dark:border-slate-700 mb-2.5">
+              <span className="text-xs font-bold font-nastaliq text-stone-700 dark:text-stone-300">زبان (Language):</span>
               <div className="flex items-center bg-stone-100 rounded-full p-0.5 border border-stone-200">
                 <button
                   type="button"
@@ -379,6 +383,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                   EN
                 </button>
               </div>
+            </div>
+
+            {/* Mobile Theme Switcher Row */}
+            <div className="flex items-center justify-between bg-white dark:bg-slate-800 p-2 rounded-xl border border-stone-200 dark:border-slate-700 mb-2.5">
+              <span className="text-xs font-bold font-nastaliq text-stone-700 dark:text-stone-300">طرزِ بصارت (Theme):</span>
+              <ThemeToggle showLabel={true} />
             </div>
 
             <div className="grid grid-cols-2 gap-1.5 font-nastaliq text-xs">
