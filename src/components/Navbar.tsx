@@ -4,6 +4,7 @@ import { TehreekImanLogo } from './TehreekImanLogo';
 import { AppTab } from '../types';
 import { GlobalSearchInput } from './Search/GlobalSearchInput';
 import { GlobalSearchResult, SearchCategoryFilter } from '../services/globalSearchService';
+import { usePortalLanguage } from '../context/LanguageContext';
 
 interface NavbarProps {
   activeTab: AppTab;
@@ -37,6 +38,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenNaatPlayer,
   onSelectSearchResult
 }) => {
+  const { language, setLanguage, t, isRTL } = usePortalLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
 
@@ -57,7 +59,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-200/90 shadow-xs" dir="rtl">
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-200/90 shadow-xs" dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="max-w-7xl mx-auto px-3 sm:px-5 lg:px-8">
         
         {/* Main Desktop & Tablet Row */}
@@ -78,12 +80,16 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
             </div>
             <div className="flex flex-col justify-center">
-              <span className="font-nastaliq text-xl sm:text-2xl lg:text-3xl font-black text-emerald-900 tracking-tight leading-tight">
-                تحریکِ ایمان
+              <span className={`text-xl sm:text-2xl lg:text-3xl text-emerald-900 tracking-tight leading-tight ${
+                language === 'en' ? 'font-sans font-black' : language === 'ar' ? 'font-arabic font-bold' : 'font-nastaliq font-black'
+              }`}>
+                {t('brand_title', 'تحریکِ ایمان')}
               </span>
-              <span className="font-nastaliq text-[10px] sm:text-xs font-bold text-amber-900 leading-tight mt-0.5 flex flex-wrap items-center gap-1">
-                <span className="text-emerald-800 font-bold">بانی و سرپرست:</span>
-                <span className="text-stone-800 hidden xs:inline">حضرت مولانا محمد نعیم الحسن صدیقی</span>
+              <span className={`text-[10px] sm:text-xs text-amber-900 leading-tight mt-0.5 flex flex-wrap items-center gap-1 ${
+                language === 'en' ? 'font-sans' : language === 'ar' ? 'font-arabic' : 'font-nastaliq'
+              }`}>
+                <span className="text-emerald-800 font-bold">{t('brand_patron_label', 'بانی و سرپرست:')}</span>
+                <span className="text-stone-800 hidden xs:inline">{t('brand_patron_short', 'حضرت مولانا محمد نعیم الحسن صدیقی')}</span>
                 <span className="text-stone-800 xs:hidden">مولانا نعیم الحسن صدیقی</span>
               </span>
             </div>
@@ -98,13 +104,53 @@ export const Navbar: React.FC<NavbarProps> = ({
               onOpenFullModal={(q, cat) => {
                 if (onOpenSearch) onOpenSearch(q, cat);
               }}
-              placeholder="147 کتب، احادیث، تفاسیر، فقہ و حواشی میں تلاش فرمائیں..."
+              placeholder={t('search_placeholder', '147 کتب، احادیث، تفاسیر، فقہ و حواشی میں تلاش فرمائیں...')}
             />
           </div>
 
-          {/* 3. Left: Audio Pills & Consolidated Nav Items */}
+          {/* 3. Left: Audio Pills, Language Switcher & Consolidated Nav Items */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             
+            {/* Global Multi-Language Switcher (Urdu / Arabic / English) */}
+            <div className="hidden sm:flex items-center bg-stone-100 rounded-full p-0.5 border border-stone-200 shadow-2xs">
+              <button
+                type="button"
+                onClick={() => setLanguage('ur')}
+                className={`px-2 py-0.5 rounded-full text-xs font-nastaliq font-bold transition cursor-pointer ${
+                  language === 'ur'
+                    ? 'bg-emerald-800 text-white shadow-2xs'
+                    : 'text-stone-700 hover:text-emerald-900'
+                }`}
+                title="اردو (Urdu)"
+              >
+                اردو
+              </button>
+              <button
+                type="button"
+                onClick={() => setLanguage('ar')}
+                className={`px-2 py-0.5 rounded-full text-xs font-arabic font-bold transition cursor-pointer ${
+                  language === 'ar'
+                    ? 'bg-emerald-800 text-white shadow-2xs'
+                    : 'text-stone-700 hover:text-emerald-900'
+                }`}
+                title="العربية (Arabic)"
+              >
+                العربية
+              </button>
+              <button
+                type="button"
+                onClick={() => setLanguage('en')}
+                className={`px-2 py-0.5 rounded-full text-xs font-sans font-semibold transition cursor-pointer ${
+                  language === 'en'
+                    ? 'bg-emerald-800 text-white shadow-2xs'
+                    : 'text-stone-700 hover:text-emerald-900'
+                }`}
+                title="English"
+              >
+                EN
+              </button>
+            </div>
+
             {/* Audio Quick Triggers */}
             {(onOpenQuranAudio || onOpenNaatPlayer) && (
               <div className="flex items-center gap-1 shrink-0">
@@ -116,7 +162,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     title="القرآن الکریم - 114 سورتیں مع تلاوتِ قراء"
                   >
                     <Headphones className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                    <span className="hidden sm:inline">تلاوتِ قرآن</span>
+                    <span className="hidden sm:inline">{t('audio_quran', 'تلاوتِ قرآن')}</span>
                     <span className="sm:hidden">قرآن</span>
                   </button>
                 )}
@@ -128,7 +174,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     title="حمد و نعت و کلامِ اکابر"
                   >
                     <Mic2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                    <span className="hidden sm:inline">حمد و نعت</span>
+                    <span className="hidden sm:inline">{t('audio_naat', 'حمد و نعت')}</span>
                     <span className="sm:hidden">نعت</span>
                   </button>
                 )}
@@ -146,7 +192,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     : 'text-stone-700 hover:bg-gray-100'
                 }`}
               >
-                کتب خانہ
+                {t('nav_dashboard', 'کتب خانہ')}
               </button>
 
               <button
@@ -159,7 +205,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 <BookOpen className="w-3 h-3" />
-                <span>مطالعہ</span>
+                <span>{t('nav_reader', 'مطالعہ')}</span>
               </button>
 
               <button
@@ -173,7 +219,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 title="احکامِ شریعت و فقہی رہنمائی"
               >
                 <Scale className="w-3 h-3 text-amber-500" />
-                <span>احکامِ شریعت</span>
+                <span>{t('nav_ahkam_shariat', 'احکامِ شریعت')}</span>
               </button>
 
               {/* XL-Only Direct Tabs */}
@@ -188,7 +234,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 title="اصلاحِ اعمال و روزمرہ محاسبۂ نفس"
               >
                 <Heart className="w-3 h-3 text-rose-500" />
-                <span>اصلاحِ اعمال</span>
+                <span>{t('nav_islah_aamal', 'اصلاحِ اعمال')}</span>
               </button>
 
               <button
@@ -201,7 +247,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 <Clock className="w-3 h-3" />
-                <span>اوقاتِ نماز</span>
+                <span>{t('nav_prayer_times', 'اوقاتِ نماز')}</span>
               </button>
 
               <button
@@ -214,7 +260,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 <GraduationCap className="w-3 h-3" />
-                <span>امتحانی مرکز</span>
+                <span>{t('nav_exams', 'امتحانی مرکز')}</span>
               </button>
 
               {/* LG-Only "More" Dropdown to prevent squishing search bar */}
@@ -228,7 +274,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       : 'text-stone-700 hover:bg-gray-100'
                   }`}
                 >
-                  <span>مزید</span>
+                  <span>{t('nav_more', 'مزید ▾')}</span>
                   <ChevronDown className="w-3 h-3" />
                 </button>
 
@@ -301,6 +347,40 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Mobile Navigation Drawer Overlay */}
         {mobileMenuOpen && (
           <div className="lg:hidden border-t border-gray-100 py-3 bg-stone-50/95 rounded-2xl mb-2 px-2 shadow-inner animate-fadeIn">
+            {/* Mobile Language Switcher Row */}
+            <div className="flex items-center justify-between bg-white p-2 rounded-xl border border-stone-200 mb-2.5">
+              <span className="text-xs font-bold font-nastaliq text-stone-700">زبان (Language):</span>
+              <div className="flex items-center bg-stone-100 rounded-full p-0.5 border border-stone-200">
+                <button
+                  type="button"
+                  onClick={() => setLanguage('ur')}
+                  className={`px-3 py-0.5 rounded-full text-xs font-nastaliq font-bold transition ${
+                    language === 'ur' ? 'bg-emerald-800 text-white shadow-2xs' : 'text-stone-700'
+                  }`}
+                >
+                  اردو
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLanguage('ar')}
+                  className={`px-3 py-0.5 rounded-full text-xs font-arabic font-bold transition ${
+                    language === 'ar' ? 'bg-emerald-800 text-white shadow-2xs' : 'text-stone-700'
+                  }`}
+                >
+                  العربية
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLanguage('en')}
+                  className={`px-3 py-0.5 rounded-full text-xs font-sans font-semibold transition ${
+                    language === 'en' ? 'bg-emerald-800 text-white shadow-2xs' : 'text-stone-700'
+                  }`}
+                >
+                  EN
+                </button>
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-1.5 font-nastaliq text-xs">
               <button
                 type="button"
@@ -313,7 +393,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 <BookOpen className="w-3.5 h-3.5 text-emerald-600" />
-                <span>کتب خانہ</span>
+                <span>{t('nav_dashboard', 'کتب خانہ')}</span>
               </button>
 
               <button
@@ -327,7 +407,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 <BookOpen className="w-3.5 h-3.5 text-amber-600" />
-                <span>مطالعہ</span>
+                <span>{t('nav_reader', 'مطالعہ')}</span>
               </button>
 
               <button
@@ -341,7 +421,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 <Scale className="w-3.5 h-3.5 text-amber-500" />
-                <span>احکامِ شریعت</span>
+                <span>{t('nav_ahkam_shariat', 'احکامِ شریعت')}</span>
               </button>
 
               <button
@@ -355,7 +435,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 <Heart className="w-3.5 h-3.5 text-rose-500" />
-                <span>اصلاحِ اعمال</span>
+                <span>{t('nav_islah_aamal', 'اصلاحِ اعمال')}</span>
               </button>
 
               <button
@@ -369,7 +449,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 <Clock className="w-3.5 h-3.5 text-emerald-600" />
-                <span>اوقاتِ نماز</span>
+                <span>{t('nav_prayer_times', 'اوقاتِ نماز')}</span>
               </button>
 
               <button
@@ -383,7 +463,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 <GraduationCap className="w-3.5 h-3.5 text-amber-600" />
-                <span>امتحانی مرکز</span>
+                <span>{t('nav_exams', 'امتحانی مرکز')}</span>
               </button>
             </div>
           </div>

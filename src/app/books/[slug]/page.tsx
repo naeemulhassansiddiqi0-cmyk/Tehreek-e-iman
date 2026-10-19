@@ -31,6 +31,9 @@ import {
   Trash2
 } from "lucide-react";
 import { UrduStyler } from "@/components/UrduStyler";
+import { FontSizeControlModal } from "@/components/Reader/FontSizeControlModal";
+import { ReaderZoomToolbar } from "@/components/Reader/ReaderZoomToolbar";
+import { usePortalLanguage } from "@/context/LanguageContext";
 import { GlobalComments } from "@/components/GlobalComments";
 import { WordLookupModal } from "@/components/Reader/WordLookupModal";
 import { NarratorModal } from "@/components/Reader/NarratorModal";
@@ -132,14 +135,15 @@ interface HadithCardDarsiViewProps {
   bookTitle: string;
   currentPage: number;
   bookFontSize: number;
+  arabicFontSize?: number;
+  urduFontSize?: number;
+  lineHeightScale?: number;
   isVerified: boolean;
   globalTashkeel: boolean;
   renderClickableArabic: (text: string, fullSentence?: string, translation?: string) => React.ReactNode;
   onOpenNarrator: (narrator: NarratorInfo) => void;
   onWordClick: (word: string, sentenceText?: string, translation?: string) => void;
 }
-
-
 
 function HadithCardDarsiView({
   hadith,
@@ -149,6 +153,9 @@ function HadithCardDarsiView({
   bookTitle,
   currentPage,
   bookFontSize: _bookFontSize,
+  arabicFontSize = 26,
+  urduFontSize = 20,
+  lineHeightScale = 1.0,
   isVerified,
   globalTashkeel,
   renderClickableArabic,
@@ -410,9 +417,9 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
             dir="rtl"
             style={{ 
               fontFamily: "'Amiri Quran', 'Amiri', 'Traditional Arabic', serif",
-              fontSize: '1.25rem', 
+              fontSize: `${Math.round(arabicFontSize * 0.85)}px`, 
               fontWeight: 600,
-              lineHeight: '2.2' 
+              lineHeight: `${Math.round(arabicFontSize * 1.55 * (lineHeightScale || 1))}px` 
             }}
           >
             {renderSanadText()}
@@ -436,8 +443,8 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
           dir="rtl"
           style={{ 
             fontFamily: "'Amiri Quran', 'Amiri', 'Traditional Arabic', serif",
-            fontSize: '1.6rem', 
-            lineHeight: '2.3', 
+            fontSize: `${arabicFontSize}px`, 
+            lineHeight: `${Math.round(arabicFontSize * 1.55 * (lineHeightScale || 1))}px`, 
             fontWeight: 500,
             color: '#111827' 
           }}
@@ -477,8 +484,8 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
               className="urdu-text text-right select-text pr-1 font-nastaliq"
               dir="rtl"
               style={{ 
-                fontSize: '1.2rem', 
-                lineHeight: '2.4', 
+                fontSize: `${urduFontSize}px`, 
+                lineHeight: `${Math.round(urduFontSize * 1.85 * (lineHeightScale || 1))}px`, 
                 fontWeight: 500, 
                 color: '#1f2937' 
               }}
@@ -997,6 +1004,85 @@ export default function BookDetailPage({ slugProp }: { slugProp?: string } = {})
       } catch {}
       return next;
     });
+  };
+
+  const { t: _t } = usePortalLanguage();
+
+  // Interactive Typography & Zoom Controls (Phase 6)
+  const [arabicFontSize, setArabicFontSize] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('tehreek_reader_arabic_font_size');
+        if (saved) {
+          const num = parseInt(saved, 10);
+          if (!isNaN(num) && num >= 18 && num <= 44) return num;
+        }
+      } catch {}
+    }
+    return 26;
+  });
+
+  const [urduFontSize, setUrduFontSize] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('tehreek_reader_urdu_font_size');
+        if (saved) {
+          const num = parseInt(saved, 10);
+          if (!isNaN(num) && num >= 15 && num <= 38) return num;
+        }
+      } catch {}
+    }
+    return 20;
+  });
+
+  const [lineHeightScale, setLineHeightScale] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('tehreek_reader_line_scale');
+        if (saved) {
+          const num = parseFloat(saved);
+          if (!isNaN(num) && num >= 0.8 && num <= 1.5) return num;
+        }
+      } catch {}
+    }
+    return 1.0;
+  });
+
+  const [isFontSizeModalOpen, setIsFontSizeModalOpen] = useState<boolean>(false);
+
+  const handleUpdateArabicFontSize = (size: number) => {
+    setArabicFontSize(size);
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('tehreek_reader_arabic_font_size', size.toString());
+        document.documentElement.style.setProperty('--arabic-font-size', `${size}px`);
+      }
+    } catch {}
+  };
+
+  const handleUpdateUrduFontSize = (size: number) => {
+    setUrduFontSize(size);
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('tehreek_reader_urdu_font_size', size.toString());
+        document.documentElement.style.setProperty('--urdu-font-size', `${size}px`);
+      }
+    } catch {}
+  };
+
+  const handleUpdateLineHeightScale = (scale: number) => {
+    setLineHeightScale(scale);
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('tehreek_reader_line_scale', scale.toString());
+      }
+    } catch {}
+  };
+
+  const handleResetTypography = () => {
+    handleUpdateArabicFontSize(26);
+    handleUpdateUrduFontSize(20);
+    handleUpdateLineHeightScale(1.0);
   };
 
   useEffect(() => {
@@ -2180,37 +2266,16 @@ ${urduToCopy}
           </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Zoom In / Out Buttons (Desktop Only, Hidden on Mobile < 768px) */}
-          <div className="hidden md:flex items-center bg-stone-50 border border-gray-200 rounded-xl p-0.5 shadow-2xs">
-            <button
-              type="button"
-              onClick={() => changeBookFontSize(-2)}
-              disabled={bookFontSize <= 16}
-              className="px-2 py-1 text-xs font-bold text-stone-700 hover:text-emerald-800 hover:bg-white rounded-lg transition disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
-              title="اردو فونٹ چھوٹا کریں (A-)"
-              aria-label="Font Zoom Out"
-            >
-              A-
-            </button>
-            <button
-              type="button"
-              onClick={resetBookFontSize}
-              className="px-1.5 py-0.5 text-[11px] font-bold font-mono text-emerald-900 hover:bg-white rounded-md transition cursor-pointer"
-              title="ڈیفالٹ سائز (20px)"
-            >
-              {bookFontSize}px
-            </button>
-            <button
-              type="button"
-              onClick={() => changeBookFontSize(2)}
-              disabled={bookFontSize >= 28}
-              className="px-2 py-1 text-xs font-bold text-stone-700 hover:text-emerald-800 hover:bg-white rounded-lg transition disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
-              title="اردو فونٹ بڑا کریں (A+)"
-              aria-label="Font Zoom In"
-            >
-              A+
-            </button>
-          </div>
+          {/* Interactive Font Zoom Controls (Phase 6 - Mobile & Desktop) */}
+          <ReaderZoomToolbar
+            arabicFontSize={arabicFontSize}
+            onArabicFontSizeChange={handleUpdateArabicFontSize}
+            urduFontSize={urduFontSize}
+            onUrduFontSizeChange={handleUpdateUrduFontSize}
+            onOpenSettings={() => setIsFontSizeModalOpen(true)}
+            onResetAll={handleResetTypography}
+            showLanguageSwitcher={true}
+          />
 
           {/* Tashkeel Toggle Button (Global for Madaris Students) */}
           <button
@@ -2688,6 +2753,17 @@ ${urduToCopy}
                 {isDarsMode ? <Minimize2 className="w-3.5 h-3.5 text-stone-950" /> : <Maximize2 className="w-3.5 h-3.5 text-emerald-800" />}
                 <span>{isDarsMode ? 'عام موڈ' : 'درس موڈ'}</span>
               </button>
+
+              {/* Reader Inline Typography Zoom Controls */}
+              <ReaderZoomToolbar
+                arabicFontSize={arabicFontSize}
+                onArabicFontSizeChange={handleUpdateArabicFontSize}
+                urduFontSize={urduFontSize}
+                onUrduFontSizeChange={handleUpdateUrduFontSize}
+                onOpenSettings={() => setIsFontSizeModalOpen(true)}
+                onResetAll={handleResetTypography}
+                showLanguageSwitcher={false}
+              />
             </div>
           </div>
 
@@ -2981,6 +3057,9 @@ ${urduToCopy}
                         bookTitle={book?.title_ur || 'حدیث شریف'}
                         currentPage={currentPage}
                         bookFontSize={bookFontSize}
+                        arabicFontSize={arabicFontSize}
+                        urduFontSize={urduFontSize}
+                        lineHeightScale={lineHeightScale}
                         isVerified={isVerified}
                         globalTashkeel={globalTashkeel}
                         renderClickableArabic={renderClickableArabic}
@@ -3139,8 +3218,8 @@ ${urduToCopy}
                             dir="rtl"
                             style={{ 
                               fontFamily: "'Amiri Quran', 'Amiri', 'Traditional Arabic', serif",
-                              fontSize: '1.75rem', 
-                              lineHeight: '2.3', 
+                              fontSize: `${Math.round(arabicFontSize * 1.08)}px`, 
+                              lineHeight: `${Math.round(arabicFontSize * 1.55 * lineHeightScale)}px`, 
                               fontWeight: 500,
                               color: '#111827' 
                             }}
@@ -3159,8 +3238,8 @@ ${urduToCopy}
                               className="urdu-text text-right select-text leading-loose font-nastaliq"
                               dir="rtl"
                               style={{ 
-                                fontSize: '1.2rem', 
-                                lineHeight: '2.4', 
+                                fontSize: `${urduFontSize}px`, 
+                                lineHeight: `${Math.round(urduFontSize * 1.85 * lineHeightScale)}px`, 
                                 fontWeight: 500, 
                                 color: '#1f2937' 
                               }}
@@ -3271,8 +3350,8 @@ ${urduToCopy}
                                     dir="rtl"
                                     style={{ 
                                       fontFamily: "'Amiri Quran', 'Amiri', 'Scheherazade New', 'Traditional Arabic', serif",
-                                      fontSize: '1.65rem', 
-                                      lineHeight: '2.35', 
+                                      fontSize: `${Math.round(arabicFontSize * 1.05)}px`, 
+                                      lineHeight: `${Math.round(arabicFontSize * 1.55 * lineHeightScale)}px`, 
                                       color: '#111827' 
                                     }}
                                   >
@@ -3288,8 +3367,8 @@ ${urduToCopy}
                                       className="leading-loose"
                                       style={{ 
                                         fontFamily: "'Jameel Noori Nastaleeq', 'Urdu Nastaleeq', 'Nafees', serif",
-                                        fontSize: '1.3rem', 
-                                        lineHeight: '2.4', 
+                                        fontSize: `${urduFontSize}px`, 
+                                        lineHeight: `${Math.round(urduFontSize * 1.85 * lineHeightScale)}px`, 
                                         fontWeight: 500, 
                                         color: '#1f2937' 
                                       }}
@@ -3513,8 +3592,8 @@ ${urduToCopy}
                         dir="rtl"
                         style={{ 
                           fontFamily: "'Amiri Quran', 'Amiri', 'Traditional Arabic', serif",
-                          fontSize: '1.6rem', 
-                          lineHeight: '2.3', 
+                          fontSize: `${arabicFontSize}px`, 
+                          lineHeight: `${Math.round(arabicFontSize * 1.55 * lineHeightScale)}px`, 
                           fontWeight: 500, 
                           color: '#111827' 
                         }}
@@ -3560,8 +3639,8 @@ ${urduToCopy}
                         dir="rtl"
                         style={{ 
                           fontFamily: "'Jameel Noori Nastaleeq', 'Urdu Nastaleeq', 'Nafees', serif",
-                          fontSize: '1.2rem', 
-                          lineHeight: '2.4', 
+                          fontSize: `${urduFontSize}px`, 
+                          lineHeight: `${Math.round(urduFontSize * 1.85 * lineHeightScale)}px`, 
                           fontWeight: 500, 
                           color: '#1f2937' 
                         }}
@@ -3832,6 +3911,19 @@ ${urduToCopy}
         onFontSizeChange={setBookFontSize}
         bookLineHeight={bookLineHeight}
         onLineHeightChange={setBookLineHeight}
+      />
+
+      {/* Interactive Typography & Zoom Control Panel (Phase 6) */}
+      <FontSizeControlModal
+        isOpen={isFontSizeModalOpen}
+        onClose={() => setIsFontSizeModalOpen(false)}
+        arabicFontSize={arabicFontSize}
+        onArabicFontSizeChange={handleUpdateArabicFontSize}
+        urduFontSize={urduFontSize}
+        onUrduFontSizeChange={handleUpdateUrduFontSize}
+        lineHeightScale={lineHeightScale}
+        onLineHeightScaleChange={handleUpdateLineHeightScale}
+        onResetAll={handleResetTypography}
       />
 
       {/* Word Lookup Modal for Sarfi, Nahwi, and Lexicon Analysis */}

@@ -23,8 +23,10 @@ import { AhkamShariatView } from './components/AhkamShariat/AhkamShariatView';
 import { IslahAamalView } from './components/IslahAamal/IslahAamalView';
 import { Headphones, Mic2 } from 'lucide-react';
 import { SearchCategoryFilter, GlobalSearchResult } from './services/globalSearchService';
+import { LanguageProvider, usePortalLanguage } from './context/LanguageContext';
 
-export function App() {
+function AppContent() {
+  const { t, isRTL } = usePortalLanguage();
   const [currentPath, setCurrentPath] = useState<string>(() => typeof window !== 'undefined' ? window.location.pathname : '/');
   const [activeTab, setActiveTab] = useState<AppTab>('dashboard');
   const [selectedBook, setSelectedBook] = useState<Book>(booksDatabase[0]);
@@ -412,7 +414,7 @@ export function App() {
   }
 
   return (
-    <div className={`min-h-screen flex flex-col transition-colors ${
+    <div dir={isRTL ? 'rtl' : 'ltr'} className={`min-h-screen flex flex-col transition-colors ${
       theme === 'dark'
         ? 'bg-stone-950 text-stone-100'
         : theme === 'parchment'
@@ -636,7 +638,7 @@ export function App() {
             <TehreekImanLogo size={48} customImgSrc={customLogoSrc} />
             <div>
               <p className="font-arabic font-bold text-base text-emerald-950 dark:text-emerald-100">
-                تَحْرِيكِ إِيمَان — مَنَصَّةُ المَدَارِسِ الإِسْلَامِيَّة
+                {t('footer_arabic_title', 'تَحْرِيكِ إِيمَان — مَنَصَّةُ المَدَارِسِ الإِسْلَامِيَّة')}
               </p>
               <p className="text-xs text-stone-600 dark:text-stone-300 font-nastaliq">
                 سرپرستی و پیشکش: <strong className="text-stone-900 dark:text-stone-100 font-bold">{userName}</strong> (Mohammad Naeem ul Hassan Siddiqi)
@@ -645,9 +647,9 @@ export function App() {
           </div>
 
           <div className="text-xs text-stone-500 space-y-1">
-            <p className="font-nastaliq">ایک بابرکت اور باوقار علمی کاوش برائے طلبہ و علماءِ کرام</p>
+            <p className="font-nastaliq">{t('footer_text', 'ایک بابرکت اور باوقار علمی کاوش برائے طلبہ و علماءِ کرام')}</p>
             <p className="text-[11px] text-stone-400 font-sans">
-              © 1448ھ / 2026ء — Tehreek-e-Iman Platform (Phase 1 MVP)
+              {t('footer_rights', '© 1448ھ / 2026ء — Tehreek-e-Iman Platform (Phase 1 MVP)')}
             </p>
           </div>
 
@@ -657,4 +659,13 @@ export function App() {
     </div>
   );
 }
+
+export function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
+  );
+}
+
 export default App;
