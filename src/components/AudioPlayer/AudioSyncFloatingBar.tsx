@@ -25,6 +25,7 @@ export const AudioSyncFloatingBar: React.FC = () => {
     autoPlayNext,
     autoScroll,
     activeSentenceIndex,
+    activeAyahNumber,
     isFloatingBarOpen,
     togglePlay,
     stop,
@@ -102,14 +103,21 @@ export const AudioSyncFloatingBar: React.FC = () => {
               </div>
               <div className="flex items-center gap-2 text-[11px] text-stone-300 font-nastaliq truncate">
                 <span>{activeItem.subtitle || activeItem.bookTitle}</span>
-                {totalSentences > 1 && (
+                {activeItem.isFullSurah && activeAyahNumber ? (
+                  <>
+                    <span>•</span>
+                    <span className="text-amber-400 font-bold">
+                      آیت نمبر {activeAyahNumber}{activeItem.totalItems ? ` از ${activeItem.totalItems}` : ''} ✨
+                    </span>
+                  </>
+                ) : totalSentences > 1 ? (
                   <>
                     <span>•</span>
                     <span className="text-amber-400 font-bold">
                       سطر {activeSentenceIndex + 1} از {totalSentences} ✨
                     </span>
                   </>
-                )}
+                ) : null}
               </div>
             </div>
           </div>

@@ -1142,10 +1142,12 @@ export default function BookDetailPage({ slugProp }: { slugProp?: string } = {})
   const { 
     activeItem, 
     isPlaying: isAudioPlaying, 
+    playSurahFull,
     playQuranAyah, 
     playHadith, 
     togglePlay: toggleAudioPlay, 
-    activeSentenceIndex 
+    activeSentenceIndex,
+    activeAyahNumber,
   } = useAudioSync();
   const darsCardId = `dars-${slug}-${currentPage + 1}`;
   const isDarsPlaying = activeItem?.id === darsCardId && isAudioPlaying;
@@ -3319,13 +3321,6 @@ ${urduToCopy}
                       {/* Full Surah Continuous Recitation Button */}
                       {(() => {
                         const surahAyahsCount = quranMeta?.ayahCount || 7;
-                        const surahFullPlaylist = buildSurahAyahPlaylist({
-                          surahNumber: currentPage + 1,
-                          ayahCount: surahAyahsCount,
-                          surahNameUrdu: quranSurah?.titleUrdu,
-                          surahNameArabic: quranSurah?.titleArabic,
-                          segments: quranSurah?.segments
-                        });
                         const isCurrentSurahPlaying = activeItem?.type === 'quran' && activeItem.surahNumber === (currentPage + 1) && isAudioPlaying;
 
                         return (
@@ -3335,20 +3330,13 @@ ${urduToCopy}
                               if (isCurrentSurahPlaying) {
                                 toggleAudioPlay();
                               } else {
-                                // Start recitation from Ayah 1 with full Surah playlist queued
-                                const firstAyah = surahFullPlaylist[0];
-                                if (firstAyah) {
-                                  playQuranAyah({
-                                    surahNumber: currentPage + 1,
-                                    ayahNumber: 1,
-                                    arabicText: firstAyah.arabicText,
-                                    urduText: firstAyah.urduText,
-                                    surahNameUrdu: quranSurah?.titleUrdu,
-                                    surahNameArabic: quranSurah?.titleArabic,
-                                    totalAyahs: surahAyahsCount,
-                                    playlist: surahFullPlaylist,
-                                  });
-                                }
+                                playSurahFull({
+                                  surahNumber: currentPage + 1,
+                                  surahNameUrdu: quranSurah?.titleUrdu,
+                                  surahNameArabic: quranSurah?.titleArabic,
+                                  totalAyahs: surahAyahsCount,
+                                  segments: quranSurah?.segments,
+                                });
                               }
                             }}
                             className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl font-black font-nastaliq text-xs sm:text-sm transition-all cursor-pointer shadow-md hover:shadow-lg active:scale-95 border-2 ${
@@ -3632,7 +3620,10 @@ ${urduToCopy}
                             </span>
                             {ayahs.map(ayahNum => {
                               const aId = `quran-${currentPage + 1}-${ayahNum}`;
-                              const isThisAyahActive = activeItem?.id === aId && isAudioPlaying;
+                              const isThisAyahActive = (
+                                activeItem?.id === aId || 
+                                (activeItem?.isFullSurah && activeItem.surahNumber === (currentPage + 1) && activeAyahNumber === ayahNum)
+                              ) && isAudioPlaying;
                               return (
                                 <div key={ayahNum} className="inline-flex items-center rounded-lg border border-gray-200 overflow-hidden shadow-2xs">
                                   <button
@@ -3721,7 +3712,10 @@ ${urduToCopy}
                             const verseUrdu = verseTranslations[vIdx] || seg.urduTranslation;
                             const wordTokens = verseText.trim().split(/\s+/).filter(w => w.length > 0 && !/^[،۔؛:؟!]+$/.test(w));
                             const verseCardId = `quran-${currentPage + 1}-${matchedAyahNum}`;
-                            const isThisVersePlaying = activeItem?.id === verseCardId && isAudioPlaying;
+                            const isThisVersePlaying = (
+                              activeItem?.id === verseCardId || 
+                              (activeItem?.isFullSurah && activeItem.surahNumber === (currentPage + 1) && activeAyahNumber === matchedAyahNum)
+                            ) && isAudioPlaying;
 
                             return (
                               <div

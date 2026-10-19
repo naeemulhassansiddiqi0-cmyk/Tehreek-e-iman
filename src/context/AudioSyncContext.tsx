@@ -7,8 +7,14 @@ export interface AudioSentence {
   endRatio: number;
 }
 
+export interface SurahAyahMarker {
+  ayahNumber: number;
+  startRatio: number;
+  endRatio: number;
+}
+
 export interface AudioSyncItem {
-  id: string; // e.g. "quran-1-1" or "hadith-bukhari-1"
+  id: string; // e.g. "quran-1-1" or "quran-surah-1" or "hadith-bukhari-1"
   type: 'quran' | 'hadith' | 'general';
   title: string;
   subtitle?: string;
@@ -21,6 +27,8 @@ export interface AudioSyncItem {
   urduText?: string;
   audioUrl?: string; // pre-computed MP3 URL
   sentences: AudioSentence[];
+  isFullSurah?: boolean;
+  surahAyahMarkers?: SurahAyahMarker[];
 }
 
 export interface ReciterInfo {
@@ -28,16 +36,27 @@ export interface ReciterInfo {
   nameUrdu: string;
   nameArabic: string;
   nameEn: string;
+  surahAudioServer?: string;
 }
 
 export const QURAN_AYAH_RECITERS: ReciterInfo[] = [
-  { id: 'Alafasy_128kbps', nameUrdu: 'مشاری راشد العفاسی', nameArabic: 'مشاري راشد العفاسي', nameEn: 'Mishary Alafasy' },
-  { id: 'Abdul_Basit_Murattal_192kbps', nameUrdu: 'عبد الباسط عبد الصمد (مرتل)', nameArabic: 'عبد الباسط عبد الصمد', nameEn: 'Abdul Basit' },
-  { id: 'Minshawy_Murattal_128kbps', nameUrdu: 'محمد صدیق المنشاوی', nameArabic: 'محمد صديق المنشاوي', nameEn: 'Minshawi' },
-  { id: 'Husary_128kbps', nameUrdu: 'محمود خلیل الحصری', nameArabic: 'محمود خليل الحصري', nameEn: 'Husary' },
-  { id: 'Hudhaify_128kbps', nameUrdu: 'علی الحذیفی', nameArabic: 'علي الحذيفي', nameEn: 'Al-Hudhaify' },
+  { id: 'Alafasy_128kbps', nameUrdu: 'مشاری راشد العفاسی', nameArabic: 'مشاري راشد العفاسي', nameEn: 'Mishary Alafasy', surahAudioServer: 'https://server8.mp3quran.net/afs' },
+  { id: 'Abdul_Basit_Murattal_192kbps', nameUrdu: 'عبد الباسط عبد الصمد (مرتل)', nameArabic: 'عبد الباسط عبد الصمد', nameEn: 'Abdul Basit', surahAudioServer: 'https://server7.mp3quran.net/basit' },
+  { id: 'Minshawy_Murattal_128kbps', nameUrdu: 'محمد صدیق المنشاوی', nameArabic: 'محمد صديق المنشاوي', nameEn: 'Minshawi', surahAudioServer: 'https://server10.mp3quran.net/minsh' },
+  { id: 'Husary_128kbps', nameUrdu: 'محمود خلیل الحصری', nameArabic: 'محمود خليل الحصري', nameEn: 'Husary', surahAudioServer: 'https://server13.mp3quran.net/husr' },
+  { id: 'Hudhaify_128kbps', nameUrdu: 'علی الحذیفی', nameArabic: 'علي الحذيفي', nameEn: 'Al-Hudhaify', surahAudioServer: 'https://server9.mp3quran.net/hthfi' },
   { id: 'urdu_shamshad_ali_khan_46kbps', nameUrdu: 'اردو ترجمہ (مولانا شمشاد علی خان)', nameArabic: 'الترجمة الأردية', nameEn: 'Urdu Audio (Shamshad Ali)' },
 ];
+
+export function buildQuranSurahFullAudioUrl(reciterId: string, surahNumber: number): string {
+  const sPad = String(surahNumber).padStart(3, '0');
+  const reciter = QURAN_AYAH_RECITERS.find(r => r.id === reciterId);
+  if (reciter?.surahAudioServer) {
+    return `${reciter.surahAudioServer}/${sPad}.mp3`;
+  }
+  // Default to reliable high-speed Mishary Alafasy full-Surah MP3 server
+  return `https://server8.mp3quran.net/afs/${sPad}.mp3`;
+}
 
 export function buildQuranAyahAudioUrl(reciterId: string, surahNumber: number, ayahNumber: number): string {
   const sPad = String(surahNumber).padStart(3, '0');
@@ -154,10 +173,18 @@ interface AudioSyncContextType {
   autoPlayNext: boolean;
   autoScroll: boolean;
   activeSentenceIndex: number;
+  activeAyahNumber: number;
   isFloatingBarOpen: boolean;
   playlist: AudioSyncItem[];
   
   // Actions
+  playSurahFull: (opts: {
+    surahNumber: number;
+    surahNameUrdu?: string;
+    surahNameArabic?: string;
+    totalAyahs?: number;
+    segments?: Array<{ arabicText: string; urduTranslation?: string }>;
+  }) => void;
   playQuranAyah: (opts: {
     surahNumber: number;
     ayahNumber: number;
@@ -209,11 +236,11 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [autoPlayNext, setAutoPlayNext] = useState(true);
   const [autoScroll, setAutoScroll] = useState(true);
   const [activeSentenceIndex, setActiveSentenceIndex] = useState(0);
+  const [activeAyahNumber, setActiveAyahNumber] = useState<number>(1);
   const [isFloatingBarOpen, setFloatingBarOpen] = useState(false);
   const [playlist, setPlaylist] = useState<AudioSyncItem[]>([]);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const speechRef = useRef<(() => void) | null>(null);
   const isTransitioningRef = useRef(false);
 
   // Initialize Audio Element once
@@ -241,12 +268,23 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         setCurrentTime(cur);
         setDuration(dur);
 
-        // Update active sentence based on ratio
-        if (dur > 0 && activeItem && activeItem.sentences.length > 0) {
+        if (dur > 0 && activeItem) {
           const ratio = Math.max(0, Math.min(1, cur / dur));
-          const idx = activeItem.sentences.findIndex(s => ratio >= s.startRatio && ratio <= s.endRatio);
-          if (idx !== -1) {
-            setActiveSentenceIndex(idx);
+
+          // 1. If full Surah mode, track active Ayah based on duration ratio
+          if (activeItem.isFullSurah && activeItem.surahAyahMarkers && activeItem.surahAyahMarkers.length > 0) {
+            const marker = activeItem.surahAyahMarkers.find(m => ratio >= m.startRatio && ratio <= m.endRatio);
+            if (marker && marker.ayahNumber !== activeAyahNumber) {
+              setActiveAyahNumber(marker.ayahNumber);
+            }
+          }
+
+          // 2. Sentence boundary tracking
+          if (activeItem.sentences.length > 0) {
+            const idx = activeItem.sentences.findIndex(s => ratio >= s.startRatio && ratio <= s.endRatio);
+            if (idx !== -1) {
+              setActiveSentenceIndex(idx);
+            }
           }
         }
       };
@@ -256,8 +294,9 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         }
       };
       const handleError = (e: Event) => {
-        console.warn('Audio playback error, fallback to speech synthesis:', e);
+        console.warn('Audio playback error:', e);
         setIsLoading(false);
+        setIsPlaying(false);
       };
 
       audio.addEventListener('waiting', handleWaiting);
@@ -280,29 +319,28 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         audio.src = '';
       };
     }
-  }, [activeItem]);
+  }, [activeItem, activeAyahNumber]);
 
-  // Smooth Auto-scroll to active item
+  // Smooth Auto-scroll to active item or active verse
   useEffect(() => {
     if (!autoScroll || !activeItem) return;
     try {
-      const el = document.getElementById(activeItem.id);
+      const targetId = activeItem.isFullSurah && activeItem.surahNumber
+        ? `quran-${activeItem.surahNumber}-${activeAyahNumber}`
+        : activeItem.id;
+      const el = document.getElementById(targetId) || document.getElementById(activeItem.id);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     } catch {
       // ignore
     }
-  }, [activeItem?.id, autoScroll]);
+  }, [activeItem?.id, activeAyahNumber, autoScroll, activeItem?.isFullSurah, activeItem?.surahNumber]);
 
   const stopCurrentAudio = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
-    }
-    if (speechRef.current) {
-      speechRef.current();
-      speechRef.current = null;
     }
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
@@ -319,16 +357,18 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
     stopCurrentAudio();
     setActiveItem(item);
+    setActiveAyahNumber(item.itemNumber || 1);
     setFloatingBarOpen(true);
     setIsLoading(true);
     isTransitioningRef.current = true;
 
     // Determine Audio Source
     let audioUrl = item.audioUrl;
-    if (item.type === 'quran' && item.surahNumber && item.itemNumber) {
+    if (item.isFullSurah && item.surahNumber) {
+      audioUrl = buildQuranSurahFullAudioUrl(selectedReciter, item.surahNumber);
+    } else if (item.type === 'quran' && item.surahNumber && item.itemNumber) {
       audioUrl = buildQuranAyahAudioUrl(selectedReciter, item.surahNumber, item.itemNumber);
     } else if (item.type === 'hadith' && !audioUrl) {
-      // Use clean Arabic speech stream for Hadith text
       const cleanArabic = item.arabicText.replace(/[\[\](){}<>«»""''‘’“”/\\#]/g, ' ').slice(0, 300);
       audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(cleanArabic)}&tl=ar&client=tw-ob`;
     }
@@ -347,65 +387,17 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             setIsLoading(false);
           })
           .catch(err => {
-            console.warn('Audio play error, falling back to Web Speech Synthesis:', err);
+            console.warn('Audio play error:', err);
             isTransitioningRef.current = false;
             setIsLoading(false);
-            fallbackSpeak(item);
+            setIsPlaying(false);
           });
       }
     } else {
-      fallbackSpeak(item);
+      setIsLoading(false);
+      setIsPlaying(false);
     }
   }, [selectedReciter, playbackRate, stopCurrentAudio]);
-
-  // Fallback / Hadith Web Speech Synthesis
-  const fallbackSpeak = (item: AudioSyncItem) => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-      setIsPlaying(false);
-      return;
-    }
-    window.speechSynthesis.cancel();
-
-    const textToSpeak = audioMode === 'urdu' && item.urduText 
-      ? item.urduText 
-      : item.arabicText;
-
-    const utterance = new SpeechSynthesisUtterance(textToSpeak);
-    utterance.lang = audioMode === 'urdu' ? 'ur-PK' : 'ar-SA';
-    utterance.rate = playbackRate;
-
-    utterance.onstart = () => {
-      setIsPlaying(true);
-      setIsLoading(false);
-    };
-
-    utterance.onend = () => {
-      setIsPlaying(false);
-      if (autoPlayNext) {
-        playNext();
-      }
-    };
-
-    utterance.onerror = () => {
-      setIsPlaying(false);
-      setIsLoading(false);
-    };
-
-    // Speech sentence boundary tracking
-    utterance.onboundary = (e) => {
-      if (item.sentences.length > 0 && e.charIndex !== undefined) {
-        const textLen = textToSpeak.length || 1;
-        const ratio = e.charIndex / textLen;
-        const idx = item.sentences.findIndex(s => ratio >= s.startRatio && ratio <= s.endRatio);
-        if (idx !== -1) {
-          setActiveSentenceIndex(idx);
-        }
-      }
-    };
-
-    window.speechSynthesis.speak(utterance);
-    speechRef.current = () => window.speechSynthesis.cancel();
-  };
 
   const playNext = useCallback(() => {
     if (!activeItem) return;
@@ -526,18 +518,12 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     if (audioRef.current && !audioRef.current.paused) {
       audioRef.current.pause();
     }
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.pause();
-    }
     setIsPlaying(false);
   };
 
   const resume = () => {
     if (audioRef.current && audioRef.current.src) {
       audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
-    } else if (typeof window !== 'undefined' && 'speechSynthesis' in window && window.speechSynthesis.paused) {
-      window.speechSynthesis.resume();
-      setIsPlaying(true);
     } else if (activeItem) {
       playItem(activeItem);
     }
@@ -571,7 +557,9 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (it.type === 'quran' && it.surahNumber) {
         return {
           ...it,
-          audioUrl: buildQuranAyahAudioUrl(reciterId, it.surahNumber, it.itemNumber),
+          audioUrl: it.isFullSurah
+            ? buildQuranSurahFullAudioUrl(reciterId, it.surahNumber)
+            : buildQuranAyahAudioUrl(reciterId, it.surahNumber, it.itemNumber),
         };
       }
       return it;
@@ -579,7 +567,9 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     if (activeItem && activeItem.type === 'quran' && activeItem.surahNumber) {
       const wasPlaying = isPlaying;
-      const newUrl = buildQuranAyahAudioUrl(reciterId, activeItem.surahNumber, activeItem.itemNumber);
+      const newUrl = activeItem.isFullSurah
+        ? buildQuranSurahFullAudioUrl(reciterId, activeItem.surahNumber)
+        : buildQuranAyahAudioUrl(reciterId, activeItem.surahNumber, activeItem.itemNumber);
       setActiveItem(prev => prev ? { ...prev, audioUrl: newUrl } : null);
       if (audioRef.current) {
         audioRef.current.src = newUrl;
@@ -590,6 +580,63 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       }
     }
   };
+
+  const playSurahFull = useCallback((opts: {
+    surahNumber: number;
+    surahNameUrdu?: string;
+    surahNameArabic?: string;
+    totalAyahs?: number;
+    segments?: Array<{ arabicText: string; urduTranslation?: string }>;
+  }) => {
+    const totalAyahs = opts.totalAyahs || (opts.segments?.length) || 7;
+
+    // Build ayah markers: compute proportional start/end ratios based on verse lengths
+    const markers: SurahAyahMarker[] = [];
+    if (opts.segments && opts.segments.length > 0) {
+      const lengths = opts.segments.map(s => Math.max(s.arabicText.length, 10));
+      const totalLen = lengths.reduce((a, b) => a + b, 0);
+      let acc = 0;
+      opts.segments.forEach((_, idx) => {
+        const start = acc;
+        const end = idx === opts.segments!.length - 1 ? 1.0 : Math.min(1.0, acc + (lengths[idx] / totalLen));
+        acc = end;
+        markers.push({
+          ayahNumber: idx + 1,
+          startRatio: start,
+          endRatio: end
+        });
+      });
+    } else {
+      // Equal distribution if segments not provided
+      for (let a = 1; a <= totalAyahs; a++) {
+        markers.push({
+          ayahNumber: a,
+          startRatio: (a - 1) / totalAyahs,
+          endRatio: a === totalAyahs ? 1.0 : a / totalAyahs
+        });
+      }
+    }
+
+    const fullUrl = buildQuranSurahFullAudioUrl(selectedReciter, opts.surahNumber);
+    const item: AudioSyncItem = {
+      id: `quran-surah-${opts.surahNumber}`,
+      type: 'quran',
+      title: opts.surahNameArabic || `سورة ${opts.surahNumber}`,
+      subtitle: `${opts.surahNameUrdu || 'القرآن الکریم'} • تلاوت مکمل سورۃ (${totalAyahs} آیات)`,
+      bookTitle: opts.surahNameUrdu || 'القرآن الکریم',
+      surahNumber: opts.surahNumber,
+      itemNumber: 1,
+      totalItems: totalAyahs,
+      arabicText: opts.surahNameArabic || `سورة ${opts.surahNumber}`,
+      urduText: opts.surahNameUrdu || `سورۃ نمبر ${opts.surahNumber}`,
+      audioUrl: fullUrl,
+      isFullSurah: true,
+      surahAyahMarkers: markers,
+      sentences: []
+    };
+
+    playItem(item, [item]);
+  }, [selectedReciter, playItem]);
 
   const playQuranAyah = useCallback((opts: {
     surahNumber: number;
@@ -667,8 +714,10 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         autoPlayNext,
         autoScroll,
         activeSentenceIndex,
+        activeAyahNumber,
         isFloatingBarOpen,
         playlist,
+        playSurahFull,
         playQuranAyah,
         playHadith,
         playItem,
