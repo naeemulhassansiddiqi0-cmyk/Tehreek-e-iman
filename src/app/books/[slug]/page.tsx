@@ -32,7 +32,8 @@ import {
   Volume2,
   Pause,
   Award,
-  Download
+  Download,
+  Mic
 } from "lucide-react";
 import { UrduStyler } from "@/components/UrduStyler";
 import { FontSizeControlModal } from "@/components/Reader/FontSizeControlModal";
@@ -65,6 +66,8 @@ import { abudawoodChapters, tirmidhiChapters, nasaiChapters, ibnmajahChapters } 
 import { BookmarksHistoryModal } from "@/components/Reader/BookmarksHistoryModal";
 import { QuizModal } from "@/components/Quiz/QuizModal";
 import { PageExportModal, PageExportData } from "@/components/Reader/PageExportModal";
+import { LectureSermonModal } from "@/components/Reader/LectureSermonModal";
+import { SermonGeneratorParams } from "@/services/lectureSermonService";
 import { ALL_QUIZZES, QuizModule } from "@/data/quizData";
 import { 
   saveReadingHistory, 
@@ -161,6 +164,7 @@ interface HadithCardDarsiViewProps {
   renderClickableArabic: (text: string, fullSentence?: string, translation?: string) => React.ReactNode;
   onOpenNarrator: (narrator: NarratorInfo) => void;
   onWordClick: (word: string, sentenceText?: string, translation?: string) => void;
+  onOpenLectureSermon?: (params: SermonGeneratorParams) => void;
 }
 
 function HadithCardDarsiView({
@@ -179,7 +183,8 @@ function HadithCardDarsiView({
   pagePlaylist,
   renderClickableArabic,
   onOpenNarrator,
-  onWordClick
+  onWordClick,
+  onOpenLectureSermon
 }: HadithCardDarsiViewProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [showWordByWord, setShowWordByWord] = useState<boolean>(false);
@@ -517,6 +522,22 @@ ${hadith.urdu || analysis?.urduTranslation || ''}
           >
             <FileEdit className={`w-3 h-3 ${showNotes ? 'text-white' : 'text-indigo-600'}`} />
             <span>{showNotes ? 'نوٹس بند کریں' : (localNotes ? 'ذاتی نوٹ (محفوظ)' : '+ درسی نوٹ')}</span>
+          </button>
+
+          {/* Lecture & Sermon Generator Button (Phase 13) */}
+          <button
+            type="button"
+            onClick={() => onOpenLectureSermon?.({
+              bookSlug: slug,
+              hadithNumber: hadithNum,
+              arabicText: hadith.arab || hadith.text || '',
+              urduText: hadith.urdu || analysis?.urduTranslation || ''
+            })}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold font-nastaliq bg-amber-50 hover:bg-amber-100 text-amber-950 border border-amber-300 transition cursor-pointer shadow-2xs"
+            title="اس حدیثِ مبارک سے جمعہ کا خطبہ یا درس کے جامع نکات تیار کریں"
+          >
+            <Mic className="w-3 h-3 text-amber-700" />
+            <span>بیان و خطبہ کے نکات</span>
           </button>
         </div>
       </div>
@@ -1200,6 +1221,8 @@ export default function BookDetailPage({ slugProp }: { slugProp?: string } = {})
   const [bookmarkFeedbackToast, setBookmarkFeedbackToast] = useState<string | null>(null);
   const [isQuizModalOpen, setIsQuizModalOpen] = useState<boolean>(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
+  const [isSermonModalOpen, setIsSermonModalOpen] = useState<boolean>(false);
+  const [sermonParams, setSermonParams] = useState<SermonGeneratorParams>({});
   const [copiedPageRef, setCopiedPageRef] = useState<boolean>(false);
   const [activeTafseer, setActiveTafseer] = useState<TafseerEntry | null>(null);
   const [isTafseerOpen, setIsTafseerOpen] = useState<boolean>(false);
@@ -2149,6 +2172,19 @@ ${urduToCopy}
     }
   };
 
+  const handleOpenLectureSermon = (customParams?: Partial<SermonGeneratorParams>) => {
+    setSermonParams({
+      bookSlug: slug,
+      hadithNumber: currentPage + 1,
+      chapterTitleAr: bannerAr,
+      chapterTitleUr: bannerUr,
+      arabicText: parsedDarsPage?.matn || (currentHadiths && currentHadiths[0] ? (currentHadiths[0].arab || currentHadiths[0].text) : ''),
+      urduText: parsedDarsPage?.urduTranslation || pipelineAnalysis?.urduTranslation || (currentHadiths && currentHadiths[0] ? currentHadiths[0].urdu : ''),
+      ...customParams
+    });
+    setIsSermonModalOpen(true);
+  };
+
   // Auto-save Reading History (Phase 10)
   useEffect(() => {
     if (!slug) return;
@@ -2738,6 +2774,17 @@ ${urduToCopy}
           >
             <Download className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             <span className="hidden sm:inline">ڈاؤن لوڈ / پی ڈی ایف</span>
+          </button>
+
+          {/* Lecture & Sermon Generator Button (Phase 13) */}
+          <button
+            type="button"
+            onClick={() => handleOpenLectureSermon()}
+            className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl border border-amber-300/80 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:border-amber-700/60 dark:hover:bg-amber-900/60 text-amber-900 dark:text-amber-200 transition cursor-pointer text-xs flex items-center gap-1.5 font-nastaliq font-bold shadow-2xs"
+            title="موجودہ صفحہ یا باب پر جمعہ کا خطبہ یا درس کے نکات تیار کریں"
+          >
+            <Mic className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+            <span className="hidden sm:inline">بیان و خطبہ کے نکات</span>
           </button>
 
           {/* Current Page Badge */}
@@ -3438,6 +3485,22 @@ ${urduToCopy}
                           <span>اس باب کا خود امتحانی جائزہ (کوئز)</span>
                         </button>
                       )}
+                      {/* Chapter Lecture & Sermon Generator Button (Phase 13) */}
+                      <button
+                        type="button"
+                        onClick={() => handleOpenLectureSermon({
+                          chapterTitleAr: bannerAr,
+                          chapterTitleUr: bannerUr,
+                          hadithNumber: currentPage * PER_PAGE + 1,
+                          arabicText: currentHadiths[0]?.arab || currentHadiths[0]?.text || '',
+                          urduText: currentHadiths[0]?.urdu || '',
+                        })}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 font-nastaliq font-bold text-xs shadow-xs transition hover:scale-105 cursor-pointer"
+                        title="اس باب کے تمام مضامین پر جمعہ کا خطبہ و درسی بیان کے جامع نکات تیار کریں"
+                      >
+                        <Mic className="w-3.5 h-3.5 text-stone-950" />
+                        <span>اس باب کے خطبہ و بیان کے نکات</span>
+                      </button>
                       <span className="text-[11px] font-nastaliq text-emerald-200 bg-emerald-900/90 px-2.5 py-0.5 rounded-lg border border-emerald-700/60">
                         احادیث {currentPage * PER_PAGE + 1} تا {Math.min((currentPage + 1) * PER_PAGE, totalHadithsCount)}
                       </span>
@@ -3512,6 +3575,7 @@ ${urduToCopy}
                           renderClickableArabic={renderClickableArabic}
                           onOpenNarrator={setActiveNarrator}
                           onWordClick={handleWordClick}
+                          onOpenLectureSermon={handleOpenLectureSermon}
                         />
                       </ErrorBoundary>
                     );
@@ -4285,6 +4349,21 @@ ${urduToCopy}
                       <Download className="w-3 h-3 text-emerald-700" />
                       <span>ڈاؤن لوڈ / پی ڈی ایف</span>
                     </button>
+
+                    {/* Lecture & Sermon Generator Button (Phase 13) */}
+                    <button
+                      type="button"
+                      onClick={() => handleOpenLectureSermon({
+                        arabicText: parsedDarsPage.matn,
+                        urduText: parsedDarsPage.urduTranslation || pipelineAnalysis?.urduTranslation,
+                        hadithNumber: currentPage + 1
+                      })}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold font-nastaliq bg-amber-50 hover:bg-amber-100 text-amber-950 border border-amber-300 transition cursor-pointer shadow-2xs"
+                      title="اس درسی صفحہ سے خطبہ و درس کے مکمل نکات تیار کریں"
+                    >
+                      <Mic className="w-3 h-3 text-amber-700" />
+                      <span>خطبہ و بیان کے نکات</span>
+                    </button>
                   </div>
                 </div>
 
@@ -4839,6 +4918,14 @@ ${urduToCopy}
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
         exportData={pageExportData}
+      />
+
+      {/* Lecture & Sermon Generator Modal (Phase 13) */}
+      <LectureSermonModal
+        isOpen={isSermonModalOpen}
+        onClose={() => setIsSermonModalOpen(false)}
+        params={sermonParams}
+        bookTitle={book?.title_ur || book?.title}
       />
 
       </div>
