@@ -37,6 +37,7 @@ import {
   DatabaseStats
 } from '../../services/databaseService';
 import { autoFetchBookFromInternet, AutoFetchResult } from '../../services/bookFetcherService';
+import { LibraryAuditModal } from './LibraryAuditModal';
 
 interface AdminPanelModalProps {
   isOpen: boolean;
@@ -71,6 +72,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
 
   // Main UI State
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
+  const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
   const [stats, setStats] = useState<DatabaseStats>(getDatabaseStats());
   const [booksList, setBooksList] = useState<Book[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -709,6 +711,15 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
               >
                 <Cloud className="w-4 h-4" />
                 <span>بیک اپ و ڈی ون کلاؤڈ</span>
+              </button>
+
+              <button
+                onClick={() => setIsAuditModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 font-black shadow-md hover:from-amber-400 hover:to-amber-500 shrink-0 mr-auto"
+                title="صحیح بخاری کے پانچ بنیادی ارکان کی بنیاد پر کتب خانہ آڈٹ و خودکار انہانسمنٹ"
+              >
+                <Sparkles className="w-4 h-4 text-stone-950" />
+                <span>مکتبہ آڈٹ و انہانسمنٹ (صحیح بخاری ماڈل)</span>
               </button>
             </div>
 
@@ -1782,8 +1793,20 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
             </div>
           </div>
         )}
-
       </div>
+
+      {/* Reusable 5-Pillar Library Audit & Enhancement Modal */}
+      <LibraryAuditModal
+        isOpen={isAuditModalOpen}
+        onClose={() => setIsAuditModalOpen(false)}
+        onOpenBookInReader={onSelectBook ? (bId) => {
+          const bk = booksList.find(b => b.id.toLowerCase() === bId.toLowerCase());
+          if (bk) {
+            onSelectBook(bk);
+            onClose();
+          }
+        } : undefined}
+      />
     </div>
   );
 };

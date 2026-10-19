@@ -9,6 +9,7 @@ import { FlashcardHubView } from './components/Flashcards/FlashcardHubView';
 import { SearchModal } from './components/SearchModal';
 import { KharjiLibraryModal } from './components/KharjiLibraryModal';
 import { AdminPanelModal } from './components/Admin/AdminPanelModal';
+import { LibraryAuditModal } from './components/Admin/LibraryAuditModal';
 import { PrayerTimesView } from './components/PrayerTimes/PrayerTimesView';
 import { SacredAudioPlayer } from './components/AudioPlayer/SacredAudioPlayer';
 import { NaatPlayer } from './components/NaatPlayer';
@@ -52,6 +53,7 @@ function AppContent() {
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [isKharjiModalOpen, setIsKharjiModalOpen] = useState<boolean>(false);
   const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false);
+  const [isAuditModalOpen, setIsAuditModalOpen] = useState<boolean>(false);
   const [kharjiModalInitialBook, setKharjiModalInitialBook] = useState<Book | null>(null);
   const [highlightSegmentId, setHighlightSegmentId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -501,6 +503,7 @@ function AppContent() {
             userName={userName}
             customLogoSrc={customLogoSrc}
             onOpenNaatPlayer={() => setIsNaatPlayerOpen(true)}
+            onOpenAudit={() => setIsAuditModalOpen(true)}
           />
         )}
 
@@ -631,6 +634,20 @@ function AppContent() {
         onSelectBook={(book) => {
           setSelectedBook(book);
           setActiveTab('reader');
+        }}
+      />
+
+      {/* 5-Pillar Reusable Library Audit & Enhancement Modal (Sahih Bukhari Template) */}
+      <LibraryAuditModal
+        isOpen={isAuditModalOpen}
+        onClose={() => setIsAuditModalOpen(false)}
+        onOpenBookInReader={(bookId) => {
+          const found = booksDatabase.find(b => b.id.toLowerCase() === bookId.toLowerCase());
+          if (found) {
+            setSelectedBook(found);
+            setIsAuditModalOpen(false);
+            setActiveTab('reader');
+          }
         }}
       />
 

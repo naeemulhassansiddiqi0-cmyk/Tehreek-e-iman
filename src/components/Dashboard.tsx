@@ -17,6 +17,7 @@ interface DashboardProps {
   userName?: string;
   customLogoSrc?: string;
   onOpenNaatPlayer?: () => void;
+  onOpenAudit?: () => void;
 }
 
 const CATEGORY_CHIPS: { id: BookCategoryTitle | 'all'; title_ur: string }[] = [
@@ -106,7 +107,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onSelectBook,
   setActiveTab,
   searchQuery = '',
-  onOpenNaatPlayer
+  onOpenNaatPlayer,
+  onOpenAudit
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<BookCategoryTitle | 'all'>('all');
   const [selectedDarja, setSelectedDarja] = useState<string>('all');
@@ -219,6 +221,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <MessageSquare className="w-3.5 h-3.5 text-teal-600" />
               <span>علمی مباحث و فورم (Q&A)</span>
             </button>
+
+            {onOpenAudit && (
+              <button
+                type="button"
+                onClick={onOpenAudit}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-gradient-to-r from-amber-50 to-emerald-50 hover:from-amber-100 hover:to-emerald-100 border border-amber-400/80 text-emerald-950 text-xs font-nastaliq font-bold shadow-2xs transition cursor-pointer"
+                title="صحیح بخاری کے ۵ بنیادی ارکان کی بنیاد پر کتب خانہ آڈٹ و انہانسمنٹ سنٹر کھولیں"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                <span>مکتبہ آڈٹ و انہانسمنٹ (صحیح بخاری سانچہ)</span>
+              </button>
+            )}
           </div>
 
           <h1
