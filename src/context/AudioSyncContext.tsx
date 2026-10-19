@@ -242,8 +242,23 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isTransitioningRef = useRef(false);
+  const activeItemRef = useRef<AudioSyncItem | null>(null);
+  const playlistRef = useRef<AudioSyncItem[]>([]);
+  const autoPlayNextRef = useRef<boolean>(true);
+  const selectedReciterRef = useRef<string>('Alafasy_128kbps');
+  const playbackRateRef = useRef<number>(1);
+  const activeAyahNumberRef = useRef<number>(1);
+  const playNextRef = useRef<() => void>(() => {});
 
-  // Initialize Audio Element once
+  // Keep refs synchronized with state to prevent stale closures
+  useEffect(() => { activeItemRef.current = activeItem; }, [activeItem]);
+  useEffect(() => { playlistRef.current = playlist; }, [playlist]);
+  useEffect(() => { autoPlayNextRef.current = autoPlayNext; }, [autoPlayNext]);
+  useEffect(() => { selectedReciterRef.current = selectedReciter; }, [selectedReciter]);
+  useEffect(() => { playbackRateRef.current = playbackRate; }, [playbackRate]);
+  useEffect(() => { activeAyahNumberRef.current = activeAyahNumber; }, [activeAyahNumber]);
+
+  // Initialize persistent Audio Element once on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const audio = new Audio();
@@ -268,20 +283,22 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         setCurrentTime(cur);
         setDuration(dur);
 
-        if (dur > 0 && activeItem) {
+        const currentItem = activeItemRef.current;
+        if (dur > 0 && currentItem) {
           const ratio = Math.max(0, Math.min(1, cur / dur));
 
           // 1. If full Surah mode, track active Ayah based on duration ratio
-          if (activeItem.isFullSurah && activeItem.surahAyahMarkers && activeItem.surahAyahMarkers.length > 0) {
-            const marker = activeItem.surahAyahMarkers.find(m => ratio >= m.startRatio && ratio <= m.endRatio);
-            if (marker && marker.ayahNumber !== activeAyahNumber) {
+          if (currentItem.isFullSurah && currentItem.surahAyahMarkers && currentItem.surahAyahMarkers.length > 0) {
+            const marker = currentItem.surahAyahMarkers.find(m => ratio >= m.startRatio && ratio <= m.endRatio);
+            if (marker && marker.ayahNumber !== activeAyahNumberRef.current) {
               setActiveAyahNumber(marker.ayahNumber);
+              activeAyahNumberRef.current = marker.ayahNumber;
             }
           }
 
           // 2. Sentence boundary tracking
-          if (activeItem.sentences.length > 0) {
-            const idx = activeItem.sentences.findIndex(s => ratio >= s.startRatio && ratio <= s.endRatio);
+          if (currentItem.sentences && currentItem.sentences.length > 0) {
+            const idx = currentItem.sentences.findIndex(s => ratio >= s.startRatio && ratio <= s.endRatio);
             if (idx !== -1) {
               setActiveSentenceIndex(idx);
             }
@@ -299,6 +316,13 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         setIsPlaying(false);
       };
 
+      const handleEnded = () => {
+        setIsPlaying(false);
+        if (autoPlayNextRef.current) {
+          playNextRef.current();
+        }
+      };
+
       audio.addEventListener('waiting', handleWaiting);
       audio.addEventListener('canplay', handleCanPlay);
       audio.addEventListener('playing', handlePlaying);
@@ -306,6 +330,8 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       audio.addEventListener('timeupdate', handleTimeUpdate);
       audio.addEventListener('durationchange', handleDurationChange);
       audio.addEventListener('error', handleError);
+      audio.addEventListener('ended', handleEnded);
+      audio.onended = handleEnded;
 
       return () => {
         audio.removeEventListener('waiting', handleWaiting);
@@ -315,11 +341,13 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         audio.removeEventListener('timeupdate', handleTimeUpdate);
         audio.removeEventListener('durationchange', handleDurationChange);
         audio.removeEventListener('error', handleError);
+        audio.removeEventListener('ended', handleEnded);
+        audio.onended = null;
         audio.pause();
         audio.src = '';
       };
     }
-  }, [activeItem, activeAyahNumber]);
+  }, []);
 
   // Smooth Auto-scroll to active item or active verse
   useEffect(() => {
@@ -354,10 +382,14 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const playItem = useCallback((item: AudioSyncItem, newPlaylist?: AudioSyncItem[]) => {
     if (newPlaylist && newPlaylist.length > 0) {
       setPlaylist(newPlaylist);
+      playlistRef.current = newPlaylist;
     }
     stopCurrentAudio();
     setActiveItem(item);
-    setActiveAyahNumber(item.itemNumber || 1);
+    activeItemRef.current = item;
+    const ayahNum = item.itemNumber || 1;
+    setActiveAyahNumber(ayahNum);
+    activeAyahNumberRef.current = ayahNum;
     setFloatingBarOpen(true);
     setIsLoading(true);
     isTransitioningRef.current = true;
@@ -365,20 +397,29 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     // Determine Audio Source
     let audioUrl = item.audioUrl;
     if (item.isFullSurah && item.surahNumber) {
-      audioUrl = buildQuranSurahFullAudioUrl(selectedReciter, item.surahNumber);
+      audioUrl = buildQuranSurahFullAudioUrl(selectedReciterRef.current, item.surahNumber);
     } else if (item.type === 'quran' && item.surahNumber && item.itemNumber) {
-      audioUrl = buildQuranAyahAudioUrl(selectedReciter, item.surahNumber, item.itemNumber);
+      audioUrl = buildQuranAyahAudioUrl(selectedReciterRef.current, item.surahNumber, item.itemNumber);
     } else if (item.type === 'hadith' && !audioUrl) {
       const cleanArabic = item.arabicText.replace(/[\[\](){}<>«»""''‘’“”/\\#]/g, ' ').slice(0, 300);
       audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(cleanArabic)}&tl=ar&client=tw-ob`;
     }
 
-    if (audioUrl && audioRef.current) {
-      audioRef.current.src = audioUrl;
-      audioRef.current.playbackRate = playbackRate;
-      audioRef.current.load();
+    const audio = audioRef.current;
+    if (audioUrl && audio) {
+      // Explicit onended handler assigned on every track to guarantee automatic advancement
+      audio.onended = () => {
+        setIsPlaying(false);
+        if (autoPlayNextRef.current) {
+          playNextRef.current();
+        }
+      };
 
-      const playPromise = audioRef.current.play();
+      audio.src = audioUrl;
+      audio.playbackRate = playbackRateRef.current;
+      audio.load();
+
+      const playPromise = audio.play();
       if (playPromise !== undefined) {
         playPromise
           .then(() => {
@@ -397,31 +438,38 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setIsLoading(false);
       setIsPlaying(false);
     }
-  }, [selectedReciter, playbackRate, stopCurrentAudio]);
+  }, [stopCurrentAudio]);
 
   const playNext = useCallback(() => {
-    if (!activeItem) return;
+    const currentItem = activeItemRef.current;
+    if (!currentItem) return;
 
-    // 1. If we have a playlist with items, find current position and advance
-    if (playlist.length > 0) {
-      const curIdx = playlist.findIndex(it => it.id === activeItem.id);
-      if (curIdx !== -1 && curIdx < playlist.length - 1) {
-        playItem(playlist[curIdx + 1]);
+    const currentPlaylist = playlistRef.current;
+
+    // 1. Advance in current playlist queue
+    if (currentPlaylist && currentPlaylist.length > 0) {
+      const curIdx = currentPlaylist.findIndex(it => it.id === currentItem.id);
+      if (curIdx !== -1 && curIdx < currentPlaylist.length - 1) {
+        const nextItem = currentPlaylist[curIdx + 1];
+        playItem(nextItem);
         return;
       }
     }
 
     // 2. Fallback for Quran Ayahs: Auto-advance to next Ayah in Surah
-    if (activeItem.type === 'quran' && activeItem.surahNumber) {
-      const totalAyahs = activeItem.totalItems || 999;
-      const nextAyah = activeItem.itemNumber + 1;
+    if (currentItem.type === 'quran' && currentItem.surahNumber) {
+      const totalAyahs = currentItem.totalItems || 999;
+      const nextAyah = (currentItem.itemNumber || 1) + 1;
       if (nextAyah <= totalAyahs) {
+        const reciter = selectedReciterRef.current;
         const nextItem: AudioSyncItem = {
-          ...activeItem,
-          id: `quran-${activeItem.surahNumber}-${nextAyah}`,
+          ...currentItem,
+          id: `quran-${currentItem.surahNumber}-${nextAyah}`,
           itemNumber: nextAyah,
-          title: `${activeItem.bookTitle || 'القرآن الکریم'} — آیت ${nextAyah}`,
-          audioUrl: buildQuranAyahAudioUrl(selectedReciter, activeItem.surahNumber, nextAyah),
+          title: `${currentItem.bookTitle || 'القرآن الکریم'} — آیت ${nextAyah}`,
+          subtitle: `${currentItem.bookTitle || 'القرآن الکریم'} • آیت ${nextAyah} از ${totalAyahs}`,
+          audioUrl: buildQuranAyahAudioUrl(reciter, currentItem.surahNumber, nextAyah),
+          sentences: []
         };
         playItem(nextItem);
         return;
@@ -429,81 +477,73 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
 
     // 3. Fallback for Hadith: advance to next hadith if numbered
-    if (activeItem.type === 'hadith' && activeItem.itemNumber && activeItem.bookSlug) {
-      const totalHadiths = activeItem.totalItems || 9999;
-      const nextNum = activeItem.itemNumber + 1;
+    if (currentItem.type === 'hadith' && currentItem.itemNumber && currentItem.bookSlug) {
+      const totalHadiths = currentItem.totalItems || 9999;
+      const nextNum = (currentItem.itemNumber || 1) + 1;
       if (nextNum <= totalHadiths) {
         const nextItem: AudioSyncItem = {
-          ...activeItem,
-          id: `hadith-${activeItem.bookSlug}-${nextNum}`,
+          ...currentItem,
+          id: `hadith-${currentItem.bookSlug}-${nextNum}`,
           itemNumber: nextNum,
-          title: `${activeItem.bookTitle || 'حدیث شریف'} — حدیث ${nextNum}`,
-          subtitle: `حدیث شریف نمبر: ${nextNum}${activeItem.totalItems ? ` از ${activeItem.totalItems}` : ''}`,
+          title: `${currentItem.bookTitle || 'حدیث شریف'} — حدیث ${nextNum}`,
+          subtitle: `حدیث شریف نمبر: ${nextNum}${currentItem.totalItems ? ` از ${currentItem.totalItems}` : ''}`,
           audioUrl: undefined,
         };
         playItem(nextItem);
         return;
       }
     }
-  }, [activeItem, playlist, selectedReciter, playItem]);
+  }, [playItem]);
+
+  useEffect(() => {
+    playNextRef.current = playNext;
+  }, [playNext]);
 
   const playPrevious = useCallback(() => {
-    if (!activeItem) return;
+    const currentItem = activeItemRef.current;
+    if (!currentItem) return;
+
+    const currentPlaylist = playlistRef.current;
 
     // 1. If we have a playlist, move backwards
-    if (playlist.length > 0) {
-      const curIdx = playlist.findIndex(it => it.id === activeItem.id);
+    if (currentPlaylist && currentPlaylist.length > 0) {
+      const curIdx = currentPlaylist.findIndex(it => it.id === currentItem.id);
       if (curIdx > 0) {
-        playItem(playlist[curIdx - 1]);
+        playItem(currentPlaylist[curIdx - 1]);
         return;
       }
     }
 
     // 2. Quran Fallback
-    if (activeItem.type === 'quran' && activeItem.surahNumber && activeItem.itemNumber > 1) {
-      const prevAyah = activeItem.itemNumber - 1;
+    if (currentItem.type === 'quran' && currentItem.surahNumber && currentItem.itemNumber > 1) {
+      const prevAyah = currentItem.itemNumber - 1;
+      const reciter = selectedReciterRef.current;
       const prevItem: AudioSyncItem = {
-        ...activeItem,
-        id: `quran-${activeItem.surahNumber}-${prevAyah}`,
+        ...currentItem,
+        id: `quran-${currentItem.surahNumber}-${prevAyah}`,
         itemNumber: prevAyah,
-        title: `${activeItem.bookTitle || 'القرآن الکریم'} — آیت ${prevAyah}`,
-        audioUrl: buildQuranAyahAudioUrl(selectedReciter, activeItem.surahNumber, prevAyah),
+        title: `${currentItem.bookTitle || 'القرآن الکریم'} — آیت ${prevAyah}`,
+        audioUrl: buildQuranAyahAudioUrl(reciter, currentItem.surahNumber, prevAyah),
       };
       playItem(prevItem);
       return;
     }
 
     // 3. Hadith Fallback
-    if (activeItem.type === 'hadith' && activeItem.itemNumber > 1 && activeItem.bookSlug) {
-      const prevNum = activeItem.itemNumber - 1;
+    if (currentItem.type === 'hadith' && currentItem.itemNumber > 1 && currentItem.bookSlug) {
+      const prevNum = currentItem.itemNumber - 1;
       const prevItem: AudioSyncItem = {
-        ...activeItem,
-        id: `hadith-${activeItem.bookSlug}-${prevNum}`,
+        ...currentItem,
+        id: `hadith-${currentItem.bookSlug}-${prevNum}`,
         itemNumber: prevNum,
-        title: `${activeItem.bookTitle || 'حدیث شریف'} — حدیث ${prevNum}`,
-        subtitle: `حدیث شریف نمبر: ${prevNum}${activeItem.totalItems ? ` از ${activeItem.totalItems}` : ''}`,
+        title: `${currentItem.bookTitle || 'حدیث شریف'} — حدیث ${prevNum}`,
+        subtitle: `حدیث شریف نمبر: ${prevNum}${currentItem.totalItems ? ` از ${currentItem.totalItems}` : ''}`,
         audioUrl: undefined,
       };
       playItem(prevItem);
       return;
     }
-  }, [activeItem, playlist, selectedReciter, playItem]);
-
-  // Audio OnEnded Listener: Continuous recitation
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    const handleEnded = () => {
-      setIsPlaying(false);
-      if (autoPlayNext) {
-        playNext();
-      }
-    };
-
-    audio.addEventListener('ended', handleEnded);
-    return () => audio.removeEventListener('ended', handleEnded);
-  }, [autoPlayNext, playNext]);
+  }, [playItem]);
 
   const togglePlay = () => {
     if (!activeItem) return;
@@ -523,9 +563,12 @@ export const AudioSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const resume = () => {
     if (audioRef.current && audioRef.current.src) {
+      if (audioRef.current.duration > 0 && audioRef.current.currentTime >= audioRef.current.duration) {
+        audioRef.current.currentTime = 0;
+      }
       audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
-    } else if (activeItem) {
-      playItem(activeItem);
+    } else if (activeItemRef.current) {
+      playItem(activeItemRef.current);
     }
   };
 

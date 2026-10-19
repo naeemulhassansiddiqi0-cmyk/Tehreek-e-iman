@@ -1142,7 +1142,6 @@ export default function BookDetailPage({ slugProp }: { slugProp?: string } = {})
   const { 
     activeItem, 
     isPlaying: isAudioPlaying, 
-    playSurahFull,
     playQuranAyah, 
     playHadith, 
     togglePlay: toggleAudioPlay, 
@@ -3330,13 +3329,30 @@ ${urduToCopy}
                               if (isCurrentSurahPlaying) {
                                 toggleAudioPlay();
                               } else {
-                                playSurahFull({
+                                const surahPlaylist = buildSurahAyahPlaylist({
                                   surahNumber: currentPage + 1,
+                                  ayahCount: surahAyahsCount,
                                   surahNameUrdu: quranSurah?.titleUrdu,
                                   surahNameArabic: quranSurah?.titleArabic,
-                                  totalAyahs: surahAyahsCount,
-                                  segments: quranSurah?.segments,
+                                  segments: quranSurah?.segments
                                 });
+                                // Start from current active ayah if in this surah, else start from Ayah 1
+                                const startAyahNum = (activeItem?.type === 'quran' && activeItem.surahNumber === (currentPage + 1) && activeItem.itemNumber)
+                                  ? activeItem.itemNumber
+                                  : 1;
+                                const targetAyah = surahPlaylist.find(it => it.itemNumber === startAyahNum) || surahPlaylist[0];
+                                if (targetAyah) {
+                                  playQuranAyah({
+                                    surahNumber: currentPage + 1,
+                                    ayahNumber: targetAyah.itemNumber,
+                                    arabicText: targetAyah.arabicText,
+                                    urduText: targetAyah.urduText,
+                                    surahNameUrdu: quranSurah?.titleUrdu,
+                                    surahNameArabic: quranSurah?.titleArabic,
+                                    totalAyahs: surahAyahsCount,
+                                    playlist: surahPlaylist,
+                                  });
+                                }
                               }
                             }}
                             className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl font-black font-nastaliq text-xs sm:text-sm transition-all cursor-pointer shadow-md hover:shadow-lg active:scale-95 border-2 ${
@@ -3484,8 +3500,6 @@ ${urduToCopy}
                                 if (activeItem?.id === rukuId) {
                                   toggleAudioPlay();
                                 } else {
-                                  // Find the slice of the playlist starting from this Ruku's first ayah
-                                  const rukuPlaylist = surahPagePlaylist.slice(Math.max(0, rukuAyah - 1));
                                   playQuranAyah({
                                     surahNumber: currentPage + 1,
                                     ayahNumber: rukuAyah,
@@ -3494,7 +3508,7 @@ ${urduToCopy}
                                     surahNameUrdu: quranSurah?.titleUrdu,
                                     surahNameArabic: quranSurah?.titleArabic,
                                     totalAyahs: surahAyahsCount,
-                                    playlist: rukuPlaylist.length > 0 ? rukuPlaylist : surahPagePlaylist,
+                                    playlist: surahPagePlaylist,
                                   });
                                 }
                               }}
@@ -3631,8 +3645,6 @@ ${urduToCopy}
                                     onClick={() => {
                                       if (activeItem?.id === aId) {
                                         toggleAudioPlay();
-                                      } else {
-                                        const ayahPlaylist = surahPagePlaylist.slice(Math.max(0, ayahNum - 1));
                                         playQuranAyah({
                                           surahNumber: currentPage + 1,
                                           ayahNumber: ayahNum,
@@ -3641,7 +3653,7 @@ ${urduToCopy}
                                           surahNameUrdu: quranSurah?.titleUrdu,
                                           surahNameArabic: quranSurah?.titleArabic,
                                           totalAyahs: surahAyahsCount,
-                                          playlist: ayahPlaylist.length > 0 ? ayahPlaylist : surahPagePlaylist,
+                                          playlist: surahPagePlaylist,
                                         });
                                       }
                                     }}
@@ -3751,8 +3763,6 @@ ${urduToCopy}
                                       onClick={() => {
                                         if (activeItem?.id === verseCardId) {
                                           toggleAudioPlay();
-                                        } else {
-                                          const ayahPlaylist = surahPagePlaylist.slice(Math.max(0, matchedAyahNum - 1));
                                           playQuranAyah({
                                             surahNumber: currentPage + 1,
                                             ayahNumber: matchedAyahNum,
@@ -3761,7 +3771,7 @@ ${urduToCopy}
                                             surahNameUrdu: quranSurah?.titleUrdu,
                                             surahNameArabic: quranSurah?.titleArabic,
                                             totalAyahs: surahAyahsCount,
-                                            playlist: ayahPlaylist.length > 0 ? ayahPlaylist : surahPagePlaylist,
+                                            playlist: surahPagePlaylist,
                                           });
                                         }
                                       }}
